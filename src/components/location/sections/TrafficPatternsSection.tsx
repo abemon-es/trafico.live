@@ -30,10 +30,10 @@ const DAY_FULL: Record<number, string> = {
 // -----------------------------------------------------------------------
 
 function barColor(intensity: number, globalMax: number): string {
-  if (globalMax === 0) return "bg-tl-50";
+  if (globalMax === 0) return "bg-tl-50 dark:bg-tl-900/20";
   const ratio = intensity / globalMax;
-  if (ratio < 0.2) return "bg-tl-50";
-  if (ratio < 0.4) return "bg-tl-100";
+  if (ratio < 0.2) return "bg-tl-50 dark:bg-tl-900/20";
+  if (ratio < 0.4) return "bg-tl-100 dark:bg-tl-900/30";
   if (ratio < 0.6) return "bg-tl-200";
   if (ratio < 0.8) return "bg-tl-amber-200";
   return "bg-tl-amber-300";
@@ -101,22 +101,22 @@ export async function TrafficPatternsSection({
   return (
     <section
       id="patrones-trafico"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* A. Section header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-tl-100 text-tl-700 flex items-center justify-center text-sm">
+          <div className="w-7 h-7 rounded-lg bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 flex items-center justify-center text-sm">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-heading text-lg font-bold text-gray-900">
+              <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
                 Patrones de trafico
               </h2>
               <span className="w-2 h-2 rounded-full bg-tl-amber-400" />
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Perfil tipico por dia de la semana
             </p>
           </div>
@@ -135,12 +135,12 @@ export async function TrafficPatternsSection({
               key={day.dayOfWeek}
               className={`text-center ${
                 isHighlighted
-                  ? "border-2 border-tl-amber-200 rounded-lg p-1"
+                  ? "border-2 border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-1"
                   : "p-1"
               }`}
             >
               {/* Day label */}
-              <p className="font-data text-[9px] text-gray-500 mb-1">
+              <p className="font-data text-[9px] text-gray-500 dark:text-gray-400 mb-1">
                 {DAY_SHORT[day.dayOfWeek]}
               </p>
 
@@ -170,7 +170,7 @@ export async function TrafficPatternsSection({
                     ? "text-tl-amber-500"
                     : day.percentDiff < -5
                       ? "text-signal-green"
-                      : "text-gray-400"
+                      : "text-gray-400 dark:text-gray-500"
                 }`}
               >
                 {day.percentDiff > 5
@@ -185,14 +185,14 @@ export async function TrafficPatternsSection({
       </div>
 
       {/* Summary text */}
-      <p className="text-[10px] text-gray-500 mt-3">
+      <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-3">
         {DAY_FULL[peakDayIdx]}: pico maximo a las {peakHour}:00 &middot;{" "}
         {DAY_FULL[lowDayIdx]}: {Math.abs(lowDayDiff)}% menos trafico que la
         media &middot; Cada barra = 1 hora (00–23)
       </p>
 
       {/* Attribution */}
-      <p className="mt-5 text-[10px] text-gray-400">
+      <p className="mt-5 text-[10px] text-gray-400 dark:text-gray-500">
         Fuente: Madrid Informo (sensores)
       </p>
     </section>

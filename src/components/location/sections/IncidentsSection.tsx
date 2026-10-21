@@ -26,9 +26,9 @@ function formatDuration(secs: number): string {
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
-  LOW: "bg-yellow-100 text-yellow-800",
-  MEDIUM: "bg-orange-100 text-orange-800",
-  HIGH: "bg-red-100 text-red-800",
+  LOW: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
+  MEDIUM: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200",
+  HIGH: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200",
   VERY_HIGH: "bg-red-200 text-red-900 font-semibold",
 };
 
@@ -63,19 +63,19 @@ export async function IncidentsSection({
   return (
     <section
       id="incidencias"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-tl-600" />
-          <h2 className="font-heading text-lg font-bold text-gray-900">
+          <AlertTriangle className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
             {total} incidencia{total !== 1 ? "s" : ""} en {entity.name}
           </h2>
           <span className="w-1.5 h-1.5 rounded-full bg-signal-green shrink-0" title="Datos en tiempo real"></span>
         </div>
         {lastUpdated && (
-          <span className="text-xs text-gray-400 font-data">
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-data">
             Actualizado {formatRelativeTime(lastUpdated)}
           </span>
         )}
@@ -86,18 +86,18 @@ export async function IncidentsSection({
         {items.map((incident) => (
           <div
             key={incident.id}
-            className="flex gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100"
+            className="flex gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800"
           >
             {/* Severity badge + type */}
             <div className="flex flex-col gap-1 min-w-[80px]">
               <span
                 className={`inline-block text-[10px] px-2 py-0.5 rounded-full text-center ${
-                  SEVERITY_COLORS[incident.severity] ?? "bg-gray-100 text-gray-700"
+                  SEVERITY_COLORS[incident.severity] ?? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                 }`}
               >
                 {SEVERITY_LABELS[incident.severity] ?? incident.severity}
               </span>
-              <span className="text-[10px] text-gray-500 text-center">
+              <span className="text-[10px] text-gray-500 dark:text-gray-400 text-center">
                 {INCIDENT_TYPE_LABELS[incident.type] ?? incident.type}
               </span>
             </div>
@@ -106,7 +106,7 @@ export async function IncidentsSection({
             <div className="flex-1 min-w-0">
               {/* Road pill */}
               {incident.roadNumber && (
-                <span className="inline-block text-xs font-data font-medium bg-tl-100 text-tl-800 px-2 py-0.5 rounded mr-2">
+                <span className="inline-block text-xs font-data font-medium bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200 px-2 py-0.5 rounded mr-2">
                   {incident.roadNumber}
                   {incident.kmPoint != null &&
                     ` km ${Number(incident.kmPoint).toFixed(0)}`}
@@ -115,7 +115,7 @@ export async function IncidentsSection({
 
               {/* Description */}
               {incident.description && (
-                <p className="text-sm text-gray-700 mt-1 line-clamp-2">
+                <p className="text-sm text-gray-700 dark:text-gray-300 mt-1 line-clamp-2">
                   {incident.description}
                 </p>
               )}
@@ -123,12 +123,12 @@ export async function IncidentsSection({
               {/* Cause / management tags */}
               <div className="flex flex-wrap gap-1 mt-1">
                 {incident.detailedCauseType && (
-                  <span className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded">
                     {incident.detailedCauseType}
                   </span>
                 )}
                 {incident.managementType && (
-                  <span className="text-[10px] bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded">
                     {incident.managementType}
                   </span>
                 )}
@@ -137,11 +137,11 @@ export async function IncidentsSection({
 
             {/* Timing */}
             <div className="text-right shrink-0 flex flex-col gap-1">
-              <span className="text-xs text-gray-400 font-data">
+              <span className="text-xs text-gray-400 dark:text-gray-500 font-data">
                 {formatRelativeTime(incident.startedAt)}
               </span>
               {incident.durationSecs != null && (
-                <span className="text-[10px] text-gray-400 font-data">
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-data">
                   {formatDuration(incident.durationSecs)}
                 </span>
               )}
@@ -154,14 +154,14 @@ export async function IncidentsSection({
       {spokeHref && total > limit && (
         <a
           href={spokeHref}
-          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
         >
           Ver las {total} incidencias →
         </a>
       )}
 
       {/* Attribution */}
-      <p className="mt-4 text-[10px] text-gray-400">Fuente: DGT</p>
+      <p className="mt-4 text-[10px] text-gray-400 dark:text-gray-500">Fuente: DGT</p>
     </section>
   );
 }

@@ -22,45 +22,45 @@ const MESSAGE_TYPE_STYLE: Record<
   { bg: string; border: string; text: string; label: string }
 > = {
   DANGER: {
-    bg: "bg-red-50",
-    border: "border-red-200",
-    text: "text-red-800",
+    bg: "bg-red-50 dark:bg-red-900/20",
+    border: "border-red-200 dark:border-red-800",
+    text: "text-red-800 dark:text-red-200",
     label: "Peligro",
   },
   PRECAUTION: {
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    text: "text-amber-800",
+    bg: "bg-amber-50 dark:bg-amber-900/20",
+    border: "border-amber-200 dark:border-amber-800",
+    text: "text-amber-800 dark:text-amber-200",
     label: "Precaución",
   },
   INFO: {
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    text: "text-blue-800",
+    bg: "bg-blue-50 dark:bg-blue-900/20",
+    border: "border-blue-200 dark:border-blue-800",
+    text: "text-blue-800 dark:text-blue-200",
     label: "Información",
   },
   SPEED_LIMIT: {
-    bg: "bg-purple-50",
-    border: "border-purple-200",
-    text: "text-purple-800",
+    bg: "bg-purple-50 dark:bg-purple-900/20",
+    border: "border-purple-200 dark:border-purple-800",
+    text: "text-purple-800 dark:text-purple-200",
     label: "Límite velocidad",
   },
   LANE_CLOSED: {
-    bg: "bg-orange-50",
-    border: "border-orange-200",
-    text: "text-orange-800",
+    bg: "bg-orange-50 dark:bg-orange-900/20",
+    border: "border-orange-200 dark:border-orange-800",
+    text: "text-orange-800 dark:text-orange-200",
     label: "Carril cerrado",
   },
   DETOUR: {
-    bg: "bg-teal-50",
-    border: "border-teal-200",
-    text: "text-teal-800",
+    bg: "bg-teal-50 dark:bg-teal-900/20",
+    border: "border-teal-200 dark:border-teal-800",
+    text: "text-teal-800 dark:text-teal-200",
     label: "Desvío",
   },
   OTHER: {
-    bg: "bg-gray-50",
-    border: "border-gray-200",
-    text: "text-gray-700",
+    bg: "bg-gray-50 dark:bg-gray-800/50",
+    border: "border-gray-200 dark:border-gray-800",
+    text: "text-gray-700 dark:text-gray-300",
     label: "Aviso",
   },
 };
@@ -79,20 +79,20 @@ export async function PanelsSection({
   return (
     <section
       id="paneles"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <MonitorSmartphone className="w-5 h-5 text-tl-600" />
-          <h2 className="font-heading text-lg font-bold text-gray-900">
+          <MonitorSmartphone className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
             {total} panel{total !== 1 ? "es" : ""} variable
             {total !== 1 ? "s" : ""} en {entity.name}
           </h2>
           <span className="w-1.5 h-1.5 rounded-full bg-signal-green shrink-0" title="Datos en tiempo real"></span>
         </div>
         {lastUpdated && (
-          <span className="text-xs text-gray-400 font-data">
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-data">
             Actualizado {formatRelativeTime(lastUpdated)}
           </span>
         )}
@@ -123,7 +123,7 @@ export async function PanelsSection({
                         : "Aviso"}
                     </span>
                     {panel.roadNumber && (
-                      <span className="text-xs font-data font-medium text-gray-600">
+                      <span className="text-xs font-data font-medium text-gray-600 dark:text-gray-400">
                         {panel.roadNumber}
                         {panel.kmPoint != null &&
                           ` km ${Number(panel.kmPoint).toFixed(0)}`}
@@ -140,13 +140,13 @@ export async function PanelsSection({
 
                   {/* Panel name as subtitle */}
                   {panel.name && (
-                    <p className="text-xs text-gray-500 mt-0.5">{panel.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{panel.name}</p>
                   )}
                 </div>
 
                 {/* Time */}
                 {panel.messageStartAt && (
-                  <span className="text-xs text-gray-400 font-data shrink-0">
+                  <span className="text-xs text-gray-400 dark:text-gray-500 font-data shrink-0">
                     {formatRelativeTime(panel.messageStartAt)}
                   </span>
                 )}
@@ -160,14 +160,14 @@ export async function PanelsSection({
       {spokeHref && total > limit && (
         <a
           href={spokeHref}
-          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
         >
           Ver los {total} paneles →
         </a>
       )}
 
       {/* Attribution */}
-      <p className="mt-4 text-[10px] text-gray-400">Fuente: DGT</p>
+      <p className="mt-4 text-[10px] text-gray-400 dark:text-gray-500">Fuente: DGT</p>
     </section>
   );
 }

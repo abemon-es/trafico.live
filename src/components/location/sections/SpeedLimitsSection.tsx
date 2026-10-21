@@ -64,19 +64,19 @@ export async function SpeedLimitsSection({
   return (
     <section
       id="limites-velocidad"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Gauge className="w-5 h-5 text-tl-600" />
-          <h2 className="font-heading text-lg font-bold text-gray-900">
+          <Gauge className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
             {total} límite{total !== 1 ? "s" : ""} de velocidad en {entity.name}
           </h2>
           <span className="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0" title="Datos estáticos"></span>
         </div>
         {lastUpdated && (
-          <span className="text-xs text-gray-400 font-data">
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-data">
             Actualizado {formatRelativeTime(lastUpdated)}
           </span>
         )}
@@ -87,11 +87,11 @@ export async function SpeedLimitsSection({
         {sortedSpeeds.map((speed) => (
           <div
             key={speed}
-            className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5"
+            className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-1.5"
           >
-            <span className="font-data font-bold text-tl-700">{speed}</span>
-            <span className="text-xs text-gray-500">km/h</span>
-            <span className="text-[10px] text-gray-400 ml-1">
+            <span className="font-data font-bold text-tl-700 dark:text-tl-300">{speed}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">km/h</span>
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1">
               ×{summary[speed]}
             </span>
           </div>
@@ -102,7 +102,7 @@ export async function SpeedLimitsSection({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-gray-500 border-b border-gray-100">
+            <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
               <th className="pb-2 pr-3 font-medium">Vía</th>
               <th className="pb-2 pr-3 font-medium font-data">Tramo km</th>
               <th className="pb-2 pr-3 font-medium font-data text-right">
@@ -112,23 +112,23 @@ export async function SpeedLimitsSection({
               <th className="pb-2 font-medium">Sentido</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
             {items.map((sl) => (
-              <tr key={sl.id} className="text-gray-700">
-                <td className="py-2 pr-3 font-data font-semibold text-tl-700">
+              <tr key={sl.id} className="text-gray-700 dark:text-gray-300">
+                <td className="py-2 pr-3 font-data font-semibold text-tl-700 dark:text-tl-300">
                   {sl.roadNumber}
                 </td>
-                <td className="py-2 pr-3 font-data text-gray-600">
+                <td className="py-2 pr-3 font-data text-gray-600 dark:text-gray-400">
                   {Number(sl.kmStart).toFixed(0)}–{Number(sl.kmEnd).toFixed(0)}
                 </td>
-                <td className="py-2 pr-3 font-data font-bold text-right text-red-700">
+                <td className="py-2 pr-3 font-data font-bold text-right text-red-700 dark:text-red-300">
                   {sl.speedLimit}
                 </td>
-                <td className="py-2 pr-3 text-xs text-gray-500">
+                <td className="py-2 pr-3 text-xs text-gray-500 dark:text-gray-400">
                   {SPEED_LIMIT_TYPE_LABELS[sl.speedLimitType] ??
                     sl.speedLimitType}
                 </td>
-                <td className="py-2 text-xs text-gray-500">
+                <td className="py-2 text-xs text-gray-500 dark:text-gray-400">
                   {sl.direction
                     ? (DIRECTION_LABELS[sl.direction] ?? sl.direction)
                     : "—"}
@@ -143,14 +143,14 @@ export async function SpeedLimitsSection({
       {spokeHref && total > limit && (
         <a
           href={spokeHref}
-          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
         >
           Ver los {total} segmentos →
         </a>
       )}
 
       {/* Attribution */}
-      <p className="mt-4 text-[10px] text-gray-400">Fuente: DGT</p>
+      <p className="mt-4 text-[10px] text-gray-400 dark:text-gray-500">Fuente: DGT</p>
     </section>
   );
 }

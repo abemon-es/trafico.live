@@ -69,24 +69,24 @@ export async function HeroSection({ entity }: HeroSectionProps) {
   const timeStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <section id="hero" className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+    <section id="hero" className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         {/* Title + live badge */}
         <div className="flex-1">
-          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900">
+          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
             Tráfico en {entity.name} Hoy
           </h1>
           {entity.parentName && (
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {entity.parentName}
             </p>
           )}
           <div className="mt-2 flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-700 text-xs font-medium">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs font-medium">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />
               En directo
             </span>
-            <span className="text-xs text-gray-500 font-data">{timeStr}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-data">{timeStr}</span>
           </div>
 
           {/* Quick stats strip */}
@@ -94,36 +94,36 @@ export async function HeroSection({ entity }: HeroSectionProps) {
             {incidents > 0 && (
               <div className="flex items-center gap-1.5 text-sm">
                 <AlertTriangle className="w-4 h-4 text-tl-amber-400" />
-                <span className="font-data font-semibold text-gray-800">{incidents}</span>
-                <span className="text-gray-500">incidencia{incidents !== 1 ? "s" : ""} activa{incidents !== 1 ? "s" : ""}</span>
+                <span className="font-data font-semibold text-gray-800 dark:text-gray-200">{incidents}</span>
+                <span className="text-gray-500 dark:text-gray-400">incidencia{incidents !== 1 ? "s" : ""} activa{incidents !== 1 ? "s" : ""}</span>
               </div>
             )}
             {weatherAlerts > 0 && (
               <div className="flex items-center gap-1.5 text-sm">
                 <CloudRain className="w-4 h-4 text-tl-sea-500" />
-                <span className="font-data font-semibold text-gray-800">{weatherAlerts}</span>
-                <span className="text-gray-500">alerta{weatherAlerts !== 1 ? "s" : ""} meteorológica{weatherAlerts !== 1 ? "s" : ""}</span>
+                <span className="font-data font-semibold text-gray-800 dark:text-gray-200">{weatherAlerts}</span>
+                <span className="text-gray-500 dark:text-gray-400">alerta{weatherAlerts !== 1 ? "s" : ""} meteorológica{weatherAlerts !== 1 ? "s" : ""}</span>
               </div>
             )}
             {stats?.cameraCount != null && stats.cameraCount > 0 && (
               <div className="flex items-center gap-1.5 text-sm">
-                <Camera className="w-4 h-4 text-tl-600" />
-                <span className="font-data font-semibold text-gray-800">{stats.cameraCount}</span>
-                <span className="text-gray-500">cámara{stats.cameraCount !== 1 ? "s" : ""}</span>
+                <Camera className="w-4 h-4 text-tl-600 dark:text-tl-400" />
+                <span className="font-data font-semibold text-gray-800 dark:text-gray-200">{stats.cameraCount}</span>
+                <span className="text-gray-500 dark:text-gray-400">cámara{stats.cameraCount !== 1 ? "s" : ""}</span>
               </div>
             )}
             {stats?.gasStationCount != null && stats.gasStationCount > 0 && (
               <div className="flex items-center gap-1.5 text-sm">
                 <Fuel className="w-4 h-4 text-tl-amber-500" />
-                <span className="font-data font-semibold text-gray-800">{stats.gasStationCount}</span>
-                <span className="text-gray-500">gasolinera{stats.gasStationCount !== 1 ? "s" : ""}</span>
+                <span className="font-data font-semibold text-gray-800 dark:text-gray-200">{stats.gasStationCount}</span>
+                <span className="text-gray-500 dark:text-gray-400">gasolinera{stats.gasStationCount !== 1 ? "s" : ""}</span>
               </div>
             )}
             {stats?.evChargerCount != null && stats.evChargerCount > 0 && (
               <div className="flex items-center gap-1.5 text-sm">
                 <Zap className="w-4 h-4 text-signal-green" />
-                <span className="font-data font-semibold text-gray-800">{stats.evChargerCount}</span>
-                <span className="text-gray-500">punto{stats.evChargerCount !== 1 ? "s" : ""} de recarga</span>
+                <span className="font-data font-semibold text-gray-800 dark:text-gray-200">{stats.evChargerCount}</span>
+                <span className="text-gray-500 dark:text-gray-400">punto{stats.evChargerCount !== 1 ? "s" : ""} de recarga</span>
               </div>
             )}
           </div>
@@ -165,24 +165,24 @@ export async function HeroSection({ entity }: HeroSectionProps) {
             </span>
           </div>
           <span className={`text-xs font-semibold ${scoreColor}`}>{scoreLabel}</span>
-          <span className="text-[10px] text-gray-400 font-data">Fuente: DGT</span>
+          <span className="text-[10px] text-gray-400 dark:text-gray-500 font-data">Fuente: DGT</span>
         </div>
       </div>
 
       {/* IMD summary if available */}
       {stats?.avgIMD != null && (
-        <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2 text-sm text-gray-500">
-          <Activity className="w-4 h-4 text-tl-600" aria-hidden="true" />
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+          <Activity className="w-4 h-4 text-tl-600 dark:text-tl-400" aria-hidden="true" />
           <span>
             IMD medio:{" "}
-            <span className="font-data font-semibold text-gray-700">
+            <span className="font-data font-semibold text-gray-700 dark:text-gray-300">
               {stats.avgIMD.toLocaleString("es-ES")}
             </span>{" "}
             veh/día
             {stats.maxIMD != null && (
               <>
                 {" — "}máximo:{" "}
-                <span className="font-data font-semibold text-gray-700">
+                <span className="font-data font-semibold text-gray-700 dark:text-gray-300">
                   {Math.round(stats.maxIMD as number).toLocaleString("es-ES")}
                 </span>
               </>

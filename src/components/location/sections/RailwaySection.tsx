@@ -26,22 +26,22 @@ const SERVICE_TYPE_LABELS: Record<string, string> = {
 };
 
 const SERVICE_TYPE_COLORS: Record<string, string> = {
-  CERCANIAS: "bg-tl-100 text-tl-700",
-  RODALIES: "bg-tl-100 text-tl-700",
-  AVE: "bg-red-100 text-red-700",
-  AVLO: "bg-red-100 text-red-700",
-  ALVIA: "bg-orange-100 text-orange-700",
-  AVANT: "bg-orange-100 text-orange-700",
-  EUROMED: "bg-orange-100 text-orange-700",
-  LARGA_DISTANCIA: "bg-purple-100 text-purple-700",
-  MEDIA_DISTANCIA: "bg-indigo-100 text-indigo-700",
-  REGIONAL: "bg-gray-100 text-gray-700",
-  REGIONAL_EXPRESS: "bg-gray-100 text-gray-700",
-  PROXIMIDAD: "bg-blue-100 text-blue-700",
-  INTERCITY: "bg-purple-100 text-purple-700",
-  TRENHOTEL: "bg-indigo-100 text-indigo-700",
-  TRENCELTA: "bg-green-100 text-green-700",
-  FEVE: "bg-green-100 text-green-700",
+  CERCANIAS: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
+  RODALIES: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300",
+  AVE: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300",
+  AVLO: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300",
+  ALVIA: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300",
+  AVANT: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300",
+  EUROMED: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300",
+  LARGA_DISTANCIA: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300",
+  MEDIA_DISTANCIA: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300",
+  REGIONAL: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
+  REGIONAL_EXPRESS: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
+  PROXIMIDAD: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
+  INTERCITY: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300",
+  TRENHOTEL: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300",
+  TRENCELTA: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+  FEVE: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
 };
 
 export async function RailwaySection({ entity }: RailwaySectionProps) {
@@ -62,13 +62,13 @@ export async function RailwaySection({ entity }: RailwaySectionProps) {
   return (
     <section
       id="trenes"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Train className="w-5 h-5 text-tl-600" />
-          <h2 className="font-heading text-lg font-bold text-gray-900">
+          <Train className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
             {total} estación{total !== 1 ? "es" : ""} de tren en {entity.name}
           </h2>
           <span
@@ -83,13 +83,13 @@ export async function RailwaySection({ entity }: RailwaySectionProps) {
         {stations.map((station) => (
           <div
             key={station.id}
-            className="rounded-xl border border-gray-100 bg-gray-50 p-3"
+            className="rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-3"
           >
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
               {station.name}
             </p>
             {station.network && (
-              <p className="text-xs text-gray-500 mt-0.5 truncate">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
                 {station.network}
               </p>
             )}
@@ -99,7 +99,7 @@ export async function RailwaySection({ entity }: RailwaySectionProps) {
                   <span
                     key={type}
                     className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-                      SERVICE_TYPE_COLORS[type] ?? "bg-gray-100 text-gray-700"
+                      SERVICE_TYPE_COLORS[type] ?? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                     }`}
                   >
                     {SERVICE_TYPE_LABELS[type] ?? type}
@@ -114,13 +114,13 @@ export async function RailwaySection({ entity }: RailwaySectionProps) {
       {/* CTA */}
       <a
         href="/trenes/estaciones"
-        className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+        className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
       >
         Ver todas las estaciones →
       </a>
 
       {/* Attribution */}
-      <p className="mt-4 text-[10px] text-gray-400">Fuente: Renfe GTFS</p>
+      <p className="mt-4 text-[10px] text-gray-400 dark:text-gray-500">Fuente: Renfe GTFS</p>
     </section>
   );
 }

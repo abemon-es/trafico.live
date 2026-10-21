@@ -105,27 +105,27 @@ export async function WeatherCorrelationSection({
 
   // Bar color intensity
   function barColorClass(count: number): string {
-    if (count === 0) return "bg-tl-sea-50";
+    if (count === 0) return "bg-tl-sea-50 dark:bg-tl-sea-900/20";
     const ratio = count / maxMonthAlerts;
-    return ratio > 0.6 ? "bg-tl-sea-200" : "bg-tl-sea-100";
+    return ratio > 0.6 ? "bg-tl-sea-200" : "bg-tl-sea-100 dark:bg-tl-sea-900/30";
   }
 
   return (
     <section
       id="meteorologia-historica"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* A. Section header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-tl-sea-50 text-tl-sea-500 flex items-center justify-center text-sm">
+          <div className="w-7 h-7 rounded-lg bg-tl-sea-50 dark:bg-tl-sea-900/20 text-tl-sea-500 flex items-center justify-center text-sm">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></svg>
           </div>
           <div>
-            <h2 className="font-heading text-lg font-bold text-gray-900">
+            <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
               Meteorologia &middot; Analisis historico
             </h2>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {recentAlerts.length.toLocaleString("es-ES")} alertas en los
               ultimos 12 meses
             </p>
@@ -166,7 +166,7 @@ export async function WeatherCorrelationSection({
             return (
               <div
                 key={`label-${key}`}
-                className="flex-1 text-center text-[8px] font-data text-gray-400"
+                className="flex-1 text-center text-[8px] font-data text-gray-400 dark:text-gray-500"
               >
                 {MONTH_ABBR[monthIdx]?.charAt(0) ?? ""}
               </div>
@@ -175,7 +175,7 @@ export async function WeatherCorrelationSection({
         </div>
 
         {/* Summary */}
-        <p className="text-[10px] text-gray-500 mt-2">
+        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-2">
           Total 12m: {recentAlerts.length} alertas
           {typeBreakdown.length > 0 && (
             <>
@@ -194,19 +194,19 @@ export async function WeatherCorrelationSection({
 
       {/* C. Weather-incident correlation card */}
       {correlation.totalAlerts > 0 && correlation.percentageIncrease !== 0 && (
-        <div className="bg-tl-sea-50 rounded-xl p-4 border border-tl-sea-100">
+        <div className="bg-tl-sea-50 dark:bg-tl-sea-900/20 rounded-xl p-4 border border-tl-sea-100 dark:border-tl-sea-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center border border-tl-sea-100">
+            <div className="w-10 h-10 rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center border border-tl-sea-100 dark:border-tl-sea-800">
               <span className="font-data text-lg font-extrabold text-tl-sea-500">
                 +{correlation.percentageIncrease}%
               </span>
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-800">
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                 Dias con alerta meteo: +{correlation.percentageIncrease}%
                 incidencias vs dias sin alerta
               </p>
-              <p className="text-[10px] text-gray-500 mt-0.5">
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
                 Media{" "}
                 <span className="font-data">
                   {correlation.avgIncidentsWithAlert}
@@ -223,7 +223,7 @@ export async function WeatherCorrelationSection({
       )}
 
       {/* Attribution */}
-      <p className="mt-5 text-[10px] text-gray-400">Fuente: AEMET, DGT</p>
+      <p className="mt-5 text-[10px] text-gray-400 dark:text-gray-500">Fuente: AEMET, DGT</p>
     </section>
   );
 }

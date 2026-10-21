@@ -119,21 +119,21 @@ export async function CityFAQ({ entity }: CityFAQProps) {
       />
       <section
         id="faq"
-        className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
       >
-        <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+        <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
           Preguntas frecuentes sobre {name}
         </h2>
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 dark:divide-gray-800">
           {questions.map((q) => (
             <details className="group py-3" key={q.question}>
-              <summary className="flex items-center justify-between text-sm font-semibold text-gray-900 hover:text-tl-600 cursor-pointer">
+              <summary className="flex items-center justify-between text-sm font-semibold text-gray-900 dark:text-gray-100 hover:text-tl-600 dark:hover:text-tl-400 cursor-pointer">
                 {q.question}
-                <span className="text-gray-400 text-xs group-open:rotate-180 transition-transform">
+                <span className="text-gray-400 dark:text-gray-500 text-xs group-open:rotate-180 transition-transform">
                   {"▼"}
                 </span>
               </summary>
-              <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
                 {q.answer}
               </p>
             </details>

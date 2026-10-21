@@ -33,9 +33,9 @@ const RESTRICTION_LABELS: Record<string, string> = {
 };
 
 const RESTRICTION_COLORS: Record<string, string> = {
-  denied: "bg-red-100 text-red-700",
-  restricted: "bg-yellow-100 text-yellow-700",
-  allowed: "bg-green-100 text-green-700",
+  denied: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300",
+  restricted: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300",
+  allowed: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
 };
 
 export async function ZBESection({
@@ -50,19 +50,19 @@ export async function ZBESection({
   return (
     <section
       id="zbe"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Leaf className="w-5 h-5 text-green-600" />
-          <h2 className="font-heading text-lg font-bold text-gray-900">
+          <Leaf className="w-5 h-5 text-green-600 dark:text-green-400" />
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
             Zona{total !== 1 ? "s" : ""} de Bajas Emisiones en {entity.name}
           </h2>
           <span className="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0" title="Datos estáticos"></span>
         </div>
         {lastUpdated && (
-          <span className="text-xs text-gray-400 font-data">
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-data">
             Actualizado {formatRelativeTime(lastUpdated)}
           </span>
         )}
@@ -101,20 +101,20 @@ export async function ZBESection({
           return (
             <div
               key={zone.id}
-              className="rounded-xl border border-green-100 bg-green-50 p-4"
+              className="rounded-xl border border-green-100 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-4"
             >
               {/* Zone name + city */}
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div>
-                  <h3 className="font-heading font-semibold text-gray-900 text-base">
+                  <h3 className="font-heading font-semibold text-gray-900 dark:text-gray-100 text-base">
                     {zone.name}
                   </h3>
-                  <p className="text-xs text-gray-500">{zone.cityName}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{zone.cityName}</p>
                 </div>
                 {zone.fineAmount != null && (
                   <div className="text-right shrink-0">
-                    <p className="text-xs text-gray-500">Multa</p>
-                    <p className="font-data font-semibold text-red-700">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Multa</p>
+                    <p className="font-data font-semibold text-red-700 dark:text-red-300">
                       {Number(zone.fineAmount).toLocaleString("es-ES")} €
                     </p>
                   </div>
@@ -129,7 +129,7 @@ export async function ZBESection({
                       key={vehicle}
                       className={`text-[10px] px-2 py-1 rounded-full font-medium ${
                         RESTRICTION_COLORS[status] ??
-                        "bg-gray-100 text-gray-600"
+                        "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
                       }`}
                     >
                       {VEHICLE_LABELS[vehicle] ?? vehicle}:{" "}
@@ -141,7 +141,7 @@ export async function ZBESection({
 
               {/* Schedule */}
               {scheduleText && (
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
                   <span className="font-medium">Horario:</span> {scheduleText}
                 </p>
               )}
@@ -150,7 +150,7 @@ export async function ZBESection({
               {spokeHref && (
                 <a
                   href={`/zbe/${entity.slug}`}
-                  className="mt-3 inline-flex items-center gap-1 text-xs text-green-700 hover:text-green-800 font-medium"
+                  className="mt-3 inline-flex items-center gap-1 text-xs text-green-700 dark:text-green-300 hover:text-green-800 dark:hover:text-green-200 font-medium"
                 >
                   Ver detalles completos →
                 </a>
@@ -164,14 +164,14 @@ export async function ZBESection({
       {total > limit && spokeHref && (
         <a
           href={spokeHref}
-          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
         >
           Ver las {total} zonas ZBE →
         </a>
       )}
 
       {/* Attribution */}
-      <p className="mt-4 text-[10px] text-gray-400">Fuente: DGT</p>
+      <p className="mt-4 text-[10px] text-gray-400 dark:text-gray-500">Fuente: DGT</p>
     </section>
   );
 }

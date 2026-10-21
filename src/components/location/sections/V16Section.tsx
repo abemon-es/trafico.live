@@ -26,9 +26,9 @@ function formatDuration(secs: number): string {
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
-  LOW: "bg-yellow-100 text-yellow-800",
-  MEDIUM: "bg-orange-100 text-orange-800",
-  HIGH: "bg-red-100 text-red-800",
+  LOW: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
+  MEDIUM: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200",
+  HIGH: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200",
   VERY_HIGH: "bg-red-200 text-red-900 font-semibold",
 };
 
@@ -52,19 +52,19 @@ export async function V16Section({
   return (
     <section
       id="balizas-v16"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Radio className="w-5 h-5 text-tl-600" />
-          <h2 className="font-heading text-lg font-bold text-gray-900">
+          <Radio className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
             {total} baliza{total !== 1 ? "s" : ""} V16 en {entity.name}
           </h2>
           <span className="w-1.5 h-1.5 rounded-full bg-signal-green shrink-0" title="Datos en tiempo real"></span>
         </div>
         {lastUpdated && (
-          <span className="text-xs text-gray-400 font-data">
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-data">
             Actualizado {formatRelativeTime(lastUpdated)}
           </span>
         )}
@@ -73,7 +73,7 @@ export async function V16Section({
       {/* Active count badge */}
       {activeCount > 0 && (
         <div className="flex items-center gap-2 mb-4">
-          <span className="inline-flex items-center gap-1.5 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-full text-sm font-medium">
+          <span className="inline-flex items-center gap-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 px-3 py-1.5 rounded-full text-sm font-medium">
             <span className="inline-block w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
             {activeCount} activa{activeCount !== 1 ? "s" : ""} ahora
           </span>
@@ -87,8 +87,8 @@ export async function V16Section({
             key={beacon.id}
             className={`flex gap-3 p-3 rounded-xl border ${
               beacon.isActive
-                ? "bg-orange-50 border-orange-200"
-                : "bg-gray-50 border-gray-100"
+                ? "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800"
+                : "bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-800"
             }`}
           >
             {/* Status dot */}
@@ -107,7 +107,7 @@ export async function V16Section({
               {/* Road + km */}
               <div className="flex flex-wrap items-center gap-1.5 mb-1">
                 {beacon.roadNumber && (
-                  <span className="text-xs font-data font-semibold bg-tl-100 text-tl-800 px-2 py-0.5 rounded">
+                  <span className="text-xs font-data font-semibold bg-tl-100 dark:bg-tl-900/30 text-tl-800 dark:text-tl-200 px-2 py-0.5 rounded">
                     {beacon.roadNumber}
                     {beacon.kmPoint != null &&
                       ` km ${Number(beacon.kmPoint).toFixed(0)}`}
@@ -117,7 +117,7 @@ export async function V16Section({
                 <span
                   className={`text-[10px] px-1.5 py-0.5 rounded-full ${
                     SEVERITY_COLORS[beacon.severity] ??
-                    "bg-gray-100 text-gray-700"
+                    "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                   }`}
                 >
                   {beacon.severity}
@@ -126,7 +126,7 @@ export async function V16Section({
 
               {/* Description */}
               {beacon.description && (
-                <p className="text-sm text-gray-700 line-clamp-2">
+                <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
                   {beacon.description}
                 </p>
               )}
@@ -134,17 +134,17 @@ export async function V16Section({
               {/* Metadata row */}
               <div className="flex flex-wrap gap-2 mt-1">
                 {beacon.carriageway && (
-                  <span className="text-[10px] text-gray-500">
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">
                     Calzada: {beacon.carriageway}
                   </span>
                 )}
                 {beacon.mobilityType && (
-                  <span className="text-[10px] text-gray-500">
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">
                     {MOBILITY_LABELS[beacon.mobilityType] ?? beacon.mobilityType}
                   </span>
                 )}
                 {beacon.durationSecs != null && (
-                  <span className="text-[10px] text-gray-500 font-data">
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 font-data">
                     {formatDuration(beacon.durationSecs)}
                   </span>
                 )}
@@ -153,7 +153,7 @@ export async function V16Section({
 
             {/* Time */}
             <div className="text-right shrink-0">
-              <span className="text-xs text-gray-400 font-data">
+              <span className="text-xs text-gray-400 dark:text-gray-500 font-data">
                 {formatRelativeTime(beacon.activatedAt)}
               </span>
             </div>
@@ -165,14 +165,14 @@ export async function V16Section({
       {spokeHref && total > limit && (
         <a
           href={spokeHref}
-          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
         >
           Ver las {total} balizas →
         </a>
       )}
 
       {/* Attribution */}
-      <p className="mt-4 text-[10px] text-gray-400">Fuente: DGT</p>
+      <p className="mt-4 text-[10px] text-gray-400 dark:text-gray-500">Fuente: DGT</p>
     </section>
   );
 }

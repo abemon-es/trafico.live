@@ -22,27 +22,27 @@ const SEVERITY_BANNER: Record<
   { bg: string; border: string; text: string; label: string }
 > = {
   LOW: {
-    bg: "bg-yellow-50",
+    bg: "bg-yellow-50 dark:bg-yellow-900/20",
     border: "border-yellow-300",
-    text: "text-yellow-800",
+    text: "text-yellow-800 dark:text-yellow-200",
     label: "Aviso",
   },
   MEDIUM: {
-    bg: "bg-orange-50",
+    bg: "bg-orange-50 dark:bg-orange-900/20",
     border: "border-orange-300",
-    text: "text-orange-800",
+    text: "text-orange-800 dark:text-orange-200",
     label: "Alerta",
   },
   HIGH: {
-    bg: "bg-red-50",
+    bg: "bg-red-50 dark:bg-red-900/20",
     border: "border-red-300",
-    text: "text-red-800",
+    text: "text-red-800 dark:text-red-200",
     label: "Alerta alta",
   },
   VERY_HIGH: {
-    bg: "bg-red-100",
+    bg: "bg-red-100 dark:bg-red-900/30",
     border: "border-red-500",
-    text: "text-red-900",
+    text: "text-red-900 dark:text-red-100",
     label: "Emergencia",
   },
 };
@@ -72,26 +72,26 @@ export async function WeatherSection({
   return (
     <section
       id="meteorologia"
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"
+      className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <CloudRain className="w-5 h-5 text-tl-600" />
-          <h2 className="font-heading text-lg font-bold text-gray-900">
+          <CloudRain className="w-5 h-5 text-tl-600 dark:text-tl-400" />
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
             Alertas meteorológicas en {entity.name}
           </h2>
           <span className="w-1.5 h-1.5 rounded-full bg-tl-amber-400 shrink-0" title="Actualizado frecuentemente"></span>
         </div>
         {lastUpdated && (
-          <span className="text-xs text-gray-400 font-data">
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-data">
             Actualizado {formatRelativeTime(lastUpdated)}
           </span>
         )}
       </div>
 
       {!hasAlerts ? (
-        <p className="text-sm text-gray-500 flex items-center gap-2">
+        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
           <span className="inline-block w-2 h-2 rounded-full bg-green-400" />
           Sin alertas meteorológicas activas
         </p>
@@ -142,14 +142,14 @@ export async function WeatherSection({
       {spokeHref && total > limit && (
         <a
           href={spokeHref}
-          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 hover:text-tl-700 font-medium"
+          className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"
         >
           Ver las {total} alertas →
         </a>
       )}
 
       {/* Attribution */}
-      <p className="mt-4 text-[10px] text-gray-400">Fuente: AEMET</p>
+      <p className="mt-4 text-[10px] text-gray-400 dark:text-gray-500">Fuente: AEMET</p>
     </section>
   );
 }
