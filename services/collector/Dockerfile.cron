@@ -26,7 +26,8 @@ RUN npx prisma generate --no-hints
 # 2026-10-19 13:09Z). scripts/check-src-lib.mjs, run below in the runtime
 # stage, fails the build if a collector imports a src/lib file missing here.
 COPY src/lib/alert-matcher.ts src/lib/bluesky.ts src/lib/db.ts src/lib/redis.ts \
-     src/lib/social-broadcast.ts src/lib/telegram.ts src/lib/web-push.ts src/lib/x-api.ts /src/lib/
+     src/lib/social-broadcast.ts src/lib/telegram.ts src/lib/vehicle-stops.ts src/lib/web-push.ts \
+     src/lib/x-api.ts /src/lib/
 COPY src/lib/email/ses.ts /src/lib/email/
 RUN for f in /src/lib/*.ts; do \
       [ -f "$f" ] || continue; \
