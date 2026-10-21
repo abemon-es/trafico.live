@@ -112,8 +112,8 @@ function formatNumber(n: number): string {
 function heatmapColorClass(intensity: number): string {
   if (intensity < 0.2) return "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200";
   if (intensity < 0.4) return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300";
-  if (intensity < 0.65) return "bg-orange-200 text-orange-900";
-  return "bg-red-300 text-red-900";
+  if (intensity < 0.65) return "bg-orange-200 dark:bg-orange-900/50 text-orange-900 dark:text-orange-200";
+  return "bg-red-300 dark:bg-red-900/60 text-red-900 dark:text-red-100";
 }
 
 function heatmapBarFill(intensity: number): string {
@@ -282,8 +282,8 @@ function HourlyHeatmap({ data }: { data: HourEntry[] }) {
           {[
             "bg-emerald-100 dark:bg-emerald-900/30",
             "bg-yellow-100 dark:bg-yellow-900/30",
-            "bg-orange-200",
-            "bg-red-300",
+            "bg-orange-200 dark:bg-orange-900/50",
+            "bg-red-300 dark:bg-red-900/60",
           ].map((c) => (
             <div key={c} className={`w-6 h-3 rounded ${c}`} />
           ))}

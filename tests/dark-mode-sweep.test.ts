@@ -82,18 +82,25 @@ assert.ok(!BROKEN.test('<div className="min-h-screen bg-gray-50 dark:bg-gray-950
 // goes on to the next line, or the whole line inside one (no quote at all).
 // Per-line closed quotes alone missed 3 pairs inside multi-line templates.
 const classStrings = (line: string) => line.match(/"[^"]*"|`[^`]*`|`[^`]*$|^[^"`]*$/g) ?? [];
+// Arbitrary colours, `text-[var(--color-tl-sea-700)]`: neither the transformer nor the rules saw them
+// until 2026-10-21, and three texts on /maritimo/combustible stayed dark on dark.
+const ARB_DARK_TEXT = new RegExp(`(?<![:\\w!-])text-\\[var\\(--color-${COLOUR}-[6-9]00\\)\\]`);
+const ARB_LIGHT_BG = new RegExp(`(?<![:\\w!-])bg-\\[var\\(--color-${COLOUR}-(?:50|100)\\)\\]`);
+const ARB_ANY_LIGHT_BG = new RegExp(`(?<![:\\w!-])bg-\\[var\\(--color-${COLOUR}-[1-3]?\\d0\\)\\]`);
 /** 5: a quoted class string with a dark background and dark text, but no dark text colour. */
 const darkBgDarkText = (line: string) =>
   classStrings(line).some(
     (s) =>
-      new RegExp(`\\bdark:bg-${COLOUR}-9\\d\\d\\b`).test(s) &&
-      new RegExp(`(?<![:\\w-])text-${COLOUR}-[789]\\d\\d\\b`).test(s) &&
+      (new RegExp(`\\bdark:bg-${COLOUR}-9\\d\\d\\b`).test(s) || new RegExp(`\\bdark:bg-\\[[^\\]]*var\\(--color-${COLOUR}-9\\d\\d\\)`).test(s)) &&
+      (new RegExp(`(?<![:\\w-])text-${COLOUR}-[789]\\d\\d\\b`).test(s) || ARB_DARK_TEXT.test(s)) &&
       !/\bdark:text-/.test(s),
   );
 assert.ok(darkBgDarkText('badge: "bg-red-100 dark:bg-red-900/30 text-red-800 border-red-200",'));
 assert.ok(!darkBgDarkText('badge: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300",'));
 assert.ok(!darkBgDarkText('className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"'));
 assert.ok(darkBgDarkText('"bg-tl-amber-50 dark:bg-tl-amber-900/20 border-tl-amber-200 text-tl-amber-800"'), "hyphenated colour names too");
+assert.ok(darkBgDarkText('"bg-[var(--color-tl-sea-50)] dark:bg-[color-mix(in_oklch,var(--color-tl-sea-900)_20%,transparent)] text-[var(--color-tl-sea-800)]"'), "arbitrary colours too");
+assert.ok(!darkBgDarkText('"dark:bg-[color-mix(in_oklch,var(--color-tl-sea-900)_20%,transparent)] text-[var(--color-tl-sea-800)] dark:text-[var(--color-tl-sea-200)]"'));
 
 /** 6: a sweep-made `hover:bg-X dark:bg-X'` pair (same colour family) that should be `dark:hover:`. */
 const GREYS = new Set(["gray", "slate", "zinc", "neutral", "stone"]);
@@ -125,8 +132,8 @@ const DARK_GREY_TEXT = /(?<![:\w!-])text-gray-[6-9]00(?![\w/-])/;
 const unpaired = (line: string) =>
   classStrings(line).some(
     (s) =>
-      (LIGHT_BG.test(s) && !/\bdark:bg-/.test(s)) ||
-      (DARK_GREY_TEXT.test(s) && !/\bdark:text-/.test(s) && !ANY_LIGHT_BG.test(s)),
+      ((LIGHT_BG.test(s) || ARB_LIGHT_BG.test(s)) && !/\bdark:bg-/.test(s)) ||
+      ((DARK_GREY_TEXT.test(s) || ARB_DARK_TEXT.test(s)) && !/\bdark:text-/.test(s) && !ANY_LIGHT_BG.test(s) && !ARB_ANY_LIGHT_BG.test(s)),
   );
 assert.ok(unpaired('className="bg-white rounded-2xl border border-gray-200 p-6"'));
 assert.ok(!unpaired('className="bg-white dark:bg-gray-900 rounded-2xl"'));
@@ -137,6 +144,10 @@ assert.ok(!unpaired('<div className="w-3 h-3 bg-tl-200 text-gray-700">'), "a dat
 assert.ok(unpaired('LOW: "bg-yellow-100 text-yellow-800",'), "a 50/100 tint must have its dark pair");
 assert.ok(!unpaired('className="hover:bg-gray-50 dark:hover:bg-gray-800"'), "a hover alone is not a background");
 assert.ok(!unpaired('"[&_button[type=submit]]:!bg-white [&_button[type=submit]]:!text-tl-700"'), "a variant's !important child style is not this element's background");
+assert.ok(unpaired('"font-bold text-[var(--color-tl-sea-700)]"'), "an arbitrary dark text with no dark pair");
+assert.ok(!unpaired('"font-bold text-[var(--color-tl-sea-700)] dark:text-[var(--color-tl-sea-300)]"'));
+assert.ok(unpaired('"rounded-lg bg-[var(--color-tl-sea-50)] p-4"'), "an arbitrary light background with no dark pair");
+assert.ok(!unpaired('"bg-[var(--color-tl-sea-600)] text-white"'), "a solid accent reads in both themes");
 
 /** 6, text and borders: the same lost hover, only where the string has a light base and its own dark base. */
 const lostHoverTextBorder = (line: string) =>
