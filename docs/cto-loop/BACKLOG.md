@@ -90,6 +90,74 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (74) — the DGT sticker badges: white text, and a gap in rule 8b
+
+**#153 merged and gated** (`2c95fce`, deployed 11:50Z). On the 18 pages, with
+/gasolineras/marcas's highlight cards forced (first try): **dark on dark
+26 → 0**; islands 2 → 2 (the «Suscribir» exception); low contrast 1 → 1, the
+one below.
+
+**Signal:** /etiqueta-ambiental «ECO», white on 2.22:1, unchanged by #152's rule
+8b. The colour comes from a map (`color: "bg-green-500"`, `map[label]`) and
+`text-white` is fixed in the badge's template, two strings the rule never
+sees together. The 5 DGT stickers (teal-500, green-500, yellow-400,
+orange-400, gray-400) were all 1.57–2.60:1.
+
+**Fix (server-28: the sticker colour doesn't change, only the text):** each
+entry carries its text colour next to its colour, and both badges take both.
+Measured with Tailwind v4's oklch in Chromium:
+
+| Sticker | Background | Text | White before | Now |
+|---|---|---|---|---|
+| 0 | teal-500 | teal-950 | 2.42 | **5.98** |
+| ECO | green-500 | green-950 | 2.22 | **6.74** |
+| C | yellow-400 | yellow-950 | 1.57 | **9.22** |
+| B | orange-400 | orange-950 | 2.38 | **6.58** |
+| Sin etiqueta | gray-400 → gray-500 | white | 2.60 | **4.84** |
+
+**Guard, rule 8c** (server-28: no fragile map parser):
+- **(a)** a map entry's `bg:`/`color:` and `text:`/`badgeText:` values are
+  checked together with rule 8b's table. Mutant: the ECO table entry back to
+  white → caught.
+- **(b)** every template with a fixed `text-white` over an interpolated
+  background is listed in `WHITE_OVER_INTERPOLATED`, with what's known about
+  its values. A new one fails until someone looks.
+  - historico's `tab.activeBg` is measured (#151).
+  - **Still «to review»:** /estaciones-aforo (IMD colour), /clima station
+    and province (computed), /cortes-trafico (computed), /estadisticas
+    (`risk.bg`), PriceAlertForm (`btnClass`), IncidentFilters (`color`).
+
+**Evidence:** dark-mode-sweep (1–8c), theme-pre-paint, camera-images,
+service-worker and sitemap-lastmod pass. Web tsc 11; eslint 0 = 0 on the file.
+
+**Gate after deploy:** dark-scan on /etiqueta-ambiental: low contrast 1 → 0,
+no new islands or dark on dark.
+
+**Open, in order:**
+1. **Accessibility:** merge this; gate. Then the 7 «to review» entries:
+   measure what each interpolates, and fix them or record the numbers.
+2. **L3:** #145, the 18:00Z gas-station run → changedAt=today and lastmod per
+   shard, to server-28.
+3. **L1:** AEMET: `aemet-forecast`'s next run (~13:30Z) to server-28.
+4. **L1/L2:** #143 (2) on 22-10 04:00 and (3) on 24-10; A-5/A-6 to the CMO
+   every day.
+5. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+6. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, visible «Sin imagen».
+7. **L2, low:** the eslint errors on main.
+8. **L3:** dead cameras in the map popups (`tile_cameras`).
+9. **Perf, low:** `prefetch={false}` on long link directories.
+10. **Hygiene:** `GasStationPopup` and other dead exports; scrub the
+    pre-October backlog entries.
+11. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+12. **L3:** the index lastmod after 23-10.
+13. **L1, low:** Euskadi id collisions.
+14. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+15. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (73) — coloured dark text with no dark pair: rule 7 only looked at grey
 
 **#152 merged and gated** (`d24a4dca`, deployed 11:32Z), on the same 14 pages:
