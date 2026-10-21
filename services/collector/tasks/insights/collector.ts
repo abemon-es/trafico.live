@@ -14,6 +14,7 @@
 
 import { PrismaClient, ArticleCategory } from "@prisma/client";
 import { heartbeat } from "../../shared/heartbeat.js";
+import { nationalFuel } from "./generators/shared";
 
 function todaySlug(): string {
   return new Date().toISOString().split("T")[0];
@@ -65,17 +66,16 @@ async function detectPriceChanges(prisma: PrismaClient): Promise<number> {
   let created = 0;
   const now = new Date();
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const yesterday = new Date(today);
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
-  const [todayAvg, todayAvgGas, yesterdayStats] = await Promise.all([
-    prisma.gasStation.aggregate({ _avg: { priceGasoleoA: true }, where: { priceGasoleoA: { not: null } } }),
-    prisma.gasStation.aggregate({ _avg: { priceGasolina95E5: true }, where: { priceGasolina95E5: { not: null } } }),
-    prisma.fuelPriceDailyStats.findFirst({ where: { date: yesterday, scope: "national" } }),
-  ]);
+  // Today and yesterday from the same stored average (see nationalFuel): an
+  // alert only when today's stored day exists, so it never compares a day
+  // with itself.
+  const fuel = await nationalFuel(prisma, today);
+  const todayStats = fuel.latest && fuel.latest.date.getTime() === today.getTime() ? fuel.latest : null;
+  const yesterdayStats = todayStats ? fuel.before(1) : null;
 
-  const avgDiesel = todayAvg._avg.priceGasoleoA;
-  const avgGas95 = todayAvgGas._avg.priceGasolina95E5;
+  const avgDiesel = todayStats?.avgGasoleoA;
+  const avgGas95 = todayStats?.avgGasolina95;
 
   if (avgDiesel) {
     const price = Number(avgDiesel).toFixed(3);
@@ -95,7 +95,7 @@ async function detectPriceChanges(prisma: PrismaClient): Promise<number> {
           data: {
             slug,
             title: `Precio medio del di\u00e9sel hoy: ${price} \u20ac/L`,
-            summary: `La media nacional del precio del gas\u00f3leo A se sit\u00faa en ${price} \u20ac/L${changeText}. Gasolina 95: ${gas95Price} \u20ac/L. Datos del MITERD.`,
+            summary: `La media nacional (Pen\u00ednsula y Baleares) del precio del gas\u00f3leo A se sit\u00faa en ${price} \u20ac/L${changeText}. Gasolina 95: ${gas95Price} \u20ac/L. Datos del MITERD.`,
             body: `## Precio del di\u00e9sel hoy\n\nEl precio medio nacional del **Gas\u00f3leo A** se sit\u00faa hoy en **${price} \u20ac/L**${changeText} seg\u00fan los datos oficiales del MITERD.\n\nLa **Gasolina 95 E5** tiene un precio medio de **${gas95Price} \u20ac/L**.\n\n## \u00bfD\u00f3nde repostar m\u00e1s barato?\n\nConsulta las [gasolineras m\u00e1s baratas](/gasolineras/baratas) o los [precios por provincia](/gasolineras/precios).\n\n---\n\n*Datos: MITERD (geoportalgasolineras.es).*`,
             category: "PRICE_ALERT" as ArticleCategory,
             source: "MITERD",
@@ -207,109 +207,6 @@ async function aggregateWeatherAlerts(prisma: PrismaClient): Promise<number> {
     }
   }
   return created;
-}
-
-// ---------------------------------------------------------------------------
-// Daily Report Generator
-// ---------------------------------------------------------------------------
-
-async function generateDailyReport(prisma: PrismaClient): Promise<number> {
-  const slug = `informe-diario-${todaySlug()}`;
-  const existing = await prisma.article.findUnique({ where: { slug } });
-  if (existing) return 0;
-
-  const now = new Date();
-  const todayStart = new Date(now);
-  todayStart.setHours(0, 0, 0, 0);
-
-  const [activeIncidents, todayIncidents, activeAlerts, avgDiesel, avgGas95] = await Promise.all([
-    prisma.trafficIncident.count({ where: { isActive: true } }),
-    prisma.trafficIncident.count({ where: { startedAt: { gte: todayStart } } }),
-    prisma.weatherAlert.count({ where: { isActive: true } }),
-    prisma.gasStation.aggregate({ _avg: { priceGasoleoA: true }, where: { priceGasoleoA: { not: null } } }),
-    prisma.gasStation.aggregate({ _avg: { priceGasolina95E5: true }, where: { priceGasolina95E5: { not: null } } }),
-  ]);
-
-  const dieselPrice = avgDiesel._avg.priceGasoleoA ? Number(avgDiesel._avg.priceGasoleoA).toFixed(3) : "N/D";
-  const gas95Price = avgGas95._avg.priceGasolina95E5 ? Number(avgGas95._avg.priceGasolina95E5).toFixed(3) : "N/D";
-  const dateStr = now.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const timeStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
-
-  const article = await prisma.article.create({
-    data: {
-      slug,
-      title: `Informe de tr\u00e1fico \u2014 ${dateStr}`,
-      summary: `${activeIncidents} incidencias activas, ${todayIncidents} nuevas hoy. Di\u00e9sel: ${dieselPrice} \u20ac/L. Gasolina 95: ${gas95Price} \u20ac/L. ${activeAlerts} alertas meteorol\u00f3gicas.`,
-      body: `## Informe de tr\u00e1fico \u2014 ${dateStr}\n\n### Incidencias\n\n- **${activeIncidents}** incidencias activas en este momento\n- **${todayIncidents}** incidencias nuevas registradas hoy\n\nConsulta el [mapa de incidencias](/incidencias) o los [atascos activos](/atascos).\n\n### Precios de combustible\n\n- **Gas\u00f3leo A:** ${dieselPrice} \u20ac/L (media nacional)\n- **Gasolina 95:** ${gas95Price} \u20ac/L (media nacional)\n\nEncuentra las [gasolineras m\u00e1s baratas](/gasolineras/baratas) cerca de ti.\n\n### Meteorolog\u00eda\n\n- **${activeAlerts}** alertas meteorol\u00f3gicas activas\n\nRevisa las [alertas meteorol\u00f3gicas](/alertas-meteo) antes de viajar.\n\n---\n\n*Datos: DGT, MITERD, AEMET. Actualizado a las ${timeStr}.*`,
-      category: "DAILY_REPORT" as ArticleCategory,
-      source: "trafico.live",
-      isAutoGenerated: true,
-      readTime: "2 min",
-    },
-  });
-
-  await attachTags(prisma, article.id, [
-    { slug: "informe-diario", name: "Informe diario" },
-    { slug: "dgt", name: "DGT" },
-    { slug: "aemet", name: "AEMET" },
-    { slug: "precio-combustible", name: "Precio combustible" },
-    { slug: "profesional", name: "Profesional" },
-  ]);
-  return 1;
-}
-
-// ---------------------------------------------------------------------------
-// Weekly Report (Monday only)
-// ---------------------------------------------------------------------------
-
-async function generateWeeklyReport(prisma: PrismaClient): Promise<number> {
-  const now = new Date();
-  if (now.getDay() !== 1) return 0;
-
-  const slug = `informe-semanal-${weekSlug()}`;
-  const existing = await prisma.article.findUnique({ where: { slug } });
-  if (existing) return 0;
-
-  const weekAgo = new Date(now);
-  weekAgo.setDate(weekAgo.getDate() - 7);
-  const twoWeeksAgo = new Date(now);
-  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-
-  const [thisWeekIncidents, lastWeekIncidents, avgDiesel, avgGas95] = await Promise.all([
-    prisma.trafficIncident.count({ where: { startedAt: { gte: weekAgo } } }),
-    prisma.trafficIncident.count({ where: { startedAt: { gte: twoWeeksAgo, lt: weekAgo } } }),
-    prisma.gasStation.aggregate({ _avg: { priceGasoleoA: true }, where: { priceGasoleoA: { not: null } } }),
-    prisma.gasStation.aggregate({ _avg: { priceGasolina95E5: true }, where: { priceGasolina95E5: { not: null } } }),
-  ]);
-
-  const dieselPrice = avgDiesel._avg.priceGasoleoA ? Number(avgDiesel._avg.priceGasoleoA).toFixed(3) : "N/D";
-  const gas95Price = avgGas95._avg.priceGasolina95E5 ? Number(avgGas95._avg.priceGasolina95E5).toFixed(3) : "N/D";
-  const incidentChange = lastWeekIncidents > 0 ? Math.round(((thisWeekIncidents - lastWeekIncidents) / lastWeekIncidents) * 100) : 0;
-  const incidentTrend = incidentChange > 5 ? `un ${incidentChange}% m\u00e1s que la semana anterior`
-    : incidentChange < -5 ? `un ${Math.abs(incidentChange)}% menos que la semana anterior`
-    : "similar a la semana anterior";
-
-  const article = await prisma.article.create({
-    data: {
-      slug,
-      title: `Informe semanal de tr\u00e1fico \u2014 ${weekSlug()}`,
-      summary: `Resumen semanal: ${thisWeekIncidents} incidencias (${incidentTrend}). Di\u00e9sel: ${dieselPrice} \u20ac/L. Gasolina 95: ${gas95Price} \u20ac/L.`,
-      body: `## Informe semanal \u2014 ${weekSlug()}\n\n### Incidencias\n\n- **${thisWeekIncidents}** incidencias registradas esta semana\n- **${lastWeekIncidents}** la semana anterior\n- Tendencia: ${incidentTrend}\n\n### Precios de combustible\n\n- **Gas\u00f3leo A:** ${dieselPrice} \u20ac/L (media nacional)\n- **Gasolina 95:** ${gas95Price} \u20ac/L (media nacional)\n\n- [Evoluci\u00f3n de precios](/gasolineras/precios)\n- [Gasolineras baratas](/gasolineras/baratas)\n- [Radares DGT](/radares)\n\n---\n\n*Datos: DGT, MITERD, AEMET.*`,
-      category: "WEEKLY_REPORT" as ArticleCategory,
-      source: "trafico.live",
-      isAutoGenerated: true,
-      readTime: "2 min",
-    },
-  });
-
-  await attachTags(prisma, article.id, [
-    { slug: "informe-semanal", name: "Informe semanal" },
-    { slug: "estadisticas", name: "Estad\u00edsticas" },
-    { slug: "dgt", name: "DGT" },
-    { slug: "precio-combustible", name: "Precio combustible" },
-    { slug: "profesional", name: "Profesional" },
-  ]);
-  return 1;
 }
 
 // ---------------------------------------------------------------------------

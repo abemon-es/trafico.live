@@ -23,6 +23,8 @@ import {
   getProvinceNameMap,
   mdTable,
   INCIDENT_TYPE_NAMES,
+  nationalFuel,
+  num,
 } from "./shared";
 
 export async function generateDailyReport(prisma: PrismaClient): Promise<number> {
@@ -43,9 +45,7 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
     todayIncidents,
     yesterdayIncidents,
     activeAlerts,
-    avgDieselToday,
-    avgGas95Today,
-    yesterdayFuelStats,
+    fuel,
     todayDailyStats,
     sevenDayStartedCount,
     provinceNameMap,
@@ -61,17 +61,7 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
       orderBy: { severity: "desc" },
       take: 20,
     }),
-    prisma.gasStation.aggregate({
-      _avg: { priceGasoleoA: true },
-      where: { priceGasoleoA: { not: null } },
-    }),
-    prisma.gasStation.aggregate({
-      _avg: { priceGasolina95E5: true },
-      where: { priceGasolina95E5: { not: null } },
-    }),
-    prisma.fuelPriceDailyStats.findFirst({
-      where: { date: yesterdayStart, scope: "national" },
-    }),
+    nationalFuel(prisma, todayStart),
     prisma.dailyStats.findFirst({
       where: { dateStart: todayStart },
     }),
@@ -86,19 +76,11 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
   ]);
 
   // ── Fuel deltas ──────────────────────────────────────────────────────────
-  const dieselNow = avgDieselToday._avg.priceGasoleoA
-    ? Number(avgDieselToday._avg.priceGasoleoA)
-    : null;
-  const gas95Now = avgGas95Today._avg.priceGasolina95E5
-    ? Number(avgGas95Today._avg.priceGasolina95E5)
-    : null;
-
-  const dieselYest = yesterdayFuelStats?.avgGasoleoA
-    ? Number(yesterdayFuelStats.avgGasoleoA)
-    : null;
-  const gas95Yest = yesterdayFuelStats?.avgGasolina95
-    ? Number(yesterdayFuelStats.avgGasolina95)
-    : null;
+  // «Now» and «yesterday» from the same stored average (see nationalFuel).
+  const dieselNow = num(fuel.latest?.avgGasoleoA);
+  const gas95Now = num(fuel.latest?.avgGasolina95);
+  const dieselYest = num(fuel.before(1)?.avgGasoleoA);
+  const gas95Yest = num(fuel.before(1)?.avgGasolina95);
 
   const dieselDelta =
     dieselNow != null && dieselYest != null

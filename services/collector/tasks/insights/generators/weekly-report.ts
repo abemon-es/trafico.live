@@ -26,6 +26,8 @@ import {
   getProvinceNameMap,
   mdTable,
   INCIDENT_TYPE_NAMES,
+  nationalFuel,
+  num,
 } from "./shared";
 
 export async function generateWeeklyReport(prisma: PrismaClient): Promise<number> {
@@ -48,10 +50,7 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
   const [
     thisWeekStats,
     lastWeekStats,
-    avgDiesel,
-    avgGas95,
-    yesterdayFuel,
-    weekAgoFuel,
+    fuel,
     provinceNameMap,
   ] = await Promise.all([
     prisma.dailyStats.findMany({
@@ -62,20 +61,7 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
       where: { dateStart: { gte: twoWeeksAgoUTC, lt: weekAgoUTC } },
       orderBy: { dateStart: "asc" },
     }),
-    prisma.gasStation.aggregate({
-      _avg: { priceGasoleoA: true },
-      where: { priceGasoleoA: { not: null } },
-    }),
-    prisma.gasStation.aggregate({
-      _avg: { priceGasolina95E5: true },
-      where: { priceGasolina95E5: { not: null } },
-    }),
-    prisma.fuelPriceDailyStats.findFirst({
-      where: { date: yesterdayUTC, scope: "national" },
-    }),
-    prisma.fuelPriceDailyStats.findFirst({
-      where: { date: weekAgoUTC, scope: "national" },
-    }),
+    nationalFuel(prisma, todayUTC),
     getProvinceNameMap(prisma),
   ]);
 
@@ -130,13 +116,11 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
   );
 
   // ── Fuel ─────────────────────────────────────────────────────────────────
-  const dieselNow = avgDiesel._avg.priceGasoleoA ? Number(avgDiesel._avg.priceGasoleoA) : null;
-  const gas95Now = avgGas95._avg.priceGasolina95E5
-    ? Number(avgGas95._avg.priceGasolina95E5)
-    : null;
-
-  const dieselWeekAgo = weekAgoFuel?.avgGasoleoA ? Number(weekAgoFuel.avgGasoleoA) : null;
-  const gas95WeekAgo = weekAgoFuel?.avgGasolina95 ? Number(weekAgoFuel.avgGasolina95) : null;
+  // «Now» and «a week ago» from the same stored average (see nationalFuel).
+  const dieselNow = num(fuel.latest?.avgGasoleoA);
+  const gas95Now = num(fuel.latest?.avgGasolina95);
+  const dieselWeekAgo = num(fuel.before(7)?.avgGasoleoA);
+  const gas95WeekAgo = num(fuel.before(7)?.avgGasolina95);
 
   const dieselDelta =
     dieselNow != null && dieselWeekAgo != null
