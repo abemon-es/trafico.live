@@ -6,11 +6,14 @@
  */
 
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import type { PrismaClient } from "@prisma/client";
 import {
   FAMILIES,
   FORGET_AFTER_DAYS,
   UPSERT_FINGERPRINTS,
+  UPSERT_GAS_FINGERPRINTS,
+  fingerprintGasStations,
   run,
   type FamilyCount,
 } from "../services/collector/tasks/content-fingerprints/collector";
@@ -19,11 +22,11 @@ import { cameraCityIndexable } from "../src/lib/seo/indexability";
 
 function fake(families: FamilyCount[], forgotten = 0) {
   const calls: Array<{ sql: string; values: unknown[] }> = [];
-  let hb: { status: string; meta: Record<string, unknown> } | null = null;
+  let hb: { task: string; status: string; meta: Record<string, unknown> } | null = null;
   const prisma = {
     $queryRaw: async (q: { sql: string; values: unknown[] }) => { calls.push({ sql: q.sql, values: q.values }); return families; },
     $executeRaw: async (strings: TemplateStringsArray, ...values: unknown[]) => { calls.push({ sql: strings.join("?"), values }); return forgotten; },
-    collectorHeartbeat: { upsert: async ({ create }: { create: { status: string; meta: Record<string, unknown> } }) => { hb = { status: create.status, meta: create.meta }; } },
+    collectorHeartbeat: { upsert: async ({ create }: { create: { task: string; status: string; meta: Record<string, unknown> } }) => { hb = { task: create.task, status: create.status, meta: create.meta }; } },
   };
   return { prisma: prisma as unknown as PrismaClient, calls, hb: () => hb! };
 }
@@ -35,13 +38,30 @@ async function main() {
   assert.equal(fingerprintKey("camera-road", "A-5"), "camera-road:A-5");
 
   // Only stable content goes into a hash: no run times, images or feed URLs.
-  for (const volatile of ["lastUpdated", "updatedAt", "createdAt", "thumbnailUrl", "feedUrl"]) {
+  for (const volatile of ["lastUpdated", "updatedAt", "createdAt", "thumbnailUrl", "feedUrl", "lastPriceUpdate"]) {
     assert.ok(!UPSERT_FINGERPRINTS.sql.includes(volatile), `SQL must not hash ${volatile}`);
   }
   // A key seen for the first time has no date; only a different hash moves it.
   assert.match(UPSERT_FINGERPRINTS.sql, /SELECT key, hash, NULL::timestamptz, now\(\) FROM page/);
   assert.match(UPSERT_FINGERPRINTS.sql, /"changedAt" = CASE WHEN cf\.hash <> EXCLUDED\.hash THEN now\(\) ELSE cf\."changedAt" END/);
   assert.equal(UPSERT_FINGERPRINTS.values.length, 0);
+
+  // The gas stations alone, at the end of each gas-station run: same hash, same upsert.
+  const gasSql = UPSERT_GAS_FINGERPRINTS.sql;
+  assert.ok(gasSql.includes("'gas-station:'"));
+  for (const family of FAMILIES.filter((f) => f !== "gas-station")) assert.ok(!gasSql.includes(`'${family}:'`), `gas SQL must not write ${family}:`);
+  assert.ok(UPSERT_FINGERPRINTS.sql.includes(gasSql.slice(gasSql.indexOf("gas AS ("), gasSql.indexOf("page (key"))), "the sweep hashes the stations the same way");
+  assert.ok(!gasSql.includes("lastPriceUpdate") && !gasSql.includes("lastUpdated"), "never the feed's read time");
+  assert.match(gasSql, /SELECT key, hash, NULL::timestamptz, now\(\) FROM page/);
+  assert.match(gasSql, /"changedAt" = CASE WHEN cf\.hash <> EXCLUDED\.hash THEN now\(\) ELSE cf\."changedAt" END/);
+  assert.equal(UPSERT_GAS_FINGERPRINTS.values.length, 0);
+  // A schedule's spacing or case isn't a change.
+  assert.ok(gasSql.includes("lower(regexp_replace(btrim(coalesce(schedule, '')), '[[:space:]]+', ' ', 'g'))"));
+  // Every price the page prints, and only those.
+  const page = readFileSync("src/app/gasolineras/terrestres/[id]/page.tsx", "utf8");
+  const printed = [...new Set(page.match(/station\.price\w+/g))].map((m) => m.slice("station.".length)).sort();
+  const hashed = [...new Set(gasSql.match(/"price\w+"/g))].map((m) => m.slice(1, -1)).sort();
+  assert.deepEqual(hashed, printed);
 
   // A run: per-family counts in the heartbeat, forgotten keys by parameter.
   const ok = fake([
@@ -70,6 +90,35 @@ async function main() {
     throw new Error('relation "content_fingerprints" does not exist');
   };
   await assert.rejects(run(failing.prisma), /does not exist/);
+
+  // The gas step: its own heartbeat, and it never fails the gas-station run.
+  const gas = fake([{ family: "gas-station", seen: 11873, new: 0, changed: 1840 }]);
+  await fingerprintGasStations(gas.prisma);
+  assert.equal(gas.hb().task, "content-fingerprints-gas");
+  assert.equal(gas.hb().status, "ok");
+  assert.deepEqual(
+    { seen: gas.hb().meta.seen, new: gas.hb().meta.new, changed: gas.hb().meta.changed },
+    { seen: 11873, new: 0, changed: 1840 },
+  );
+  assert.equal(gas.calls[0].sql, UPSERT_GAS_FINGERPRINTS.sql);
+  const noGas = fake([]);
+  await fingerprintGasStations(noGas.prisma);
+  assert.equal(noGas.hb().status, "partial");
+  const gasFailing = fake([]);
+  (gasFailing.prisma as unknown as { $queryRaw: () => Promise<never> }).$queryRaw = async () => { throw new Error("deadlock detected"); };
+  await fingerprintGasStations(gasFailing.prisma);
+  assert.equal(gasFailing.hb().status, "error");
+  assert.match(String(gasFailing.hb().meta.error), /deadlock/);
+
+  // …chained as the last step of both gas-station endings (loaded, or unchanged
+  // feed), never by a cron offset that could hash a half-loaded feed.
+  const gasRun = readFileSync("services/collector/tasks/gas-station/collector.ts", "utf8");
+  assert.match(gasRun, /heartbeat\(prisma, "gas-station", "ok", \{ skipped: true, reason: "unchanged" \}\);\n\s*await fingerprintGasStations\(prisma\);\n\s*return;/);
+  assert.match(gasRun, /heartbeat\(prisma, "gas-station", processed > 0[^\n]*\n(\s*\/\/[^\n]*\n)?\s*await fingerprintGasStations\(prisma\);\n\}/);
+  const crontabs = ["realtime", "frequent", "fuel", "daily", "weekly"]
+    .map((c) => { try { return readFileSync(`services/collector/crontabs/${c}`, "utf8"); } catch { return ""; } })
+    .join("\n");
+  assert.equal((crontabs.match(/TASK=content-fingerprints/g) ?? []).length, 1, "only the 04:50 sweep has a cron");
 
   // The sitemap reads only dated keys of the families it asks for.
   let where: unknown;

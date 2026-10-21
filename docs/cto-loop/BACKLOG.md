@@ -90,6 +90,88 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (65) — a gas station's lastmod was when we read the feed; now it's when its prices changed
+
+**Signal:** shard 1 of the gas-station sitemap had 4,474 of 5,000 URLs at
+«today». Their lastmod was `GasStation.lastPriceUpdate`, which is the time the
+feed was read (3×/day), not the time a price changed. This is the next lastmod
+item after #129 (server-28 approved the order, with four conditions).
+
+**Fix:** a new `gas-station:<id>` family in `content_fingerprints`.
+- **It hashes only what /gasolineras/terrestres/<id> prints:**
+  - the station's name, address, postal code, locality, municipality,
+    province, road and km, and coordinates;
+  - its schedule (trimmed, lower case, one space per run, so spacing and case
+    aren't a change), 24 h and sale type;
+  - the 12 prices the page prints, at 3 decimals (`numeric(5,3)::text`).
+
+  It never hashes `lastPriceUpdate`, `lastUpdated`, or the 3 biofuel prices
+  the page doesn't print. A test reads the page's `station.price*` and
+  checks it against the hash.
+- **It is chained, not offset (condition 1).** It runs as the last step of
+  both gas-station endings: a loaded feed, and an unchanged feed (where the
+  table is already complete). There is no cron 30 min later that could hash a
+  half-loaded feed.
+  - It has its own heartbeat, `content-fingerprints-gas`, with seen/new/changed
+    (condition 4), and a health threshold of 39,600 s like gas-station.
+  - It never fails the gas-station run: an error goes in its heartbeat.
+- **The 04:50 sweep** hashes the stations with the same CTE, so it never
+  re-dates them.
+
+**Evidence** (compute, throwaway containers):
+- `sitemap-lastmod` and `seo-indexability` tests pass; collector tsc 626 and
+  web tsc 11, both at baseline; eslint 0 errors.
+- **Mutant** (the hash includes `lastPriceUpdate`): the test fails («must not
+  hash lastPriceUpdate»).
+- **A throwaway Postgres with 3 stations:**
+
+  | step | seen / new / changed | dated |
+  |---|---|---|
+  | first run | 3 / 3 / 0 | none |
+  | same data | 3 / 0 / 0 | |
+  | only the read time moved | 3 / 0 / 0 | |
+  | schedule spacing/case only | 3 / 0 / 0 | |
+  | a biofuel price and `margin` (not printed) | 3 / 0 / 0 | none |
+  | diesel 1.399 → 1.449 | 3 / 0 / 1 | g3 |
+  | a real schedule change | 3 / 0 / 1 | g1, g3 |
+  | the 04:50 sweep right after | gas-station 3 / 0 / 0 | g1, g3 |
+
+**What to expect (condition 3).** The price history shows how many stations
+really change a printed price from one day to the next:
+- weekdays: 40–48 % (20-10 4,795/11,258; 21-10 4,518/11,238 so far);
+- Sundays and the day after a holiday: 9–26 %.
+
+So shard 1 should fall from 89 % «today» to about 40–48 %. That is under 50 %,
+but not by much, and it's the prices, not the hash. The first run after the
+deploy inserts all ~12,470 stations as new with no date, so the gas-station
+URLs carry no lastmod until their first real change.
+
+**Pending:** after 2 runs, report in the PR, per run, the stations with
+`changedAt` = today and shard 1's share at «today».
+
+**Open, in order:**
+1. **L3:** merge this; after 2 gas-station runs, the numbers to the PR and
+   to server-28.
+2. **L1/L2:** #143 (2) on 22-10 04:00 and (3) on 24-10; A-5/A-6 to the CMO
+   every day.
+3. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+4. **bin:** dark-scan at 2 browsers, retrying on 429.
+5. **L2:** location cards, bg + border + text (dark-scan as the gate).
+6. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, visible «Sin imagen», the remaining tints.
+7. **L3:** dead cameras in the map popups (`tile_cameras`).
+8. **L1:** #132, a `weather` run that hits the key (07:02Z check).
+9. **Security (server-28):** a strict Report-Only CSP; exempting internal
+   traffic at the edge; the read-only DB role for checks.
+10. **Accessibility:** grey on white under 3:1.
+11. **L3:** the index lastmod after 23-10.
+12. **L1, low:** Euskadi id collisions.
+13. **Hygiene:** scrub the pre-October backlog entries.
+14. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+15. **Waiting on MJ:** the AEMET key (urgent), SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (64) — daily digest; the read-only errors of 20-10 were the loop's own
 
 **#143 merged** (`ac536ae7`; server-28 applied the migration first). Check 1

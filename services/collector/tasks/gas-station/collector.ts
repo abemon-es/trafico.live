@@ -13,6 +13,7 @@ import { PrismaClient } from "@prisma/client";
 import { createHash } from "crypto";
 import { PROVINCES } from "../../shared/provinces.js";
 import { heartbeat } from "../../shared/heartbeat.js";
+import { fingerprintGasStations } from "../content-fingerprints/collector.js";
 
 const MINETUR_API_URL =
   "https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/";
@@ -184,6 +185,7 @@ export async function run(prisma: PrismaClient) {
       console.log(`[gas-station] Response unchanged (hash ${bodyHash}) — skipping full re-process`);
       await redis.quit().catch(() => {});
       await heartbeat(prisma, "gas-station", "ok", { skipped: true, reason: "unchanged" });
+      await fingerprintGasStations(prisma);
       return;
     }
     await redis.set(REDIS_HASH_KEY, bodyHash, "EX", 86400).catch(() => {}); // expire after 24h
@@ -515,4 +517,6 @@ export async function run(prisma: PrismaClient) {
   const elapsed = ((Date.now() - now.getTime()) / 1000).toFixed(1);
   console.log(`[gas-station] Completed in ${elapsed}s — ${processed} stations updated`);
   await heartbeat(prisma, "gas-station", processed > 0 ? "ok" : "partial", { processed, elapsed });
+  // Last step, on the feed just loaded: dates the price changes in the sitemap.
+  await fingerprintGasStations(prisma);
 }
