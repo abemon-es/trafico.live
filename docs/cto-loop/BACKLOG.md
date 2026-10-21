@@ -90,6 +90,112 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (66) — two service workers on one scope: every page load swapped them, and some pages never loaded
+
+**#145 merged** (`197d933b`); web and collectors are deployed. The first
+gas-station run with it is at 11:00Z. **#132 verified for weather:** the 07:00Z
+failure reused issue JR (count 2), with no new issue.
+
+**Signal:** making dark-scan reliable (2 browsers, retry on 429) turned up two
+causes, and the second wasn't the scanner's.
+1. **The 429s were Next.js link prefetches.** /radares sends 120 RSC
+   prefetches, and 111 got a 429. The edge counts everything from compute as
+   one client, so they spent its bucket, and the next page's document got the
+   429 («NOT DARK», cycle 61). The same burst also hit other sites' internal
+   checks from compute (4 limits on other hosts at 06:56Z).
+2. **With the 429s gone, 1 to 3 pages per run still timed out.** The edge had
+   served them in 66 ms. The proxy logged the document as 499 with duration 0
+   (QUIC or not), and Chromium's net-log shows the request **cancelled by the
+   browser 1 ms after it was sent**.
+
+**Cause: the layout registered two service workers on scope `/`**, `/sw.js`
+and `/tile-sw.js`, and /alertas registered a third, `/sw-push.js`.
+- A scope has a single registration, so each `register()` with another script
+  replaced the worker. Both use `skipWaiting()` + `clients.claim()`.
+- In a browser on compute, over 6 page loads:
+  - every load swapped the controller 1–2 times;
+  - each activate deleted the other's caches, so `/sw.js`'s cache (offline
+    page, stale-while-revalidate HTML) was never there when it was needed;
+  - a navigation that started during a swap was cancelled and never loaded.
+    Two parallel browsers, new page per path: both hung on their second page.
+- Visitors got `/tile-sw.js` in the end, since it registers second.
+
+**Fix:**
+- `/sw.js` is the only worker. It does what visitors actually got:
+  - tile caching from `/tile-sw.js` (static files stale-while-revalidate;
+    `/dynamic/` network first, 5 s);
+  - Web Push by `importScripts("/sw-push.js")`.
+- It doesn't intercept pages. The old navigation handling never ran, and stale
+  HTML after a deploy points at chunks that are gone.
+- The layout registers only `/sw.js`; so does the push prompt (a no-op if it's
+  already registered). `tile-sw.js` and `offline.html` go.
+- Two bugs found on the way and fixed:
+  - a 204 built with `""` throws in browsers, so a dynamic tile with no network
+    and no cache hung;
+  - a response cloned after the page had read it threw, and nothing was cached.
+  Range requests (PMTiles) go straight to the network: a 206 can't be cached.
+- **dark-scan:** blocks link prefetches (they change nothing on the page),
+  retries a document 429 (Retry-After, or 5/15/30 s), reports an HTTP error
+  as «not scanned», and defaults to 2 browsers.
+
+**Evidence:**
+- `tests/service-worker.test.ts` runs `public/sw.js` + `sw-push.js` in a
+  sandbox. It checks:
+  - pages, the API and other origins aren't intercepted; range requests aren't;
+  - stale-while-revalidate, the network-first timeout, the 204;
+  - activate keeps only the tile cache;
+  - the only script any page registers is `/sw.js`.
+  Mutants caught: the second register (the bug as it was), the `""` 204, a
+  late clone. theme-pre-paint and dark-mode-sweep still pass. Web tsc 11, at
+  baseline; eslint 0.
+- dark-scan's retry and prefetch block were tested on a stub server: 2 × 429
+  with Retry-After, 1 × 429 without, always 429 → «not scanned», 404 → «not
+  scanned», 0 prefetches reached it. Without the block, 1 got through.
+- On production from compute, 14 heavy pages: 0 limits at the edge with the
+  block (117 before, at 06:5x).
+- **The fix in a real browser before deploying** (two parallel browsers, new
+  page per path, the 14 pages):
+  - Through a TLS proxy in the browser's container that serves the branch's
+    `sw.js`/`sw-push.js` and drops the second registration from the HTML
+    (14/14 rewritten). Playwright's routing doesn't see a worker's requests,
+    so it couldn't simulate this.
+  - **14/14 loaded.** The registration stayed `/sw.js`, with one controller
+    change on the first page and 0 after, and the tile cache was kept from
+    page to page.
+  - Production as it is, same run: **both browsers hung on their second page**
+    and never loaded it.
+
+**Verify after deploy** (330 s, then twice):
+- two browsers, new page per path, the 14 pages: 0 navigation failures;
+- the registration stays `/sw.js` with no controller change after the first
+  page;
+- dark-scan on the 14 pages: every page scanned, no retry.
+
+**Also:** my read-only checks are on the read-only URL since this cycle
+(PLAYBOOK updated).
+
+**Open, in order:**
+1. **L2:** merge this; verify after the deploy.
+2. **L3:** #145 after 2 gas-station runs (11:00Z and 18:00Z): changedAt=today
+   per run and shard 1, in the PR and to server-28.
+3. **L1/L2:** #143 (2) on 22-10 04:00 and (3) on 24-10; A-5/A-6 to the CMO
+   every day.
+4. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+5. **L2:** location cards, bg + border + text (dark-scan as the gate).
+6. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, visible «Sin imagen», the remaining tints.
+7. **L3:** dead cameras in the map popups (`tile_cameras`).
+8. **Security (server-28):** a strict Report-Only CSP; exempting internal
+   traffic at the edge.
+9. **Accessibility:** grey on white under 3:1.
+10. **L3:** the index lastmod after 23-10.
+11. **L1, low:** Euskadi id collisions.
+12. **Hygiene:** scrub the pre-October backlog entries.
+13. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+14. **Waiting on MJ:** the AEMET key (urgent), SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (65) — a gas station's lastmod was when we read the feed; now it's when its prices changed
 
 **Signal:** shard 1 of the gas-station sitemap had 4,474 of 5,000 URLs at
