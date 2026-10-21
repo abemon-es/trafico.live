@@ -53,6 +53,7 @@ const LABELS = [
     code: "0",
     name: "Distintivo 0 Emisiones",
     color: "bg-teal-500",
+    badgeText: "text-teal-950", // 5.98:1 (white was too light on it)
     textColor: "text-teal-700 dark:text-teal-300",
     bgLight: "bg-teal-50 dark:bg-teal-900/20",
     borderColor: "border-teal-200",
@@ -76,6 +77,7 @@ const LABELS = [
     code: "ECO",
     name: "Distintivo ECO",
     color: "bg-green-500",
+    badgeText: "text-green-950", // 6.74:1 (white was too light on it)
     textColor: "text-green-700 dark:text-green-400",
     bgLight: "bg-green-50 dark:bg-green-900/20",
     borderColor: "border-green-200",
@@ -100,6 +102,7 @@ const LABELS = [
     code: "C",
     name: "Distintivo C",
     color: "bg-yellow-400",
+    badgeText: "text-yellow-950", // 9.22:1 (white was too light on it)
     textColor: "text-yellow-700 dark:text-yellow-400",
     bgLight: "bg-yellow-50 dark:bg-yellow-900/20",
     borderColor: "border-yellow-200",
@@ -122,6 +125,7 @@ const LABELS = [
     code: "B",
     name: "Distintivo B",
     color: "bg-orange-400",
+    badgeText: "text-orange-950", // 6.58:1 (white was too light on it)
     textColor: "text-orange-700 dark:text-orange-400",
     bgLight: "bg-orange-50 dark:bg-orange-900/20",
     borderColor: "border-orange-200",
@@ -142,7 +146,8 @@ const LABELS = [
   {
     code: "Sin etiqueta",
     name: "Sin distintivo ambiental",
-    color: "bg-gray-400",
+    color: "bg-gray-500",
+    badgeText: "text-white", // 4.84:1 (on gray-400 it was 2.60:1)
     textColor: "text-gray-700 dark:text-gray-300",
     bgLight: "bg-gray-50 dark:bg-gray-950",
     borderColor: "border-gray-200 dark:border-gray-800",
@@ -226,10 +231,11 @@ const FAQ_ITEMS = [
   },
 ];
 
-function LabelBadge({ code, color }: { code: string; color: string }) {
+/** The DGT sticker: its colour and, from the same entry, the text colour that reads on it. */
+function LabelBadge({ code, color, text }: { code: string; color: string; text: string }) {
   return (
     <span
-      className={`inline-flex items-center justify-center w-10 h-10 rounded-full ${color} text-white text-xs font-black leading-none`}
+      className={`inline-flex items-center justify-center w-10 h-10 rounded-full ${color} ${text} text-xs font-black leading-none`}
     >
       {code === "Sin etiqueta" ? "—" : code}
     </span>
@@ -237,17 +243,19 @@ function LabelBadge({ code, color }: { code: string; color: string }) {
 }
 
 function TableLabelBadge({ label }: { label: string }) {
-  const map: Record<string, string> = {
-    "0": "bg-teal-500",
-    ECO: "bg-green-500",
-    C: "bg-yellow-400",
-    B: "bg-orange-400",
-    "Sin etiqueta": "bg-gray-400",
+  // Background and text from the same entry: dark text on the sticker colours
+  // (5.98–9.22:1), white only on gray-500 (4.84:1). See LABELS.
+  const map: Record<string, { bg: string; text: string }> = {
+    "0": { bg: "bg-teal-500", text: "text-teal-950" },
+    ECO: { bg: "bg-green-500", text: "text-green-950" },
+    C: { bg: "bg-yellow-400", text: "text-yellow-950" },
+    B: { bg: "bg-orange-400", text: "text-orange-950" },
+    "Sin etiqueta": { bg: "bg-gray-500", text: "text-white" },
   };
-  const cls = map[label] ?? "bg-gray-400";
+  const { bg, text } = map[label] ?? map["Sin etiqueta"];
   return (
     <span
-      className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-bold text-white ${cls}`}
+      className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-bold ${bg} ${text}`}
     >
       {label}
     </span>
@@ -399,7 +407,7 @@ export default function EtiquetaAmbientalPage() {
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     {/* Badge */}
                     <div className="flex-shrink-0">
-                      <LabelBadge code={label.code} color={label.color} />
+                      <LabelBadge code={label.code} color={label.color} text={label.badgeText} />
                     </div>
 
                     <div className="flex-1 min-w-0">
