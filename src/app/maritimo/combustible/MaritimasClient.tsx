@@ -47,7 +47,7 @@ const REGION_META: Record<
   "Mediterráneo": {
     label: "Mediterráneo",
     color: "bg-[var(--color-tl-sea-50)] dark:bg-[color-mix(in_oklch,var(--color-tl-sea-900)_20%,transparent)]",
-    borderColor: "border-[var(--color-tl-sea-200)]",
+    borderColor: "border-[var(--color-tl-sea-200)] dark:border-[var(--color-tl-sea-700)]",
     icon: "🌊",
     desc: "Cataluña, Valencia, Murcia, Andalucía oriental",
   },
@@ -68,7 +68,7 @@ const REGION_META: Record<
   Baleares: {
     label: "Baleares",
     color: "bg-[var(--color-tl-sea-50)] dark:bg-[color-mix(in_oklch,var(--color-tl-sea-900)_20%,transparent)]",
-    borderColor: "border-[var(--color-tl-sea-200)]",
+    borderColor: "border-[var(--color-tl-sea-200)] dark:border-[var(--color-tl-sea-700)]",
     icon: "🏝️",
     desc: "Islas Baleares",
   },
@@ -346,7 +346,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
         <div className="flex items-start gap-4">
           <Ship className="w-8 h-8 text-[var(--color-tl-sea-600)] dark:text-[var(--color-tl-sea-400)] flex-shrink-0 mt-0.5" />
           <div>
-            <h2 className="text-lg font-semibold text-[var(--color-tl-sea-900)] mb-2">
+            <h2 className="text-lg font-semibold text-[var(--color-tl-sea-900)] dark:text-[var(--color-tl-sea-100)] mb-2">
               ¿Quién necesita combustible en puerto?
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-[var(--color-tl-sea-800)] dark:text-[var(--color-tl-sea-200)]">
@@ -702,8 +702,8 @@ function StationCard({
 
       {station.priceGasoleoB != null && (
         <div className="mt-2 bg-[var(--color-tl-sea-50)] dark:bg-[color-mix(in_oklch,var(--color-tl-sea-900)_20%,transparent)] rounded p-2">
-          <div className="text-xs text-[var(--color-tl-sea-600)]">Gasóleo B (pesca)</div>
-          <div className="font-bold text-[var(--color-tl-sea-700)]">{formatP(station.priceGasoleoB)}</div>
+          <div className="text-xs text-[var(--color-tl-sea-600)] dark:text-[var(--color-tl-sea-400)]">Gasóleo B (pesca)</div>
+          <div className="font-bold text-[var(--color-tl-sea-700)] dark:text-[var(--color-tl-sea-300)]">{formatP(station.priceGasoleoB)}</div>
         </div>
       )}
 

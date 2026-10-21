@@ -331,7 +331,8 @@ export default function FlotasPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-14">
               {steps.map((s, i) => (
                 <div key={i} className="flex flex-col gap-4">
-                  <span className="font-heading font-extrabold text-5xl text-tl-200 dark:text-tl-800">
+                  {/* A watermark: the steps' order is already in the list itself. */}
+                  <span aria-hidden="true" className="font-heading font-extrabold text-5xl text-tl-200 dark:text-tl-800">
                     {s.num}
                   </span>
                   <h3 className="font-heading font-bold text-xl">{s.title}</h3>
