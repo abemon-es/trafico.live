@@ -20,7 +20,7 @@ import {
   Activity,
   ChevronDown,
 } from "lucide-react";
-import { provinceSlug } from "@/lib/geo/slugify";
+import { provinceSlugByCode } from "@/lib/geo/slugify";
 import { TraficoMapEmbed } from "@/components/map/TraficoMapEmbed";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -404,36 +404,43 @@ export function AccidentesClient({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                {provinceData.slice(0, 20).map((p, i) => (
-                  <tr
-                    key={p.province}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                  >
-                    <td className="px-4 py-3 font-data text-gray-400 dark:text-gray-500 text-xs">
-                      {i + 1}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
-                      <Link
-                        href={`/estadisticas/accidentes/${provinceSlug(p.provinceName ?? p.province)}`}
-                        className="text-tl-600 dark:text-tl-400 hover:underline hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
-                      >
-                        {p.provinceName ?? p.province}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-right font-data tabular-nums text-gray-700 dark:text-gray-300">
-                      {formatNumber(p.accidents)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-data tabular-nums text-red-600 dark:text-red-400 font-semibold">
-                      {formatNumber(p.fatalities)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-data tabular-nums text-tl-amber-600 dark:text-tl-amber-400">
-                      {formatNumber(p.hospitalized)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-data tabular-nums text-gray-600 dark:text-gray-400">
-                      {p.rate.toFixed(2)}%
-                    </td>
-                  </tr>
-                ))}
+                {provinceData.slice(0, 20).map((p, i) => {
+                  const slug = provinceSlugByCode(p.province);
+                  return (
+                    <tr
+                      key={p.province}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    >
+                      <td className="px-4 py-3 font-data text-gray-400 dark:text-gray-500 text-xs">
+                        {i + 1}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                        {slug ? (
+                          <Link
+                            href={`/estadisticas/accidentes/${slug}`}
+                            className="text-tl-600 dark:text-tl-400 hover:underline hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
+                          >
+                            {p.provinceName ?? p.province}
+                          </Link>
+                        ) : (
+                          p.provinceName ?? p.province
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-right font-data tabular-nums text-gray-700 dark:text-gray-300">
+                        {formatNumber(p.accidents)}
+                      </td>
+                      <td className="px-4 py-3 text-right font-data tabular-nums text-red-600 dark:text-red-400 font-semibold">
+                        {formatNumber(p.fatalities)}
+                      </td>
+                      <td className="px-4 py-3 text-right font-data tabular-nums text-tl-amber-600 dark:text-tl-amber-400">
+                        {formatNumber(p.hospitalized)}
+                      </td>
+                      <td className="px-4 py-3 text-right font-data tabular-nums text-gray-600 dark:text-gray-400">
+                        {p.rate.toFixed(2)}%
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -1,3 +1,5 @@
+import { getProvinceByCode } from "./ine-codes";
+
 /**
  * Convert a string to a URL-friendly slug
  * Handles Spanish characters (ñ, accents)
@@ -28,6 +30,17 @@ export function communitySlug(name: string): string {
  */
 export function provinceSlug(name: string): string {
   return slugify(name);
+}
+
+/**
+ * A province's slug by INE code, the one /estadisticas/accidentes/[provincia]
+ * and /radares/provincia/[slug] resolve: provinceSlug() of its PROVINCES name
+ * («Valencia/València» → "valenciavalencia"). A short or source name slugs to
+ * another string that 404s («Valencia», «S.C. Tenerife», «Guipúzcoa»).
+ */
+export function provinceSlugByCode(code: string): string | null {
+  const province = getProvinceByCode(code.padStart(2, "0"));
+  return province ? provinceSlug(province.name) : null;
 }
 
 /**

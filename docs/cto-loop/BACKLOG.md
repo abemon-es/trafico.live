@@ -90,6 +90,134 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (86) — seven province links on /estadisticas/accidentes led to a 404
+
+**aemet-forecast gate (L0, #161), on the 19:20Z run, the first with progress
+reports:**
+- `/api/health` read `running: true` with the last report 18 s, 218 s and
+  248 s old (limit 900);
+- every AEMET call got 401 (key past its renewal deadline);
+- the run stopped itself at 19:30:05Z on `no-answer` (10 min without one
+  answer), as designed;
+- the entry then showed the finished run, with no `running` left over.
+
+The second progress report (due 19:30:15Z) never came, because the run
+stopped 10 s earlier. Growing counts stay covered by the tests. Green.
+
+**Re-prioritised: L2 over the planned L3.** Building the sr-only table turned
+up broken links:
+- /estadisticas/accidentes linked seven provinces to a 404: alava, alicante,
+  baleares, castellon, valencia, sc-tenerife and guipuzcoa;
+- the route resolves `provinceSlug()` of the official name
+  («Valencia/València» → `valenciavalencia`), the slugs the sitemap already
+  lists;
+- the province grid slugged the short display names, and the top-20 table
+  slugged the accident data's own names («S.C. Tenerife», «Guipúzcoa»);
+- the hidden list on /estadisticas linked `/valencia` by hand.
+
+**Fix (this PR):**
+- `provinceSlugByCode()`: links built from the INE code;
+- the grid comes from `PROVINCES`, showing the short name;
+- the table links by code;
+- /estadisticas links `valenciavalencia`;
+- guard `tests/accident-province-links.test.ts` checks the 52 codes, the
+  sitemap's hand-written list, every hard-coded link, and that no link to the
+  page slugs a name. Both controls (main's files) fail it.
+
+**Not changed** (CMO question): the canonical slugs stay as they are. Short
+aliases (`/valencia` → `valenciavalencia`) could 308, and prettier canonicals
+would be a URL migration.
+
+**sr-only lists, table so far** (JS-off, 1280 and 412):
+- **home:** 34 destinations; 20 visible on the home itself.
+  - 9 more are visible only on another page: A-7 and N-340 (/accidentes),
+    /estaciones-aforo, /intensidad, /estadisticas, /puntos-negros, /trafico,
+    /zbe, and /noticias (only on /noticias itself).
+  - 5 have no visible link on any of 30 scanned pages: /accidentes,
+    /andorra, /portugal, /corredores, /calidad-aire/prevision.
+- **/incidencias:** the 10 /trafico/{city} links are visible only on /trafico.
+- **/camaras:** the 8 city links are all in the footer.
+- **/estadisticas:** 3 of 6 are visible on the page; madrid and barcelona
+  (and valencia, after this fix) are visible on /estadisticas/accidentes.
+- **To the CMO:** does «already visibly linked» mean on the same page, or
+  anywhere? #164 used anywhere. Here that decides the home's 9 and
+  /incidencias' 10.
+- **The hidden home paragraph** (sources and counts, in the speakable
+  selector) is text, not a link list, so it is out of this scope. Flagged to
+  the CMO.
+
+**Open, in order:**
+1. **L2:** gate this PR (all 52 grid links + the top-20 table links → 200).
+2. **L3 (CMO):** the sr-only lists PR, once the same-page or anywhere rule is
+   answered.
+3. **L3:** #145, the full-day share after 22-10's runs (PR comment).
+4. **L2:** territorios' two redirecting links; `/status` → `/alertas` full
+   reload.
+5. **L2:** #157 part 2 and #143 (2), 22-10 after 07:00 local; #143 (3) on
+   24-10; A-5/A-6 to the CMO every day.
+6. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+7. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+8. **L2, low:** `set-state-in-effect` / `purity`; `prefetch={false}` on long
+   link directories; dead exports.
+9. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+   exemption at the edge (waiting on MJ's OK).
+10. **L3:** the index lastmod after 23-10.
+11. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+12. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
+## Cycle 2026-10-21 (85) — #145 measured: gas-station lastmod from 89 % «today» to 13 %
+
+**#164 merged and gated** (`8d843c61`, deployed 18:05:44Z). JS-off rescan of
+17 pages at 1280 and 412:
+- 0 links in aria-hidden/sr-only blocks on /, /carga-ev, /mapa and
+  /incidencias;
+- all 126 block destinations visibly linked; nothing lost its last visible
+  link;
+- visible destinations: / 199→212, /carga-ev 201→233, /mapa 194→208,
+  /incidencias 197→212.
+- The CMO verified it from outside and logged it as a site-wide event,
+  symmetric between pilot and control.
+- **CMO decision for a second PR:** the screen-reader-reachable `sr-only` link
+  lists get the same per-destination treatment. That's the home page (35),
+  «Tráfico por ciudad» on /incidencias, the /camaras hub and /estadisticas.
+  - Reasons: SEO, and WCAG 2.4.7 (an invisible but focusable link).
+  - What stays sr-only: skip links shown on focus, control labels, headings.
+  - **Pilot rule:** /camaras/carretera/A-5 and A-6 (and /radares/A-3 against
+    A-6) get identical treatment, or none.
+
+**#145, second run after the deploy** (18:00Z):
+- gas-station `ok` 18:01:43Z;
+- `content-fingerprints-gas`: seen 12,470 · new 0 · changed 1,689 in
+  446 ms;
+- sitemap shards 1/2/3: 652/714/323 lastmod, all today; 1,689 in total, the
+  same as `changed`.
+- Shard 1 goes from 89 % «today» (the feed read time) to 13 % (when a printed
+  price changed).
+- 13 % is one 7 h interval; the 40–48 % forecast is day over day. The
+  full-day figure comes after 22-10's three runs, and goes to the PR.
+
+**Open, in order:**
+1. **L0:** aemet-forecast gate on the 19:20Z run.
+2. **L3 (CMO):** the sr-only lists PR (the pilot rule above).
+3. **L3:** #145, the full-day share after 22-10's runs (PR comment).
+4. **L2:** territorios' two redirecting links; `/status` → `/alertas` full
+   reload.
+5. **L2:** #157 part 2 and #143 (2), 22-10 after 07:00 local; #143 (3) on
+   24-10; A-5/A-6 to the CMO every day.
+6. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+7. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+8. **L2, low:** `set-state-in-effect` / `purity`; `prefetch={false}` on long
+   link directories; dead exports.
+9. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+   exemption at the edge (waiting on MJ's OK).
+10. **L3:** the index lastmod after 23-10.
+11. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+12. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (84) — four hidden link blocks only crawlers could see: visible, or gone
 
 **#163 merged and gated** (`4a2cb408`, deployed 17:15Z):
