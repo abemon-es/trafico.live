@@ -326,11 +326,11 @@ export default async function Gasolineras24hPage() {
                       <span
                         className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                           idx === 0
-                            ? "bg-orange-500 text-white"
+                            ? "bg-orange-900 text-white"
                             : idx === 1
-                            ? "bg-orange-400 text-white"
+                            ? "bg-orange-800 text-white"
                             : idx === 2
-                            ? "bg-orange-300 text-white"
+                            ? "bg-orange-700 text-white"
                             : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400"
                         }`}
                       >

@@ -95,7 +95,7 @@ export function PricingTable() {
           ].join(" ")}
         >
           {tier.highlight && (
-            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-tl-amber-500 text-white text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">
+            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-tl-amber-600 text-white text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">
               Más popular
             </span>
           )}
@@ -133,7 +133,7 @@ export function PricingTable() {
             className={[
               "block text-center py-3 rounded-xl font-semibold text-sm transition-colors",
               tier.highlight
-                ? "bg-tl-amber-500 hover:bg-tl-amber-600 text-white"
+                ? "bg-tl-amber-600 hover:bg-tl-amber-700 text-white"
                 : "bg-tl-600 hover:bg-tl-700 text-white",
             ].join(" ")}
           >

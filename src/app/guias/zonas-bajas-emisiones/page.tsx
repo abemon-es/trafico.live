@@ -408,7 +408,7 @@ export default async function GuiaZBEPage() {
               <div className="mt-10 mb-8">
                 <Link
                   href="/zbe"
-                  className="flex items-center justify-between bg-green-600 hover:bg-green-700 text-white rounded-xl p-5 transition-colors"
+                  className="flex items-center justify-between bg-green-700 hover:bg-green-800 text-white rounded-xl p-5 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <Leaf className="w-7 h-7" />

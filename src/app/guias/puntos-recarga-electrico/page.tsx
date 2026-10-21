@@ -400,7 +400,7 @@ export default async function GuiaPuntosRecargaPage() {
               <div className="mt-10 mb-8 space-y-3">
                 <Link
                   href="/carga-ev"
-                  className="flex items-center justify-between bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl p-5 transition-colors"
+                  className="flex items-center justify-between bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl p-5 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <Zap className="w-7 h-7" />

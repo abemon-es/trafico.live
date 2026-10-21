@@ -79,7 +79,7 @@ const SEVERITY_CONFIG: Record<
     color: "text-orange-700 dark:text-orange-400",
     bg: "bg-orange-50 dark:bg-orange-900/20",
     border: "border-orange-500",
-    badge: "bg-orange-500 text-white",
+    badge: "bg-orange-700 text-white",
   },
   MEDIUM: {
     label: "Moderado",
@@ -93,7 +93,7 @@ const SEVERITY_CONFIG: Record<
     color: "text-green-700 dark:text-green-400",
     bg: "bg-green-50 dark:bg-green-900/20",
     border: "border-green-500",
-    badge: "bg-green-500 text-white",
+    badge: "bg-green-700 text-white",
   },
 };
 

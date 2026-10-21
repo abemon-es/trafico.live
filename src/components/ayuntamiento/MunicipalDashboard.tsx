@@ -98,7 +98,7 @@ export function MunicipalDashboard({
           </div>
           <Link
             href="/api-landing"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-tl-amber-500 hover:bg-tl-amber-600 text-white text-sm font-semibold font-heading transition-colors shrink-0"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-tl-amber-600 hover:bg-tl-amber-700 text-white text-sm font-semibold font-heading transition-colors shrink-0"
           >
             Solicitar información
           </Link>

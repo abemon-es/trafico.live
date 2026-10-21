@@ -296,11 +296,11 @@ export default async function BaratasCityPage({ params }: Props) {
                     <span
                       className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                         idx === 0
-                          ? "bg-tl-amber-500 text-white"
+                          ? "bg-tl-amber-800 text-white"
                           : idx === 1
-                          ? "bg-tl-amber-400 text-white"
+                          ? "bg-tl-amber-700 text-white"
                           : idx === 2
-                          ? "bg-tl-amber-300 text-white"
+                          ? "bg-tl-amber-600 text-white"
                           : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400"
                       }`}
                     >
@@ -366,11 +366,11 @@ export default async function BaratasCityPage({ params }: Props) {
                     <span
                       className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                         idx === 0
-                          ? "bg-tl-500 text-white"
+                          ? "bg-tl-800 text-white"
                           : idx === 1
-                          ? "bg-tl-400 text-white"
+                          ? "bg-tl-700 text-white"
                           : idx === 2
-                          ? "bg-tl-300 text-white"
+                          ? "bg-tl-600 text-white"
                           : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400"
                       }`}
                     >

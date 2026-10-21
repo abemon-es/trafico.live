@@ -169,9 +169,9 @@ export default async function ProvincePricesPage({ params }: Props) {
                     <div className="flex items-start gap-2">
                       {idx < 3 && (
                         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                          idx === 0 ? "bg-green-500 text-white" :
-                          idx === 1 ? "bg-green-400 text-white" :
-                          "bg-green-300 text-white"
+                          idx === 0 ? "bg-green-900 text-white" :
+                          idx === 1 ? "bg-green-800 text-white" :
+                          "bg-green-700 text-white"
                         }`}>
                           {idx + 1}
                         </span>

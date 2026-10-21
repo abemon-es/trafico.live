@@ -273,7 +273,7 @@ function AffiliateCTA({ asin, modelName }: { asin: string; modelName: string }) 
       href={amazonUrl}
       target="_blank"
       rel="noopener sponsored"
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-tl-amber-500 hover:bg-tl-amber-600 text-white text-xs font-semibold rounded-lg transition-colors"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-tl-amber-600 hover:bg-tl-amber-700 text-white text-xs font-semibold rounded-lg transition-colors"
       aria-label={`Ver ${modelName} en Amazon`}
     >
       <ExternalLink className="w-3.5 h-3.5" />

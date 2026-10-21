@@ -740,7 +740,7 @@ export default function CuantoCuestaCargarContent() {
           <div className="flex flex-wrap gap-3">
             <Link
               href="/carga-ev"
-              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
             >
               <Zap className="w-4 h-4" />
               Todos los cargadores

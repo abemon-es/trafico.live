@@ -552,7 +552,7 @@ export default async function IncidenciasPage() {
               </p>
               <Link
                 href="/trenes/reclamaciones"
-                className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-tl-amber-500 hover:bg-tl-amber-600 text-white text-sm font-semibold font-body transition-colors"
+                className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-tl-amber-600 hover:bg-tl-amber-700 text-white text-sm font-semibold font-body transition-colors"
               >
                 Calcular mi indemnización
                 <ArrowRight className="w-4 h-4" />

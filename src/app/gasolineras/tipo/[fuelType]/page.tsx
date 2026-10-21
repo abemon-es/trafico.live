@@ -144,21 +144,21 @@ function toNumber(value: unknown): number | null {
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 1) {
     return (
-      <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 bg-tl-amber-400 text-white">
+      <span className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 bg-tl-amber-700 text-white">
         <Trophy className="w-3.5 h-3.5" />
       </span>
     );
   }
   if (rank === 2) {
     return (
-      <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 bg-gray-400 text-white">
+      <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 bg-gray-500 text-white">
         2
       </span>
     );
   }
   if (rank === 3) {
     return (
-      <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 bg-tl-amber-300 text-white">
+      <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 bg-tl-amber-600 text-white">
         3
       </span>
     );
