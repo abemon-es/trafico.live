@@ -88,6 +88,72 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (60) — #139 didn't reach zero: hyphenated colours escaped my own rules
+
+**#139 merged** (`6556070e`, web 03:55Z). dark-scan on the 5 pages:
+
+| page | dark-on-dark | notes |
+|---|---|---|
+| /espana | **0** (the title, before 1.13:1) | 20 `bg-white` cards (the location/espana batch) |
+| /precio-diesel-hoy | **0** (before 1.01:1) | — |
+| /radares/A-3 | **0** (before 1.05:1) | — |
+| /radares | **1**: «Atención: radares de tramo activos» `text-orange-800`, 2.73:1 | |
+| /puntos-negros | **1**: «¿Qué es un Tramo…?» `text-tl-amber-800`, 1.36:1 | 10 «Medio» badges `bg-tl-amber-100` |
+
+**Why rule 5 didn't see them, and what else that hid:**
+1. **The background is on the parent and the text class on the child.** No
+   single string has both, so only dark-scan sees it at runtime.
+2. **Hyphenated colour names.** My regexes used `[a-z]+` for the colour, and
+   `tl-amber` / `tl-sea` didn't match. That hid:
+   - **11 more `/200`**: `bg-tl-amber-50 dark:bg-tl-amber-900/200` (dots and
+     legends on /gasolineras, /baratas, /precio-diesel-hoy, /operaciones,
+     /zbe, /cortes-trafico, /puntos-negros and three charts), which #134
+     didn't fix because its rewrite had the same limit;
+   - **3 more rule-5 strings** (/paneles, and the «not available» box on both
+     price pages).
+
+**Fix (PR below):**
+- the 11 → `bg-tl-amber-500`;
+- the 3 strings get `dark:text-tl-amber-300`;
+- the /radares and /puntos-negros headings get their dark text (plus the
+  callout's dark border);
+- the «Medio» badge gets dark bg + text.
+- **`tests/dark-mode-sweep.test.ts`:** every rule now uses `COLOUR =
+  [a-z]+(?:-[a-z]+)*`, with cases for `tl-amber`.
+  - **Mutant:** the `puntos-negros` dot back to `/200` → fails at
+    `page.tsx:68`.
+- **Other checks:** web `tsc` 11; eslint 0 errors.
+- **Lesson:** Tailwind colour names can carry hyphens. A rule that's checked
+  without a case for them hides exactly what it should catch. Cross-element
+  cases (background on the parent, text on the child) aren't seen statically:
+  dark-scan is the one that finds them.
+
+**Verify after deploy:** dark-scan → 0 dark-on-dark on /radares,
+/puntos-negros, /espana, /precio-diesel-hoy and /radares/A-3; /puntos-negros
+without the «Medio» islands.
+
+**Open, in order** (server-28's order for dark mode):
+1. **L2:** merge and verify this fix.
+2. **L2:** «lost hover» (`dark:hover:`, 126 lines), with a pattern test that
+   handles hyphenated colours.
+3. **L2:** location cards, bg + border + text, verified with the contrast
+   check.
+4. **L2:** the remaining tints with no dark variant, page by page.
+5. **L2:** #135 at 04:07Z.
+6. **L1:** #132, a `weather` run that hits the key.
+7. **L3:** `content-fingerprints` 04:50 and 22-10; then the pilots.
+8. **L3:** gas stations by price.
+9. **Daily (21-10):** GSC/GA4 + GlitchTip digest.
+10. **Security (server-28):** a strict Report-Only CSP.
+11. **Accessibility:** grey on white under 3:1.
+12. **L3:** the index lastmod after 23-10.
+13. **L1, low:** Euskadi id collisions.
+14. **Hygiene:** scrub the pre-October backlog entries.
+15. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+16. **Waiting on MJ:** the AEMET key (urgent), SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (59) — text invisible in dark mode: a dark background with no light colour for its text
 
 **#138 verified** (web `804f0b5`, 03:18Z):

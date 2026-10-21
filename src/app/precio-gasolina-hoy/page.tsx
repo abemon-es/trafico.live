@@ -393,7 +393,7 @@ export default async function PrecioGasolinaHoyPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-6 mb-8 text-tl-amber-800">
+          <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-6 mb-8 text-tl-amber-800 dark:text-tl-amber-300">
             Los precios de hoy aún no están disponibles. Los datos se actualizan varias veces al
             día desde la API oficial del MITERD.
           </div>

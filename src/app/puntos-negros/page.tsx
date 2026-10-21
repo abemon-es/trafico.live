@@ -63,9 +63,9 @@ const RISK_LEVEL_CONFIG: Record<
   },
   MEDIUM: {
     label: "Medio",
-    badgeClass: "bg-tl-amber-100 text-tl-amber-800 border-tl-amber-200 dark:border-tl-amber-800",
+    badgeClass: "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-800 dark:text-tl-amber-200 border-tl-amber-200 dark:border-tl-amber-800",
     rowClass: "border-l-4 border-l-tl-amber-400",
-    dotClass: "bg-tl-amber-50 dark:bg-tl-amber-900/200",
+    dotClass: "bg-tl-amber-500",
   },
   LOW: {
     label: "Bajo",
@@ -266,7 +266,7 @@ export default async function PuntosNegrosPage() {
           <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-4 mb-6 flex items-start gap-3">
             <Info className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h2 className="font-semibold text-tl-amber-800">
+              <h2 className="font-semibold text-tl-amber-800 dark:text-tl-amber-100">
                 ¿Qué es un Tramo de Concentración de Accidentes?
               </h2>
               <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300 mt-0.5">

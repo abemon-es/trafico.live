@@ -272,7 +272,7 @@ export default async function BaratasCityPage({ params }: Props) {
         {/* Cheapest Diesel Top 10 */}
         <section className="mb-10">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-tl-amber-50 dark:bg-tl-amber-900/200 inline-block"></span>
+            <span className="w-3 h-3 rounded-full bg-tl-amber-500 inline-block"></span>
             Top 10 Gasóleo A más barato en {cityData.name}
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -296,7 +296,7 @@ export default async function BaratasCityPage({ params }: Props) {
                     <span
                       className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                         idx === 0
-                          ? "bg-tl-amber-50 dark:bg-tl-amber-900/200 text-white"
+                          ? "bg-tl-amber-500 text-white"
                           : idx === 1
                           ? "bg-tl-amber-400 text-white"
                           : idx === 2

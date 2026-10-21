@@ -169,10 +169,10 @@ export default async function RadaresPage() {
 
           {/* Section radar alert */}
           {byType.find((t) => t.type === "SECTION") && (
-            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 mb-6 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h2 className="font-semibold text-orange-800">Atención: radares de tramo activos</h2>
+                <h2 className="font-semibold text-orange-800 dark:text-orange-200">Atención: radares de tramo activos</h2>
                 <p className="text-sm text-orange-700 dark:text-orange-400 mt-0.5">
                   Hay{" "}
                   <strong className="font-data">

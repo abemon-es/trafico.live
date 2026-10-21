@@ -94,7 +94,7 @@ export function StationPriceHistory({ stationId }: StationPriceHistoryProps) {
       <div className="flex gap-4 mb-4">
         {hasDiesel && (
           <span className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
-            <span className="w-3 h-0.5 bg-tl-amber-50 dark:bg-tl-amber-900/200 inline-block" />
+            <span className="w-3 h-0.5 bg-tl-amber-500 inline-block" />
             Gasóleo A
           </span>
         )}
