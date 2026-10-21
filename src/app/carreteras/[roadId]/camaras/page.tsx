@@ -167,7 +167,7 @@ export default async function RoadCamerasPage({ params }: PageProps) {
                         </p>
                       </div>
                       <span className={`px-2 py-0.5 rounded-full text-xs ${
-                        camera.isActive ? "bg-green-100 dark:bg-green-900/30 text-green-800" : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400"
+                        camera.isActive ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300" : "bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400"
                       }`}>
                         {camera.isActive ? "Activa" : "Inactiva"}
                       </span>

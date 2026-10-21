@@ -91,7 +91,7 @@ export function PriceAlertForm({
 
   const borderColor = isAmber ? "border-tl-amber-200 dark:border-tl-amber-800" : "border-tl-200 dark:border-tl-800";
   const bgColor = isAmber ? "bg-tl-amber-50 dark:bg-tl-amber-900/20" : "bg-tl-50 dark:bg-tl-900/20";
-  const titleColor = isAmber ? "text-tl-amber-900" : "text-tl-800 dark:text-tl-200";
+  const titleColor = isAmber ? "text-tl-amber-900 dark:text-tl-amber-100" : "text-tl-800 dark:text-tl-200";
   const iconColor = isAmber ? "text-tl-amber-600 dark:text-tl-amber-400" : "text-tl-600 dark:text-tl-400";
   const btnClass = isAmber
     ? "bg-tl-amber-600 hover:bg-tl-amber-700 focus:ring-tl-amber-500"

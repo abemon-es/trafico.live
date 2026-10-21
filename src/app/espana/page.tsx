@@ -53,10 +53,10 @@ export default function EspanaPage() {
           { name: "Inicio", href: "/" },
           { name: "España", href: "/espana" },
         ]} />
-        <h1 className="mt-4 text-3xl font-heading font-bold text-gray-900">
+        <h1 className="mt-4 text-3xl font-heading font-bold text-gray-900 dark:text-gray-100">
           Tráfico en España
         </h1>
-        <p className="mt-2 mb-6 text-gray-600 max-w-3xl">
+        <p className="mt-2 mb-6 text-gray-600 dark:text-gray-400 max-w-3xl">
           Estado del tráfico en tiempo real en las 17 comunidades autónomas de España.
           Incidencias activas, balizas V16, cámaras de la DGT y estadísticas de
           siniestralidad actualizadas.

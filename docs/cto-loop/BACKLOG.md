@@ -88,6 +88,92 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (59) — text invisible in dark mode: a dark background with no light colour for its text
+
+**#138 verified** (web `804f0b5`, 03:18Z):
+- **24/24** (3 pages × 4 cases × 1× and 4× CPU) with the correct `html.dark`
+  at DOMContentLoaded and **0 flips**, so 0 ms of light (before: ~0.33 s
+  desktop, ~1.2–1.4 s at 4×);
+- a stored «light» on a dark system stays light;
+- the button: click → dark plus the choice saved, and after a reload it's dark
+  from DOMContentLoaded.
+
+**Signal:**
+- `bin/dark-scan.sh` now also measures **text contrast** against the
+  background behind it (WCAG relative luminance). It splits it into:
+  - **dark-on-dark**: under 3:1 with both colours dark; fails;
+  - other low contrast: grey on white, an accessibility matter in both themes;
+    informational.
+- **Measured in production:**
+
+| page | text | ratio |
+|---|---|---|
+| /espana | the h1 «Tráfico en España» (`text-gray-900`) | **1.13:1** |
+| /precio-diesel-hoy | the «¿Transportista…?» callout (`text-tl-amber-900`) | **1.01:1** |
+| /precio-diesel-hoy | «Alerta de Precio de Combustible» (PriceAlertForm) | **1.01:1** |
+| /radares/A-3 | «Ver toda la información de la A-3» (`text-tl-900`) | **1.05:1** |
+| /radares/A-3 | type and speed badges (`text-*-800` on `dark:bg-*-900/30`) | 2.4–2.8:1 |
+
+- **Cause:** the sweep `dc3f166c` gave those strings `dark:bg-…` but not
+  `dark:text-…`.
+
+**Fix (PR below):**
+- `dark:text-*` on those texts, and the /espana intro;
+- the A-3 `bg-tl-amber-100` badge («80 km/h», the light island) and the
+  orange badge get their dark variant;
+- **every remaining class string** in `src` with `dark:bg-X-9NN` +
+  `text-X-7|8|9NN` and no `dark:text-` gets one (19 lines in 11 files + 2
+  more strings the test found: lines with two strings, where the other
+  string's `dark:text-` hid them from the per-line grep):
+  - rule: 700/800 → `dark:text-X-300`, 900 → `dark:text-X-200`;
+  - **0 left**.
+- **`tests/dark-mode-sweep.test.ts` rule 5:** a quoted class string with a
+  dark background and dark text needs `dark:text-`; it's checked per string,
+  not per line.
+  - **Mutant:** the `puntos-negros` badge without it → fails at
+    `puntos-negros/page.tsx:54`.
+- **`bin/dark-scan.mjs`:**
+  - contrast;
+  - waits 20 s for `html.dark` (the /espana/andalucia «not dark» was the 8 s
+    wait under load).
+- **Other checks:** web `tsc` 11; eslint on the changed files 1 error / 12
+  warnings, **the same on `main`**.
+
+**Found and left for their own batches:**
+- **«Lost hover», a 4th artifact of the sweep:**
+  - `hover:bg-X dark:bg-Y`: the dark half lost its `hover:`, so in dark mode
+    it's a permanent background and there's no hover;
+  - **126 lines in 55 files**;
+  - mechanical (`dark:hover:`), with a pattern test.
+- **The location components** (LocationShell sections, /espana/[community]/
+  [province]/*): `bg-white` cards and their texts never got dark mode (~60
+  cards).
+  - Darkening the background without the text would make it dark on dark: it
+    needs bg + border + text together, with dark-scan's contrast before and
+    after.
+- **Grey on white under 3:1** (`text-gray-400` on white): an accessibility
+  item in both themes.
+
+**Open, in order:**
+1. **L2:** merge and verify this batch (dark-scan: 0 dark-on-dark on /espana,
+   /precio-diesel-hoy, /radares/A-3, /puntos-negros, /radares).
+2. **L2:** «lost hover» (126 lines).
+3. **L2:** dark mode for the location components (bg + border + text).
+4. **L2:** #135 at 04:07Z (`Actualizado hoy`).
+5. **L1:** #132, a `weather` run that hits the key.
+6. **L3:** `content-fingerprints` 04:50 and 22-10; then the pilots.
+7. **L3:** gas stations by price.
+8. **Daily (21-10):** GSC/GA4 + GlitchTip digest.
+9. **Security (server-28):** a strict Report-Only CSP.
+10. **Accessibility:** grey on white under 3:1.
+11. **L3:** the index lastmod after 23-10.
+12. **L1, low:** Euskadi id collisions.
+13. **Hygiene:** scrub the pre-October backlog entries.
+14. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+15. **Waiting on MJ:** the AEMET key (urgent), SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (58) — dark mode appeared 0.3–1.4 s late, after a light page
 
 **#137 merged** (`4ae953fe`): `bin/dark-scan.sh`. server-28 reviewed the

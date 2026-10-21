@@ -147,7 +147,7 @@ const RISK_LEVEL_CONFIG: Record<
 > = {
   HIGH: {
     label: "Alto",
-    badgeClass: "bg-red-100 dark:bg-red-900/30 text-red-800 border-red-200",
+    badgeClass: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200",
     rowClass: "border-l-4 border-l-red-400",
   },
   VERY_HIGH: {
@@ -162,7 +162,7 @@ const RISK_LEVEL_CONFIG: Record<
   },
   LOW: {
     label: "Bajo",
-    badgeClass: "bg-green-100 dark:bg-green-900/30 text-green-800 border-green-200",
+    badgeClass: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200",
     rowClass: "border-l-4 border-l-green-400",
   },
 };
