@@ -90,6 +90,92 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (64) — daily digest; the read-only errors of 20-10 were the loop's own
+
+**#143 merged** (`ac536ae7`; server-28 applied the migration first). Check 1
+after the deploy:
+- /camaras/madrid, /camaras/camara/186295 (a 404 camera),
+  /camaras/carretera/A-5, /camaras/sevilla and /carreteras/a-6/hoy → 200;
+- 0 Prisma/column errors in the web;
+- collector-daily has the snapshot step.
+- **Pending:**
+  - 22-10 04:00 local: `snapshots` (~1,938/34, 0 deactivated, A-5 74 /
+    A-6 120), /camaras/sevilla at 20 etraffic `<img>`, 186295 without
+    og:image/VideoObject;
+  - Friday 24-10: ~33 deactivated, the 15 cities unchanged.
+- The city grid's «no image» is just a camera icon. Putting visible «Sin
+  imagen» text there goes in the page-by-page pass.
+
+**#129, the first `content-fingerprints` run** (02:50Z): `ok`, seen 3,266,
+**new 3,266, changed 0**, 87 ms; `content_fingerprints` has 0 rows with
+`changedAt`, so nobody got a made-up date. 22-10 is the first run that can
+date changes.
+
+**Daily: traffic (SeoSnapshot 21-10 04:00Z) + GlitchTip (project 9):**
+- **GSC 30 d:** 11 clicks · 1,254 impressions · position **46.4** (yesterday
+  11 / 1,230 / 46.3): flat.
+  - By day, data up to 10-18: 39 impressions, position 55.0.
+  - Top: / 9 clicks / 362 impressions / 50.8; /camaras/carretera/A-62 1 / 8 /
+    20.0; /camaras/valencia 1 / 9 / 34.0.
+- **GA4 30 d:** 1,385 sessions (+47) · 1,246 users · 3,527 pageviews.
+  - The last 8 days: 98 · 54 · 41 · 39 · 29 · 51 · 75 · 27.
+  - Sources: bing 666 · direct 181 · yahoo 176 · chatgpt.com 105 ·
+    duckduckgo 97.
+  - Pages: /mapa 384 · /trenes/incidencias 305 · / 207 · /trenes 149.
+  - Devices: desktop 875 / mobile 508.
+- **GlitchTip, 24 h:**
+
+  | issues | events | message | last |
+  |---|---|---|---|
+  | 2 | 14,326 | «error running command: exit status 1» (cron) | 01:30Z (aemet-forecast, expected with the key) |
+  | 2 | 239 | «fetch failed» (transit-realtime, weather) | 16:18Z |
+  | 17 | 49 | pg «Connection terminated due to connection timeout» | **07:16Z on 20-10**, nothing since |
+  | 4 | 6 | pg «timeout exceeded when trying to connect» | 07:16Z on 20-10 |
+  | **1+1** | **7+1** | **«cannot execute INSERT in a read-only transaction»** (JM, JN) | 16:24Z on 20-10 |
+  | 1 | 2 | «AEMET data fetch error: 500» (JL) | 22:00Z (waiting for #132's verification) |
+  | 1 | 1 | «AEMET API key past its renewal deadline» (JP) | 01:30Z (#112's fingerprint ✓) |
+
+**JM/JN were caused by the loop itself.**
+- At 16:16:37Z on 20-10, a read-only check script of mine ran `SET
+  default_transaction_read_only=on` at session level through PgBouncer
+  (transaction pooling).
+- It stuck to a pooled server connection: every error in Postgres has the
+  same backend PID. `city-traffic` failed its sensor upserts until that
+  connection was recycled (Loki: last 16:25:31Z; 0 in the following 13 h).
+- **The fix is ours:** a rule in the PLAYBOOK («Read-only DB checks: `BEGIN
+  READ ONLY`, never a session `SET`»), the loop's memory, and a lesson.
+- **server-28 confirmed the cause and decided:**
+  - PgBouncer has `DISCARD ALL` as its reset query, but it doesn't run in
+    transaction mode;
+  - **no** to resetting on every transaction (it costs the whole app);
+  - **yes** to a dedicated read-only role with its own pool, giving
+    `DATABASE_URL_RO` for checks.
+  - It resolves JM/JN at its gate with this cause.
+- The 21 pg issues from the morning blip of 20-10 have had no event for 22 h:
+  proposed to server-28 to resolve them like the Redis ones.
+
+**Open, in order:**
+1. **L1/L2:** #143 (2) on 22-10 04:00 and (3) on 24-10; A-5/A-6 to the CMO
+   every day.
+2. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+3. **bin:** dark-scan at 2 browsers, retrying on 429.
+4. **L2:** location cards, bg + border + text (dark-scan as the gate).
+5. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, visible «Sin imagen», the remaining tints.
+6. **L3:** dead cameras in the map popups (`tile_cameras`).
+7. **L1:** #132, a `weather` run that hits the key.
+8. **L3:** gas stations by price.
+9. **Security (server-28):** a strict Report-Only CSP; exempting internal
+   traffic at the edge; PgBouncer and session SETs.
+10. **Accessibility:** grey on white under 3:1.
+11. **L3:** the index lastmod after 23-10.
+12. **L1, low:** Euskadi id collisions.
+13. **Hygiene:** scrub the pre-October backlog entries.
+14. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+15. **Waiting on MJ:** the AEMET key (urgent), SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (63) — cameras with no image: «sin imagen» from day 1, inactive after 3
 
 **#142 verified** (web `056a4cd`, 04:50Z). Chromium scrolling the whole page:
