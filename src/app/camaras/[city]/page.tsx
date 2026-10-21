@@ -321,6 +321,10 @@ export default async function CamarasCityPage({ params }: Props) {
                         >
                           {cam.thumbnailUrl ? (
                             <div className="aspect-video bg-gray-100 dark:bg-gray-900 relative overflow-hidden">
+                              {/* unoptimized, like every camera image: the thumbnails are
+                                  live DGT snapshots on etraffic.dgt.es, which the image
+                                  optimizer doesn't allow (it answered 400 for all 54 on
+                                  /camaras/madrid until 2026-10-21), and it would cache them. */}
                               <Image
                                 src={cam.thumbnailUrl}
                                 alt={`Cámara DGT ${cam.roadNumber ?? ""} km ${cam.kmPoint ?? ""} — ${cityData.name}`}
@@ -328,7 +332,7 @@ export default async function CamarasCityPage({ params }: Props) {
                                 height={480}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
-                                quality={75}
+                                unoptimized
                               />
                             </div>
                           ) : (
