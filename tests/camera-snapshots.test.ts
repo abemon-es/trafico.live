@@ -89,7 +89,22 @@ async function main() {
   calls.length = 0;
   const outage = await applySnapshotChecks(prisma, [], fixed(r([["a", "image"], ["b", "notImage"], ["c", "notImage"]])));
   assert.equal(outage.outage, true);
-  assert.equal(calls.length, 0, "a DGT outage changes no counter and deactivates nothing");
+  assert.ok(!calls.some((c) => "snapshotFailDays" in c.data), "a DGT outage moves no counter");
+  // …but the upsert has just reactivated the whole feed, so the cameras already
+  // past their grace days go back to inactive anyway (server-28's review of
+  // #143): otherwise an outage day would make them count as active for 24 h.
+  assert.deepEqual(calls, [calls.find((c) => c.data.isActive === false)]);
+  assert.equal(outage.deactivated, 2, "a camera at 3 days ends inactive on an outage day too");
+
+  // The sweep's budget: what's left when it runs out counts as an error, neither way.
+  const slow = (async () => { await new Promise((res) => setTimeout(res, 30)); return answers.ok(); }) as unknown as typeof fetch;
+  const budgeted = await checkSnapshots(
+    Array.from({ length: 20 }, (_, i) => ({ id: `s${i}`, url: `https://x/ok-${i}` })),
+    { fetchImpl: slow, concurrency: 2, budgetMs: 50 },
+  );
+  const counts = [...budgeted.values()].reduce((a, v) => (a[v] = (a[v] || 0) + 1, a), {} as Record<string, number>);
+  assert.ok((counts.error ?? 0) > 0 && (counts.image ?? 0) > 0, `some checked, the rest past the budget: ${JSON.stringify(counts)}`);
+  assert.equal(budgeted.size, 20, "every camera gets a result");
 
   // The pages: «sin imagen» from the first failed day.
   assert.equal(cameraImage({ thumbnailUrl: "https://e/1.jpg", snapshotFailDays: 0 }), "https://e/1.jpg");

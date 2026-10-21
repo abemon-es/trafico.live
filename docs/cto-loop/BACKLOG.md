@@ -161,7 +161,19 @@ own text on hubs).
 
 **Order:** the migration **before** the merge. The web selects
 `snapshotFailDays`, and without the column the camera pages would fail.
-server-28 applies it and runs the resolve → merge.
+server-28 applied it (07:07 local, `lock_timeout` 5 s, resolve done, checksum =
+the repo's).
+
+**server-28's review, fixed before the merge:**
+- **The deactivation step was inside `if (!plan.outage)`.** On a DGT outage
+  day the upsert would reactivate the dead cameras and they'd count as active
+  for 24 h, so cameraCityIndexable would flap. It's now outside: it moves no
+  counter, so it's safe on an outage day.
+  - **Test:** outage + a camera at 3 days → it ends inactive.
+  - **Mutant:** with the outage skipping deactivation, it fails.
+- **The sweep's budget (its suggestion):** 5 min in total. What's left counts
+  as an error (neither way), so a hung DGT can't hold `camera` for ~2 h. With
+  a test.
 
 **Verify after deploy:**
 - the `camera` run (04:00 local, tomorrow) with `snapshots` in the heartbeat
