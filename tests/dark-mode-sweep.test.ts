@@ -52,6 +52,13 @@
  *    text-xl bold), measured in Chromium with Tailwind v4's oklch and the tl-*
  *    hex. 51 badges, buttons and cards (rankings, train brands, guide cards,
  *    tl-amber-500 at 4.46:1) failed until 2026-10-21.
+ *    8c. Rule 8b sees one class string at a time. A badge that takes its
+ *    background from a map and has `text-white` fixed in its template is two
+ *    strings: the DGT stickers on /etiqueta-ambiental were 1.57–2.60:1 until
+ *    2026-10-21. So (a) a map entry's `bg:`/`color:` and `text:` values are
+ *    checked together, and (b) a template with a fixed `text-white` over an
+ *    interpolated background must be in WHITE_OVER_INTERPOLATED, which says
+ *    whether its values were measured. A new one fails until someone looks.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:dark-sweep
@@ -227,14 +234,57 @@ assert.ok(whiteTooLight('"text-sm bg-orange-600 text-white"'), "small text: 3.58
 assert.ok(!whiteTooLight('"bg-white/10 text-white"'), "a translucent white overlay is not a shade");
 assert.ok(!whiteTooLight('"bg-green-300 text-green-950"'), "dark text on a light shade is fine");
 
+/** 8c (a): a map entry with a background and a text colour, checked as one pair. */
+const mapEntryTooLight = (src: string) =>
+  [...src.matchAll(/\{[^{}]*\}/g)]
+    .map((m) => {
+      const bg = m[0].match(/\b(?:bg|background|color)\s*:\s*"([^"]*\bbg-[^"]*)"/)?.[1];
+      const text = m[0].match(/\b(?:text|textColor|badgeText|fg)\s*:\s*"([^"]*)"/)?.[1];
+      return bg && text && whiteTooLight(`"${bg} ${text}"`) ? `${bg} + ${text}` : null;
+    })
+    .filter(Boolean);
+assert.deepEqual(mapEntryTooLight('{ bg: "bg-green-500", text: "text-white" }'), ["bg-green-500 + text-white"]);
+assert.deepEqual(mapEntryTooLight('{ bg: "bg-green-500", text: "text-green-950" }'), []);
+assert.deepEqual(mapEntryTooLight('{\n    color: "bg-gray-500",\n    badgeText: "text-white",\n  }'), [], "4.84:1");
+
+/**
+ * 8c (b): templates with a fixed `text-white` over an interpolated background.
+ * Each one is listed with what is known about the values it interpolates.
+ */
+const WHITE_OVER_INTERPOLATED: Record<string, string> = {
+  "src/app/gasolineras/historico/content.tsx tab.activeBg": "measured: 6.97 / 5.89 / 5.22:1 (#151)",
+  "src/app/estaciones-aforo/content.tsx imdColor(selectedStation.imd)": "to review",
+  "src/app/clima/estacion/[id]/page.tsx (computed)": "to review",
+  "src/app/clima/provincia/[slug]/page.tsx (computed)": "to review",
+  "src/app/cortes-trafico/page.tsx (computed)": "to review",
+  "src/app/estadisticas/content.tsx risk.bg": "to review",
+  "src/components/fuel/PriceAlertForm.tsx btnClass": "to review",
+  "src/components/incidents/IncidentFilters.tsx color": "to review",
+};
+const whiteOverInterpolated = (rel: string, line: string) =>
+  (line.match(/`[^`]*`|`[^`]*$/g) ?? []).flatMap((t) => {
+    const fixed = t.replace(/\$\{[^}]*\}/g, " ");
+    if (!/(?<![:\w!-])text-white\b/.test(fixed) || !t.includes("${") || /(?<![:\w!/-])bg-(?:[a-z]+-)*\d+|bg-\[/.test(fixed)) return [];
+    const exprs = [...t.matchAll(/\$\{([^}]*)\}/g)].map((m) => m[1].trim()).filter((e) => /^[\w.()[\]]+$/.test(e));
+    const key = `${rel} ${exprs.length ? exprs.join(" ") : "(computed)"}`;
+    return key in WHITE_OVER_INTERPOLATED ? [] : [key];
+  });
+assert.deepEqual(whiteOverInterpolated("src/x.tsx", "className={`rounded ${color} text-white`}"), ["src/x.tsx color"]);
+assert.deepEqual(whiteOverInterpolated("src/x.tsx", "className={`rounded ${bg} ${text}`}"), [], "text from the same entry");
+
+const unlisted: string[] = [];
 const hits: string[] = [];
 for (const file of sources(join(process.cwd(), "src"))) {
   const rel = file.slice(process.cwd().length + 1);
   const done = DARK_DONE.some((d) => rel.startsWith(d));
-  readFileSync(file, "utf8").split("\n").forEach((line, i) => {
+  const src = readFileSync(file, "utf8");
+  for (const pair of mapEntryTooLight(src)) hits.push(`${rel}: map entry ${pair}`);
+  src.split("\n").forEach((line, i) => {
+    unlisted.push(...whiteOverInterpolated(rel, line).map((k) => `${k} (line ${i + 1})`));
     if (BROKEN.test(line) || darkBgDarkText(line) || lostHover(line) || lostHoverTextBorder(line) || primaryUnderWhite(line) || whiteTooLight(line) || (done && unpaired(line))) hits.push(`${rel}:${i + 1}`);
   });
 }
 assert.deepEqual(hits, [], `dark-mode sweep leftovers:\n${hits.join("\n")}`);
+assert.deepEqual(unlisted, [], `fixed text-white over an interpolated background, not in WHITE_OVER_INTERPOLATED:\n${unlisted.join("\n")}`);
 
 console.log("dark-mode sweep: all checks passed");
