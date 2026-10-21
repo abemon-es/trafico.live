@@ -90,6 +90,81 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (78) — dark-mode hovers: 40 card titles always in the hover colour, 21 hovers that didn't change
+
+**#156 gated:** the 10 active chips give the same numbers before and after
+the refactor; the /clima circles are emerald-700 at 5.36:1 in both themes
+(that step printed nothing inside the gate script; rerun on its own it gives
+this); 0 new on 7 pages.
+**#157, part 1:**
+- the label equals the source hash in all 3 places (`01549446a9885792`);
+- `snapshotFailDays` arrives as a number in the real tile (decoded 10/501/386);
+- `hasImage` is in the API.
+- Part 2 is tomorrow after 07:00: there are 0 failing cameras today, since the
+  first snapshot check runs on 22-10 at 04:00.
+- Tile cache (max-age 1 day): left as it is (server-28).
+
+**AEMET:** the 13:20Z `aemet-forecast` run gets 401 «Tu apiKey ha superado el
+plazo establecido hasta el 15/10…». **The key isn't renewed.** The 08:00/09:00
+`weather` successes were the few calls an expired key lets through.
+server-28 has put it back on MJ's list.
+
+**Signal:** BACKLOG 6 («/profesional hover», «the 11 hand-written hovers»),
+which turned out larger. The 11 are fine: brand buttons with their own dark
+base, and their `hover:` also applies in dark.
+- **40 lost group-hovers in 30 files.** `group-hover:text-X dark:text-Y` is
+  the sweep's signature on `group-hover:`, which rule 6 didn't look at. In
+  dark mode the card title was the hover colour all the time. On /carga-ev,
+  measured on production: green-400 at rest, and green-700 on hover at
+  **3.59:1**.
+- **21 dead dark hovers in 12 files:** `dark:hover:` equal to the dark base,
+  so no feedback in dark. /profesional's «Ver documentación API» and the
+  /gasolineras/precios breadcrumb: measured, no change on hover. In 4 (/espana)
+  the equal one was a duplicate base left by the sweep.
+
+**Fix (37 files):**
+- **Lost group-hover → `dark:group-hover:`**, under rule 6's condition (a light
+  base and its own dark base).
+- **Dead hovers:** the duplicate base removed (4); otherwise the dark hover goes
+  one shade lighter (17), the mirror of light mode where it's one darker.
+- Light mode is byte-identical without the `dark:` tokens (37/37).
+
+**Guard:** rule 6 also covers `group-hover:`; **rule 6c** fails on a dark hover
+equal to the dark base (each branch string of a template is its own element).
+Mutants: /carga-ev's title back → `carga-ev/content.tsx:236`; /profesional's
+hover back → `profesional/page.tsx:217`. Both caught.
+
+**Evidence:** dark-mode-sweep, camera-snapshots, camera-images and
+service-worker pass. Web tsc 11; eslint 3 = 3 with main.
+
+**Gate after deploy** (a real hover in dark, `scratchpad hover.mjs`, the same
+3 elements):
+- /carga-ev: the title near-white at rest, green-400 on hover;
+- /profesional: the background gray-900 → gray-800 on hover;
+- /gasolineras/precios: the breadcrumb gray-300 → gray-200 on hover;
+- every hovered colour ≥4.5:1 (server-28).
+
+**Open, in order:**
+1. **L2:** merge this; gate with a real hover.
+2. **L3:** #145, the 18:00Z gas-station run → changedAt=today and lastmod per
+   shard, to server-28.
+3. **L2:** #157 part 2 and #143 (2), 22-10 after 07:00 local; #143 (3) on
+   24-10; A-5/A-6 to the CMO every day.
+4. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+5. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+6. **L2, low:** the eslint errors on main.
+7. **Perf, low:** `prefetch={false}` on long link directories.
+8. **Hygiene:** `GasStationPopup` and other dead exports; scrub the
+   pre-October backlog entries.
+9. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+   exemption at the edge (waiting on MJ's OK).
+10. **L3:** the index lastmod after 23-10.
+11. **L1, low:** Euskadi id collisions.
+12. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+13. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (77) — /mapa showed a broken camera as an empty strip; the tiles never carried the daily check
 
 **#156 merged** (`WHITE_OVER_INTERPOLATED` empty); its gate is running (the
