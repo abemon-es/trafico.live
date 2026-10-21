@@ -346,7 +346,7 @@ export default async function PuntosNegrosPage() {
                             <td className="px-4 py-3">
                               <Link
                                 href={`/carreteras/${encodeURIComponent(zone.roadNumber)}`}
-                                className="font-semibold text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
+                                className="font-semibold text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:hover:text-tl-200 hover:underline"
                               >
                                 {zone.roadNumber}
                               </Link>
@@ -478,7 +478,7 @@ export default async function PuntosNegrosPage() {
                             </span>
                             <Link
                               href={(provincePath(item.province) ?? "/espana")}
-                              className="text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline truncate"
+                              className="text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:hover:text-tl-200 hover:underline truncate"
                             >
                               {name}
                             </Link>

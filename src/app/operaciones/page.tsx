@@ -210,7 +210,7 @@ export default async function OperacionesPage() {
               </div>
               <Link
                 href="/incidencias"
-                className="ml-auto text-xs font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 flex items-center gap-1"
+                className="ml-auto text-xs font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 flex items-center gap-1"
               >
                 Ver <ChevronRight className="w-3 h-3" />
               </Link>

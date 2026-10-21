@@ -481,13 +481,13 @@ export default function ProvinceContent() {
         <div className="mt-8 flex gap-4">
           <Link
             href={`/comunidad-autonoma/${province.community.slug}`}
-            className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline text-sm"
+            className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline text-sm"
           >
             ← Volver a {province.community.name}
           </Link>
           <Link
             href="/espana"
-            className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline text-sm"
+            className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline text-sm"
           >
             ← Todas las comunidades
           </Link>

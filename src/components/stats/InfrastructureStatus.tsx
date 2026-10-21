@@ -115,7 +115,7 @@ export function InfrastructureStatus() {
         </div>
         <Link
           href="/explorar/infraestructura"
-          className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline flex items-center gap-1"
+          className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline flex items-center gap-1"
         >
           Ver todo
           <ChevronRight className="w-4 h-4" />

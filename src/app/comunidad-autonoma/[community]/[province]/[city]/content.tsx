@@ -171,7 +171,7 @@ export default function CityContent() {
             </p>
             <Link
               href={`/mapa?lat=${municipality.latitude}&lng=${municipality.longitude}&zoom=12`}
-              className="mt-2 inline-block text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 text-sm"
+              className="mt-2 inline-block text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 text-sm"
             >
               Ver en el mapa →
             </Link>
@@ -194,19 +194,19 @@ export default function CityContent() {
         <div className="mt-8 flex flex-wrap gap-4">
           <Link
             href={`/comunidad-autonoma/${municipality.province.community.slug}/${municipality.province.slug}`}
-            className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline text-sm"
+            className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline text-sm"
           >
             ← Volver a {municipality.province.name}
           </Link>
           <Link
             href={`/comunidad-autonoma/${municipality.province.community.slug}`}
-            className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline text-sm"
+            className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline text-sm"
           >
             ← {municipality.province.community.name}
           </Link>
           <Link
             href="/espana"
-            className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline text-sm"
+            className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline text-sm"
           >
             ← Todas las comunidades
           </Link>

@@ -90,6 +90,88 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-21 (69) — dark mode, batch 3: the rest of the site, and the guards go site-wide
+
+**#148 merged and gated** (`df068e16`, deployed 09:28Z). dark-scan on the
+same 9 pages: **islands 51 → 0, dark on dark 4 → 0, low contrast 34 → 0**.
+The location pages and /espana are done.
+
+**AEMET (server-28):** `weather` ok at 08:00Z/09:00Z, but `aemet-forecast` and
+`aemet-historical` are still on the key error. That fits «an expired key lets
+a few calls through», not a renewal. MJ hasn't said he renewed it. No probe;
+if `aemet-forecast` comes out ok on its next run, tell server-28.
+
+**Signal:** after the location batches, 103 class strings with a light
+background and no dark pair were left in 48 files. dark-scan on 23 of the
+pages they render found **about 72 light islands and about 107 dark on dark
+texts**:
+- dark on dark: /paneles 47, /ayuda/alertas-push 38, /maritimo/combustible 9;
+- islands: /ayuda 23 (the help centre had no dark mode), /mejor-hora 13,
+  /paneles 9.
+
+Most of the dark on dark is cross-element: a parent with a dark background
+and a child's `text-X-800` with no dark colour. The `bg-tl-amber-100` badges
+are what the old sweep's regex missed (hyphenated colour names): dark text,
+light background.
+
+**And the sweep's «lost hover» on text and borders, site-wide:** 117 strings
+`hover:text-X dark:text-Y`, where the dark-mode hover colour had become a
+permanent colour (links with no hover in dark mode).
+
+**Fix (95 files):**
+1. **The 117 lost hovers become `dark:hover:`** (rule 6's own condition: a
+   light base and its own dark base).
+2. **The 48 files** get the same transformer and pairs as batches 1 and 2.
+3. **White on purpose stays white**, and says so with `dark:bg-white`: two
+   dots on coloured badges, a toggle knob, and two white buttons on teal
+   banners (/flotas, the footer's newsletter).
+4. **Two light gradients** get their dark pair: the cheapest-station highlight
+   and the autovías intro; their children's text is now light.
+5. Two strings the transformer couldn't parse (`font-['…']`) are paired by
+   hand.
+
+**Guards:**
+- **Rule 6** now covers text and borders too.
+- **Rule 7's `DARK_DONE` is all of `src/`.** No light background or dark grey
+  text without its dark pair, anywhere. The `!`-important child styles of an
+  arbitrary variant don't count.
+- Mutants: an /ayuda card without its pair, caught at `ayuda/page.tsx:55`; a
+  lost text hover put back, caught at `maritimas/[id]/page.tsx:191`.
+
+**Evidence:**
+- Light mode is byte-identical with every `dark:` removed (94/94 source files).
+- dark-mode-sweep (1–7), theme-pre-paint, camera-images, service-worker and
+  sitemap-lastmod pass.
+- Web tsc 11. eslint: 18 errors on the branch and 18 on main for the same
+  files (only class tokens change).
+
+**Gate after deploy:** dark-scan on the same 23 pages, islands ~72 → ~0 and
+dark on dark ~107 → 0, and low contrast not up.
+
+**Open, in order:**
+1. **L2:** merge this; gate after the deploy.
+2. **L3:** #145 after 2 gas-station runs (11:00Z and 18:00Z).
+3. **L1:** AEMET: `aemet-forecast`'s next run (~13:30Z) to server-28.
+4. **L1/L2:** #143 (2) on 22-10 04:00 and (3) on 24-10; A-5/A-6 to the CMO
+   every day.
+5. **L3:** `content-fingerprints` on 22-10 (changed per family, to server-28).
+6. **L2:** page-by-page: /carga-ev, /calculadora, /profesional (hover), the
+   11 hand-written hovers, visible «Sin imagen».
+7. **L2, low:** the 18 eslint errors on main in these files (internal `<a>`
+   links, components created during render).
+8. **L3:** dead cameras in the map popups (`tile_cameras`).
+9. **Perf, low:** `prefetch={false}` on long link directories.
+10. **Security (server-28):** a strict Report-Only CSP; the internal-traffic
+    exemption at the edge (waiting on MJ's OK).
+11. **Accessibility:** grey on white under 3:1.
+12. **L3:** the index lastmod after 23-10.
+13. **L1, low:** Euskadi id collisions.
+14. **Hygiene:** scrub the pre-October backlog entries.
+15. **Recheck:** EUSKADI 2026-10-27; transit-gtfs Sunday 25-10.
+16. **Waiting on MJ:** the AEMET key, SASEMAR.
+
+---
+
 ## Cycle 2026-10-21 (68) — dark mode, batch 2: /espana and the province sub-pages
 
 **#147 merged and gated** (`7937e4c2`, deployed 08:48Z). dark-scan on the same

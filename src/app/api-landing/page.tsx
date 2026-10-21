@@ -245,7 +245,7 @@ export default function ApiLandingPage() {
                   Inicio
                 </Link>
               </li>
-              <li aria-hidden="true" className="text-tl-700">
+              <li aria-hidden="true" className="text-tl-700 dark:text-tl-300">
                 /
               </li>
               <li className="text-tl-200" aria-current="page">
@@ -530,7 +530,7 @@ export default function ApiLandingPage() {
                     className="w-4 h-4 rounded-full bg-[color:var(--tl-primary)] flex items-center justify-center flex-shrink-0 mt-0.5"
                     aria-hidden="true"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-white block" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-white dark:bg-white block" />
                   </span>
                   {item}
                 </li>

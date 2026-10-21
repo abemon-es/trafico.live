@@ -58,8 +58,8 @@ const POWER_LEVELS = [
     sublabel: "22–50 kW",
     min: 22,
     max: 50,
-    color: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300",
-    activeColor: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 ring-2 ring-tl-amber-500",
+    color: "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300",
+    activeColor: "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300 ring-2 ring-tl-amber-500",
   },
   {
     id: "fast",
@@ -230,7 +230,7 @@ export default function CargaEVContent() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Link
             href="/carga-ev/cerca"
-            className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:border-green-300 hover:shadow-sm transition-all group"
+            className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:border-green-300 dark:hover:border-green-700 hover:shadow-sm transition-all group"
           >
             <Navigation className="w-6 h-6 text-green-600 dark:text-green-400 mb-2" />
             <h3 className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-green-700 dark:text-green-400">
@@ -270,7 +270,7 @@ export default function CargaEVContent() {
                 className={`rounded-lg p-4 text-left transition-all ${
                   powerFilter === band.id
                     ? band.activeColor
-                    : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:border-gray-700"
+                    : "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700"
                 }`}
               >
                 <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 font-data">{band.count}</p>
@@ -289,7 +289,7 @@ export default function CargaEVContent() {
               <Link
                 key={city.slug}
                 href={`/carga-ev/${city.slug}`}
-                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-green-100 dark:hover:bg-green-900/30 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:text-green-400 rounded-full text-sm transition-colors"
+                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-900 hover:bg-green-100 dark:hover:bg-green-900/30 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 rounded-full text-sm transition-colors"
               >
                 {city.name}
               </Link>
@@ -303,7 +303,7 @@ export default function CargaEVContent() {
           <div className="flex flex-wrap gap-3 items-center">
             {/* Search */}
             <div className="relative flex-1 min-w-[180px] max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Nombre, ciudad, operador..."
@@ -316,7 +316,7 @@ export default function CargaEVContent() {
             {/* Province */}
             {provinces.length > 0 && (
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-gray-400 shrink-0" />
+                <Filter className="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0" />
                 <select
                   value={provinceFilter}
                   onChange={(e) => setProvinceFilter(e.target.value)}
@@ -352,7 +352,7 @@ export default function CargaEVContent() {
             {hasActiveFilters && (
               <button
                 onClick={clearAllFilters}
-                className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 ml-auto"
+                className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-300 ml-auto"
               >
                 <X className="w-3.5 h-3.5" />
                 Limpiar filtros
@@ -376,7 +376,7 @@ export default function CargaEVContent() {
                       className={`px-3 py-1 rounded-full text-sm font-medium border transition-all ${
                         active
                           ? "bg-green-600 text-white border-green-600"
-                          : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-green-400 hover:text-green-700 dark:text-green-400"
+                          : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:border-green-400 hover:text-green-700 dark:hover:text-green-400"
                       }`}
                     >
                       {CONNECTOR_LABELS[type] ?? type}
@@ -426,7 +426,7 @@ export default function CargaEVContent() {
                           : charger.totalPowerKw >= 50
                           ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400"
                           : charger.totalPowerKw >= 22
-                          ? "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300"
+                          ? "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300"
                           : "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300"
                       }`}
                     >
@@ -444,7 +444,7 @@ export default function CargaEVContent() {
                     {charger.provinceName && `, ${charger.provinceName}`}
                   </p>
                   {charger.operator && (
-                    <p className="text-gray-400 truncate">
+                    <p className="text-gray-400 dark:text-gray-500 truncate">
                       <span className="font-medium">Operador:</span> {charger.operator}
                     </p>
                   )}
@@ -502,7 +502,7 @@ export default function CargaEVContent() {
         {!isLoading && filteredChargers?.length === 0 && (
           <div className="text-center py-20">
             <div className="w-12 h-12 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Zap className="w-6 h-6 text-gray-400" />
+              <Zap className="w-6 h-6 text-gray-400 dark:text-gray-500" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
               No se encontraron cargadores

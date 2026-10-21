@@ -112,7 +112,7 @@ const RADAR_TYPES: Record<string, string> = {
 
 const ZBE_STATUS: Record<string, { label: string; color: string }> = {
   ACTIVE: { label: "Activa", color: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" },
-  PLANNED: { label: "Planificada", color: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300" },
+  PLANNED: { label: "Planificada", color: "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300" },
   SUSPENDED: { label: "Suspendida", color: "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300" },
 };
 
@@ -243,7 +243,7 @@ export default function InfraestructuraContent() {
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="relative flex-1 min-w-[200px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
           <input
             type="text"
             placeholder="Buscar..."
@@ -255,7 +255,7 @@ export default function InfraestructuraContent() {
 
         {provinces.length > 0 && (
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-400" />
+            <Filter className="w-4 h-4 text-gray-400 dark:text-gray-500" />
             <select
               value={provinceFilter}
               onChange={(e) => setProvinceFilter(e.target.value)}
@@ -315,7 +315,7 @@ export default function InfraestructuraContent() {
                       {camera.km && <span>km {camera.km}</span>}
                     </div>
                     {camera.province && (
-                      <p className="text-xs text-gray-400 mt-1">{camera.province}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{camera.province}</p>
                     )}
                   </div>
                 </div>
@@ -377,7 +377,7 @@ export default function InfraestructuraContent() {
                       <p className="text-gray-500 dark:text-gray-400">Sentido: {radar.direction}</p>
                     )}
                     {radar.province && (
-                      <p className="text-gray-400">{radar.province}</p>
+                      <p className="text-gray-400 dark:text-gray-500">{radar.province}</p>
                     )}
                   </div>
                 </div>
@@ -420,7 +420,7 @@ export default function InfraestructuraContent() {
                       {charger.province && `, ${charger.province}`}
                     </p>
                     {charger.operatorName && (
-                      <p className="text-gray-400">Operador: {charger.operatorName}</p>
+                      <p className="text-gray-400 dark:text-gray-500">Operador: {charger.operatorName}</p>
                     )}
                     {charger.connectorTypes.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
@@ -468,7 +468,7 @@ export default function InfraestructuraContent() {
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="font-medium text-gray-900 dark:text-gray-100">{zone.name}</h3>
                     <span className={`px-2 py-0.5 text-xs font-medium rounded ${
-                      zone.activeAllYear ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" : "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300"
+                      zone.activeAllYear ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" : "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300"
                     }`}>
                       {zone.activeAllYear ? "Activa" : "Temporal"}
                     </span>
@@ -500,10 +500,10 @@ export default function InfraestructuraContent() {
           (activeTab === "zbe" && zbeData?.data?.zones?.length === 0)) && (
           <div className="text-center py-20">
             <div className="w-12 h-12 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
-              {activeTab === "camaras" && <Camera className="w-6 h-6 text-gray-400" />}
-              {activeTab === "radares" && <Radar className="w-6 h-6 text-gray-400" />}
-              {activeTab === "cargadores" && <Zap className="w-6 h-6 text-gray-400" />}
-              {activeTab === "zbe" && <Ban className="w-6 h-6 text-gray-400" />}
+              {activeTab === "camaras" && <Camera className="w-6 h-6 text-gray-400 dark:text-gray-500" />}
+              {activeTab === "radares" && <Radar className="w-6 h-6 text-gray-400 dark:text-gray-500" />}
+              {activeTab === "cargadores" && <Zap className="w-6 h-6 text-gray-400 dark:text-gray-500" />}
+              {activeTab === "zbe" && <Ban className="w-6 h-6 text-gray-400 dark:text-gray-500" />}
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Sin datos disponibles</h3>
             <p className="text-gray-500 dark:text-gray-400">

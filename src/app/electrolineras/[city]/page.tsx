@@ -536,7 +536,7 @@ export default async function ElectrolinerasCityPage({ params }: Props) {
                   <Link
                     key={slug}
                     href={`/electrolineras/${slug}`}
-                    className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:text-tl-300 transition-colors"
+                    className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
                   >
                     {data.name}
                   </Link>

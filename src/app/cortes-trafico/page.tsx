@@ -109,7 +109,7 @@ function getSeverityBadge(severity: string): string {
   switch (severity) {
     case "HIGH":
     case "CRITICAL":
-      return "bg-red-50 dark:bg-red-900/20 border-red-200 text-red-700 dark:text-red-400";
+      return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400";
     case "MEDIUM":
       return "bg-tl-amber-50 dark:bg-tl-amber-900/20 border-tl-amber-200 dark:border-tl-amber-800 text-tl-amber-700 dark:text-tl-amber-300";
     default:
@@ -224,7 +224,7 @@ export default async function CortesTráficoPage() {
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
                     Cortes de Tráfico y Obras en Carreteras
                   </h1>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800">
                     <span className="w-2 h-2 rounded-full bg-tl-amber-500 animate-pulse" />
                     {closures.length} activos
                   </span>
@@ -240,7 +240,7 @@ export default async function CortesTráficoPage() {
                     </span>
                   )}
                 </p>
-                <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
+                <div className="flex items-center gap-2 mt-2 text-xs text-gray-400 dark:text-gray-500">
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>Actualizado a las {lastUpdated}</span>
                 </div>
@@ -335,8 +335,8 @@ export default async function CortesTráficoPage() {
                         key={incident.id}
                         className={`bg-white dark:bg-gray-900 rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow ${
                           group.color === "red"
-                            ? "border-red-100 hover:border-red-200"
-                            : "border-tl-amber-100 hover:border-tl-amber-200 dark:border-tl-amber-800"
+                            ? "border-red-100 dark:border-red-800 hover:border-red-200 dark:hover:border-red-700"
+                            : "border-tl-amber-100 hover:border-tl-amber-200 dark:hover:border-tl-amber-700 dark:border-tl-amber-800"
                         }`}
                       >
                         <div className="flex flex-col sm:flex-row sm:items-start gap-3">
@@ -354,7 +354,7 @@ export default async function CortesTráficoPage() {
                                 {incident.roadNumber}
                               </Link>
                             ) : (
-                              <span className="inline-block px-3 py-1.5 bg-gray-200 text-gray-700 dark:text-gray-300 text-sm font-bold rounded-lg">
+                              <span className="inline-block px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-bold rounded-lg">
                                 CARRETERA
                               </span>
                             )}
@@ -413,7 +413,7 @@ export default async function CortesTráficoPage() {
           )}
 
           {closures.length === 50 && (
-            <p className="mt-2 mb-8 text-xs text-gray-400 text-center">
+            <p className="mt-2 mb-8 text-xs text-gray-400 dark:text-gray-500 text-center">
               Mostrando los 50 cortes más recientes.{" "}
               <Link href="/incidencias" className="text-tl-600 dark:text-tl-400 hover:underline">
                 Ver todas las incidencias

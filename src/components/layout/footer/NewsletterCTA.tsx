@@ -86,7 +86,7 @@ export function NewsletterCTA() {
                 <button
                   type="submit"
                   disabled={status === "loading" || !email}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold bg-white text-tl-700 hover:bg-tl-50 focus:outline-none focus:ring-2 focus:ring-white/60 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-heading shrink-0"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold bg-white dark:bg-white text-tl-700 hover:bg-tl-50 focus:outline-none focus:ring-2 focus:ring-white/60 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-heading shrink-0"
                 >
                   {status === "loading" ? (
                     <>

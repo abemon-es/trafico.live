@@ -505,7 +505,7 @@ export default function FlotasPage() {
             <div className="flex flex-wrap gap-4 justify-center">
               <Link
                 href="/flotas/onboarding"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-tl-700 font-semibold hover:bg-tl-50 transition-colors shadow-lg"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white dark:bg-white text-tl-700 font-semibold hover:bg-tl-50 transition-colors shadow-lg"
               >
                 Empezar ahora
                 <ArrowRight className="w-4 h-4" />

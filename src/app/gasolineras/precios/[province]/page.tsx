@@ -81,7 +81,7 @@ export default async function ProvincePricesPage({ params }: Props) {
 
       <Link
         href="/gasolineras/precios"
-        className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:text-orange-400 mb-6"
+        className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-400 mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver a precios nacionales
@@ -204,7 +204,7 @@ export default async function ProvincePricesPage({ params }: Props) {
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/gasolineras/terrestres/${station.id}`}
-                      className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:text-orange-400"
+                      className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-400"
                     >
                       <MapPin className="w-4 h-4" />
                     </Link>

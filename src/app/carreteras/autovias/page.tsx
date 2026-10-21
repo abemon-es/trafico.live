@@ -74,7 +74,7 @@ export default async function AutoviasPage() {
         ]} />
 
         {/* Header */}
-        <div className="bg-gradient-to-r from-tl-50 to-tl-100 rounded-lg p-6 mb-6 border border-tl-200 dark:border-tl-800">
+        <div className="bg-gradient-to-r from-tl-50 to-tl-100 dark:from-tl-900/20 dark:to-tl-900/30 rounded-lg p-6 mb-6 border border-tl-200 dark:border-tl-800">
           <div className="flex items-center gap-3 mb-4">
             <Route className="w-8 h-8 text-tl-600 dark:text-tl-400" />
             <div>
@@ -139,7 +139,7 @@ export default async function AutoviasPage() {
                         <td className="py-3 px-4">
                           <Link
                             href={`/carreteras/${road.id}`}
-                            className="font-semibold text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200"
+                            className="font-semibold text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:hover:text-tl-200"
                           >
                             {road.id}
                           </Link>

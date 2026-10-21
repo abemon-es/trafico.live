@@ -223,7 +223,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
             </div>
             <Link
               href="/carreteras"
-              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
             >
               <ArrowLeft className="w-4 h-4" />
               Volver
@@ -339,7 +339,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                     </p>
                     <Link
                       href={`/camaras/carretera/${road.id}`}
-                      className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline flex items-center gap-1"
+                      className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:hover:text-tl-200 hover:underline flex items-center gap-1"
                     >
                       Ver todas <ExternalLink className="w-3 h-3" />
                     </Link>
@@ -395,7 +395,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
                     </p>
                     <Link
                       href={`/radares/${road.id}`}
-                      className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline flex items-center gap-1"
+                      className="text-sm text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:hover:text-tl-200 hover:underline flex items-center gap-1"
                     >
                       Ver todos <ExternalLink className="w-3 h-3" />
                     </Link>

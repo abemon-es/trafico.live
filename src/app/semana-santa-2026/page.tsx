@@ -259,9 +259,9 @@ const FAQ_ITEMS = [
 ];
 
 const CONGESTION_COLOR: Record<string, string> = {
-  "muy alta": "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
-  alta: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200",
-  media: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200",
+  "muy alta": "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800",
+  alta: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800",
+  media: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800",
 };
 
 // ---------------------------------------------------------------------------
@@ -342,7 +342,7 @@ export default async function SemanaSanta2026Page() {
               </div>
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className="text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                  <span className="text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
                     Operación activa
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -367,7 +367,7 @@ export default async function SemanaSanta2026Page() {
           {/* LIVE STATS STRIP                                                   */}
           {/* ------------------------------------------------------------------ */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-100 p-4 flex items-center gap-3">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-100 dark:border-tl-800 p-4 flex items-center gap-3">
               <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
                 <Activity className="w-5 h-5 text-tl-600 dark:text-tl-400" />
               </div>
@@ -381,12 +381,12 @@ export default async function SemanaSanta2026Page() {
               </div>
               <Link
                 href="/incidencias"
-                className="ml-auto text-xs font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 flex items-center gap-1 flex-shrink-0"
+                className="ml-auto text-xs font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 flex items-center gap-1 flex-shrink-0"
               >
                 Ver <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-amber-100 p-4 flex items-center gap-3">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-amber-100 dark:border-tl-amber-800 p-4 flex items-center gap-3">
               <div className="p-2 bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg flex-shrink-0">
                 <Zap className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
               </div>
@@ -433,7 +433,7 @@ export default async function SemanaSanta2026Page() {
               </div>
 
               {/* Retorno */}
-              <div className="bg-white dark:bg-gray-900 rounded-lg border border-orange-200 p-5">
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-orange-200 dark:border-orange-800 p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100">
@@ -493,13 +493,13 @@ export default async function SemanaSanta2026Page() {
                   {AVOID_SLOTS.map((slot) => (
                     <div
                       key={slot.day}
-                      className="bg-white dark:bg-gray-900 border border-red-100 rounded-lg p-4"
+                      className="bg-white dark:bg-gray-900 border border-red-100 dark:border-red-800 rounded-lg p-4"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-2 mb-1">
                         <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                           {slot.day}
                         </span>
-                        <span className="text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full border border-red-200">
+                        <span className="text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full border border-red-200 dark:border-red-800">
                           {slot.hours}
                         </span>
                       </div>
@@ -523,13 +523,13 @@ export default async function SemanaSanta2026Page() {
                   {RECOMMENDED_SLOTS.map((slot) => (
                     <div
                       key={slot.day}
-                      className="bg-white dark:bg-gray-900 border border-green-100 rounded-lg p-4"
+                      className="bg-white dark:bg-gray-900 border border-green-100 dark:border-green-800 rounded-lg p-4"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-2 mb-1">
                         <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                           {slot.day}
                         </span>
-                        <span className="text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full border border-green-200">
+                        <span className="text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full border border-green-200 dark:border-green-800">
                           {slot.hours}
                         </span>
                       </div>
@@ -543,7 +543,7 @@ export default async function SemanaSanta2026Page() {
                 {/* CTA to mejor-hora */}
                 <Link
                   href="/mejor-hora"
-                  className="mt-4 flex items-center gap-2 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 transition-colors"
+                  className="mt-4 flex items-center gap-2 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
                 >
                   <Clock className="w-4 h-4" />
                   Calculadora: mejor hora para viajar por carretera
@@ -573,7 +573,7 @@ export default async function SemanaSanta2026Page() {
                 <Link
                   key={route.id}
                   href={`/carreteras/${route.id}`}
-                  className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
+                  className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 dark:hover:border-tl-700 transition-all group"
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-2">
@@ -641,14 +641,14 @@ export default async function SemanaSanta2026Page() {
           {/* ------------------------------------------------------------------ */}
           <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-5 mb-8">
             <div className="flex items-start gap-4">
-              <div className="p-2 bg-tl-amber-100 rounded-lg flex-shrink-0">
+              <div className="p-2 bg-tl-amber-100 dark:bg-tl-amber-900/30 rounded-lg flex-shrink-0">
                 <Fuel className="w-6 h-6 text-tl-amber-700 dark:text-tl-amber-300" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-tl-amber-900 mb-1">
+                <h3 className="font-semibold text-tl-amber-900 dark:text-tl-amber-100 mb-1">
                   Consulta el precio del combustible antes de salir
                 </h3>
-                <p className="text-sm text-tl-amber-800 leading-relaxed mb-3">
+                <p className="text-sm text-tl-amber-800 dark:text-tl-amber-200 leading-relaxed mb-3">
                   Las gasolineras en accesos a autopistas y áreas de servicio
                   pueden ser hasta un 20% más caras durante la operación salida.
                   Repostar en tu ciudad o en carreteras secundarias te puede
@@ -692,7 +692,7 @@ export default async function SemanaSanta2026Page() {
                   icon: AlertTriangle,
                   color: "text-red-600 dark:text-red-400",
                   bg: "bg-red-50 dark:bg-red-900/20",
-                  border: "border-red-100",
+                  border: "border-red-100 dark:border-red-800",
                 },
                 {
                   href: "/camaras",
@@ -700,7 +700,7 @@ export default async function SemanaSanta2026Page() {
                   icon: Camera,
                   color: "text-tl-600 dark:text-tl-400",
                   bg: "bg-tl-50 dark:bg-tl-900/20",
-                  border: "border-tl-100",
+                  border: "border-tl-100 dark:border-tl-800",
                 },
                 {
                   href: "/radares",
@@ -708,23 +708,23 @@ export default async function SemanaSanta2026Page() {
                   icon: Radar,
                   color: "text-purple-600 dark:text-purple-400",
                   bg: "bg-purple-50 dark:bg-purple-900/20",
-                  border: "border-purple-100",
+                  border: "border-purple-100 dark:border-purple-800",
                 },
                 {
                   href: "/alertas-meteo",
                   label: "Alertas Meteo",
                   icon: CloudLightning,
-                  color: "text-sky-600",
-                  bg: "bg-sky-50",
-                  border: "border-sky-100",
+                  color: "text-sky-600 dark:text-sky-400",
+                  bg: "bg-sky-50 dark:bg-sky-900/20",
+                  border: "border-sky-100 dark:border-sky-800",
                 },
                 {
                   href: "/paneles",
                   label: "Paneles PMV",
                   icon: BarChart3,
-                  color: "text-teal-600",
+                  color: "text-teal-600 dark:text-teal-400",
                   bg: "bg-teal-50 dark:bg-teal-900/20",
-                  border: "border-teal-100",
+                  border: "border-teal-100 dark:border-teal-800",
                 },
                 {
                   href: "/mejor-hora",
@@ -732,7 +732,7 @@ export default async function SemanaSanta2026Page() {
                   icon: Clock,
                   color: "text-green-600 dark:text-green-400",
                   bg: "bg-green-50 dark:bg-green-900/20",
-                  border: "border-green-100",
+                  border: "border-green-100 dark:border-green-800",
                 },
               ].map(({ href, label, icon: Icon, color, bg, border }) => (
                 <Link

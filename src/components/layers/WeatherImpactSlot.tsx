@@ -11,10 +11,10 @@ import { TimestampBadge } from "@/components/freshness/TimestampBadge";
 import { cn } from "@/lib/utils";
 
 const SEVERITY_STYLE = {
-  none: { ring: "ring-tl-200", bg: "bg-tl-50", label: "Sin impacto", icon: "·" },
-  advisory: { ring: "ring-tl-sky-300", bg: "bg-tl-sky-50", label: "Información", icon: "i" },
-  warning: { ring: "ring-tl-amber-400", bg: "bg-tl-amber-50", label: "Precaución", icon: "!" },
-  critical: { ring: "ring-red-500", bg: "bg-red-50", label: "Riesgo alto", icon: "⚠" },
+  none: { ring: "ring-tl-200", bg: "bg-tl-50 dark:bg-tl-900/20", label: "Sin impacto", icon: "·" },
+  advisory: { ring: "ring-tl-sky-300", bg: "bg-tl-sky-50 dark:bg-tl-sky-900/20", label: "Información", icon: "i" },
+  warning: { ring: "ring-tl-amber-400", bg: "bg-tl-amber-50 dark:bg-tl-amber-900/20", label: "Precaución", icon: "!" },
+  critical: { ring: "ring-red-500", bg: "bg-red-50 dark:bg-red-900/20", label: "Riesgo alto", icon: "⚠" },
 } as const;
 
 export interface WeatherImpactSlotProps {
@@ -60,7 +60,7 @@ export function WeatherImpactSlot({
         <div className="flex items-center gap-2">
           <span
             aria-hidden
-            className="inline-flex size-6 items-center justify-center rounded-full bg-white/70 font-bold"
+            className="inline-flex size-6 items-center justify-center rounded-full bg-white/70 dark:bg-gray-900/70 font-bold"
           >
             {style.icon}
           </span>

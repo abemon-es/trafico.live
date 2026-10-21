@@ -427,7 +427,7 @@ export default async function RondaSlugPage({
                 })}
                 <Link
                   href="/incidencias"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
                 >
                   Ver todas las incidencias en España
                   <ChevronRight className="w-4 h-4" />

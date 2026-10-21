@@ -2527,7 +2527,7 @@ export function EstadisticasContent({ initialTab }: EstadisticasContentProps) {
                     ${
                       isActive
                         ? "border-red-600 text-red-600 dark:text-red-400"
-                        : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:border-gray-700"
+                        : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:border-gray-700"
                     }
                   `}
                 >

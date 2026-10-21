@@ -61,26 +61,26 @@ const MESSAGE_TYPE_STYLES: Record<
   DANGER: {
     bg: "bg-red-50 dark:bg-red-900/20",
     border: "border-red-300",
-    text: "text-red-800",
-    badge: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
+    text: "text-red-800 dark:text-red-200",
+    badge: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800",
   },
   PRECAUTION: {
     bg: "bg-tl-amber-50 dark:bg-tl-amber-900/20",
     border: "border-tl-amber-300",
-    text: "text-tl-amber-800",
-    badge: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
+    text: "text-tl-amber-800 dark:text-tl-amber-200",
+    badge: "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
   },
   SPEED_LIMIT: {
     bg: "bg-orange-50 dark:bg-orange-900/20",
     border: "border-orange-300",
-    text: "text-orange-800",
-    badge: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200",
+    text: "text-orange-800 dark:text-orange-200",
+    badge: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800",
   },
   LANE_CLOSED: {
     bg: "bg-red-50 dark:bg-red-900/20",
     border: "border-red-300",
-    text: "text-red-800",
-    badge: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
+    text: "text-red-800 dark:text-red-200",
+    badge: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800",
   },
   INFO: {
     bg: "bg-tl-50 dark:bg-tl-900/20",
@@ -93,8 +93,8 @@ const MESSAGE_TYPE_STYLES: Record<
 const DEFAULT_MESSAGE_STYLE = {
   bg: "bg-green-50 dark:bg-green-900/20",
   border: "border-green-300",
-  text: "text-green-800",
-  badge: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200",
+  text: "text-green-800 dark:text-green-200",
+  badge: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800",
 };
 
 function formatDisplayName(roadNumber: string | null, kmPoint: number | null, direction: string | null): string {
@@ -264,7 +264,7 @@ export default async function PanelesPage({ searchParams }: Props) {
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Total paneles</div>
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-green-200 shadow-sm p-4 text-center">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-green-200 dark:border-green-800 shadow-sm p-4 text-center">
               <div className="text-2xl font-bold text-green-700 dark:text-green-400">
                 {withMessageCount.toLocaleString("es-ES")}
               </div>
@@ -274,10 +274,10 @@ export default async function PanelesPage({ searchParams }: Props) {
               </div>
             </div>
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm p-4 text-center">
-              <div className="text-2xl font-bold text-gray-400">
+              <div className="text-2xl font-bold text-gray-400 dark:text-gray-500">
                 {withoutMessageCount.toLocaleString("es-ES")}
               </div>
-              <div className="text-sm text-gray-400 mt-0.5 flex items-center justify-center gap-1">
+              <div className="text-sm text-gray-400 dark:text-gray-500 mt-0.5 flex items-center justify-center gap-1">
                 <MessageSquareOff className="w-3.5 h-3.5" />
                 Sin mensaje
               </div>
@@ -289,7 +289,7 @@ export default async function PanelesPage({ searchParams }: Props) {
             <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-4 mb-6 flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h2 className="font-semibold text-tl-amber-800">
+                <h2 className="font-semibold text-tl-amber-800 dark:text-tl-amber-200">
                   {withMessageCount.toLocaleString("es-ES")} paneles con mensaje activo
                 </h2>
                 <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300 mt-0.5">
@@ -386,7 +386,7 @@ export default async function PanelesPage({ searchParams }: Props) {
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm p-12 text-center">
               <MonitorSmartphone className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500 dark:text-gray-400 font-medium">No se encontraron paneles</p>
-              <p className="text-sm text-gray-400 mt-1">
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
                 Prueba a cambiar los filtros de búsqueda.
               </p>
               <Link
@@ -416,7 +416,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                         <Route className="w-4 h-4" />
                         <span id={`road-${road}`}>{road}</span>
                       </div>
-                      <span className="text-sm text-gray-400">
+                      <span className="text-sm text-gray-400 dark:text-gray-500">
                         {roadPanels.length} panel{roadPanels.length !== 1 ? "es" : ""}
                         {roadWithMessage > 0 && (
                           <span className="ml-1.5 text-tl-amber-600 dark:text-tl-amber-400 font-medium">
@@ -467,7 +467,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                                   {displayName}
                                 </p>
                                 {panel.provinceName && (
-                                  <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
+                                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 flex items-center gap-1">
                                     <MapPin className="w-3 h-3" />
                                     {panel.provinceName}
                                   </p>
@@ -498,7 +498,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                                 >
                                   {panel.message}
                                 </p>
-                                <p className="text-[10px] text-gray-400 mt-2">
+                                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2">
                                   Actualizado:{" "}
                                   {new Date(panel.lastUpdated).toLocaleString("es-ES", {
                                     day: "2-digit",
@@ -510,7 +510,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                               </div>
                             ) : (
                               <div className="px-4 py-3">
-                                <p className="text-xs text-gray-400 italic">
+                                <p className="text-xs text-gray-400 dark:text-gray-500 italic">
                                   Sin mensaje activo
                                 </p>
                               </div>
@@ -542,12 +542,12 @@ export default async function PanelesPage({ searchParams }: Props) {
                     className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-sm text-gray-400 w-5 text-right">
+                      <span className="text-sm text-gray-400 dark:text-gray-500 w-5 text-right">
                         {idx + 1}
                       </span>
                       <Link
                         href={`/carreteras/${encodeURIComponent(item.roadNumber!)}`}
-                        className="font-semibold text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:text-tl-200 hover:underline"
+                        className="font-semibold text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:hover:text-tl-200 hover:underline"
                       >
                         {item.roadNumber}
                       </Link>
@@ -579,10 +579,10 @@ export default async function PanelesPage({ searchParams }: Props) {
                   <Link
                     key={item.roadNumber}
                     href={`/paneles?carretera=${encodeURIComponent(item.roadNumber!)}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:border-tl-200 dark:border-tl-800 transition-colors shadow-sm"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm font-medium text-tl-600 dark:text-tl-400 hover:bg-tl-50 dark:hover:bg-tl-900/20 hover:border-tl-200 dark:hover:border-tl-800 transition-colors shadow-sm"
                   >
                     {item.roadNumber}
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
                       ({item._count})
                     </span>
                   </Link>

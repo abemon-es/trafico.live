@@ -303,7 +303,7 @@ const SERVICE_ICONS: Record<string, { icon: React.ElementType; label: string; co
   fuel: { icon: Fuel, label: "Combustible", color: "text-tl-amber-600 dark:text-tl-amber-400" },
   restaurant: { icon: Utensils, label: "Restaurante", color: "text-green-600 dark:text-green-400" },
   coffee: { icon: Coffee, label: "Cafetería", color: "text-orange-600 dark:text-orange-400" },
-  shower: { icon: ShowerHead, label: "Duchas", color: "text-cyan-600" },
+  shower: { icon: ShowerHead, label: "Duchas", color: "text-cyan-600 dark:text-cyan-400" },
   rest: { icon: Bed, label: "Área descanso", color: "text-purple-600 dark:text-purple-400" },
   wifi: { icon: Wifi, label: "WiFi", color: "text-gray-600 dark:text-gray-400" },
   logistics: { icon: Package, label: "Logística", color: "text-red-600 dark:text-red-400" },
@@ -311,12 +311,12 @@ const SERVICE_ICONS: Record<string, { icon: React.ElementType; label: string; co
 
 const ROUTE_COLORS: Record<string, string> = {
   "AP-7": "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border-tl-200 dark:border-tl-800",
-  "A-1": "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200",
-  "A-2": "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
-  "A-4": "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
-  "A-31": "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200",
-  "A-6": "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200",
-  "AP-9": "bg-teal-100 text-teal-700 border-teal-200",
+  "A-1": "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800",
+  "A-2": "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
+  "A-4": "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800",
+  "A-31": "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800",
+  "A-6": "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800",
+  "AP-9": "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800",
 };
 
 function getRouteColor(road: string) {
@@ -337,7 +337,7 @@ export default function AreasPage() {
         {/* Back link */}
         <Link
           href="/profesional"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
           Volver al portal profesional
@@ -416,7 +416,7 @@ export default function AreasPage() {
                   {group.route}
                 </span>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{group.label}</h2>
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-gray-400 dark:text-gray-500">
                   {group.areas.length} área{group.areas.length !== 1 ? "s" : ""}
                 </span>
               </div>

@@ -48,7 +48,7 @@ const REGION_META: Record<
   "Mediterráneo": {
     label: "Mediterráneo",
     color: "bg-cyan-50 dark:bg-cyan-900/20",
-    borderColor: "border-cyan-200",
+    borderColor: "border-cyan-200 dark:border-cyan-800",
     icon: "🌊",
     desc: "Cataluña, Valencia, Murcia, Andalucía oriental",
   },
@@ -61,15 +61,15 @@ const REGION_META: Record<
   },
   "Atlántico Norte": {
     label: "Atlántico Norte",
-    color: "bg-indigo-50",
-    borderColor: "border-indigo-200",
+    color: "bg-indigo-50 dark:bg-indigo-900/20",
+    borderColor: "border-indigo-200 dark:border-indigo-800",
     icon: "🌬️",
     desc: "Galicia, Asturias, Cantabria, País Vasco",
   },
   Baleares: {
     label: "Baleares",
     color: "bg-teal-50 dark:bg-teal-900/20",
-    borderColor: "border-teal-200",
+    borderColor: "border-teal-200 dark:border-teal-800",
     icon: "🏝️",
     desc: "Islas Baleares",
   },
@@ -186,8 +186,8 @@ function TaxInfoBox() {
     <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg border border-tl-amber-200 dark:border-tl-amber-800 p-5 mb-8 flex items-start gap-3">
       <AlertTriangle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0 mt-0.5" />
       <div>
-        <h3 className="font-semibold text-tl-amber-900 mb-1">Fiscalidad especial del combustible náutico</h3>
-        <p className="text-sm text-tl-amber-800 leading-relaxed">
+        <h3 className="font-semibold text-tl-amber-900 dark:text-tl-amber-100 mb-1">Fiscalidad especial del combustible náutico</h3>
+        <p className="text-sm text-tl-amber-800 dark:text-tl-amber-200 leading-relaxed">
           El combustible adquirido en <strong>Canarias</strong> (IGIC 7 %), <strong>Ceuta</strong> y{" "}
           <strong>Melilla</strong> (IPSI 0,5 %) tiene una carga fiscal significativamente menor.
           La navegación comercial y de transporte en aguas comunitarias puede acceder a{" "}
@@ -342,7 +342,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
         <div className="flex items-start gap-4">
           <Ship className="w-8 h-8 text-tl-600 dark:text-tl-400 flex-shrink-0 mt-0.5" />
           <div>
-            <h2 className="text-lg font-semibold text-tl-900 mb-2">
+            <h2 className="text-lg font-semibold text-tl-900 dark:text-tl-100 mb-2">
               ¿Quién necesita combustible en puerto?
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-tl-800 dark:text-tl-200">
@@ -470,7 +470,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
       <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Buscar por nombre, puerto, localidad..."
@@ -633,7 +633,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
             <Link
               key={link.href}
               href={link.href}
-              className="flex items-center gap-2 p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-tl-300 hover:shadow-sm transition-all group text-sm"
+              className="flex items-center gap-2 p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-tl-300 dark:hover:border-tl-700 hover:shadow-sm transition-all group text-sm"
             >
               <Anchor className="w-4 h-4 text-tl-500 flex-shrink-0" />
               <span className="text-gray-700 dark:text-gray-300 group-hover:text-tl-700 dark:text-tl-300 transition-colors line-clamp-1">
@@ -695,12 +695,12 @@ function StationCard({
 
       {station.priceGasoleoB != null && (
         <div className="mt-2 bg-cyan-50 dark:bg-cyan-900/20 rounded p-2">
-          <div className="text-xs text-cyan-600">Gasóleo B (pesca)</div>
-          <div className="font-bold text-cyan-700">{formatP(station.priceGasoleoB)}</div>
+          <div className="text-xs text-cyan-600 dark:text-cyan-400">Gasóleo B (pesca)</div>
+          <div className="font-bold text-cyan-700 dark:text-cyan-300">{formatP(station.priceGasoleoB)}</div>
         </div>
       )}
 
-      <div className="mt-3 flex items-center gap-1 text-xs text-gray-400">
+      <div className="mt-3 flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
         <MapPin className="w-3 h-3" />
         {station.latitude.toFixed(4)}, {station.longitude.toFixed(4)}
       </div>

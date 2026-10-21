@@ -264,7 +264,7 @@ export default function TerrestresClient({ initialData }: TerrestresClientProps)
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
                   fuelFilter === opt.value
                     ? "bg-orange-600 text-white border-orange-600"
-                    : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700 hover:border-orange-400 hover:text-orange-600 dark:text-orange-400"
+                    : "bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-700 hover:border-orange-400 hover:text-orange-600 dark:hover:text-orange-400"
                 }`}
               >
                 {opt.value === "all" ? "Todos" : opt.label.replace("Solo con ", "")}
@@ -544,7 +544,7 @@ export default function TerrestresClient({ initialData }: TerrestresClientProps)
                         <td className="px-4 py-3">
                           <Link
                             href={`/gasolineras/terrestres/${station.id}`}
-                            className="font-medium text-gray-900 dark:text-gray-100 hover:text-orange-700 dark:text-orange-400 line-clamp-1 block max-w-[200px]"
+                            className="font-medium text-gray-900 dark:text-gray-100 hover:text-orange-700 dark:hover:text-orange-400 line-clamp-1 block max-w-[200px]"
                           >
                             {station.name}
                           </Link>

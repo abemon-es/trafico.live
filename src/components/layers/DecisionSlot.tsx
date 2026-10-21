@@ -15,17 +15,17 @@ import { cn } from "@/lib/utils";
 
 const VERDICT_STYLE = {
   go: {
-    container: "bg-tl-emerald-50 ring-tl-emerald-300 text-tl-emerald-900",
+    container: "bg-tl-emerald-50 dark:bg-tl-emerald-900/20 ring-tl-emerald-300 text-tl-emerald-900 dark:text-tl-emerald-100",
     dot: "bg-tl-emerald-500",
     label: "Sí",
   },
   caution: {
-    container: "bg-tl-amber-50 ring-tl-amber-300 text-tl-amber-900",
+    container: "bg-tl-amber-50 dark:bg-tl-amber-900/20 ring-tl-amber-300 text-tl-amber-900 dark:text-tl-amber-100",
     dot: "bg-tl-amber-500",
     label: "Con precaución",
   },
   avoid: {
-    container: "bg-red-50 ring-red-300 text-red-900",
+    container: "bg-red-50 dark:bg-red-900/20 ring-red-300 text-red-900 dark:text-red-100",
     dot: "bg-red-500",
     label: "Mejor no",
   },

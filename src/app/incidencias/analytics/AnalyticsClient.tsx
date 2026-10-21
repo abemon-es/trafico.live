@@ -201,7 +201,7 @@ export function IncidenciasAnalyticsClient() {
         <div className="mb-6">
           <Link
             href="/incidencias"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300 mb-3 transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 mb-3 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver a incidencias

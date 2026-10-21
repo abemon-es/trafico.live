@@ -38,12 +38,12 @@ export default function AyudaLayout({ children }: AyudaLayoutProps) {
       {/* Breadcrumb bar */}
       <nav
         aria-label="Migas de pan"
-        className="border-b border-gray-100 bg-white"
+        className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900"
       >
         <div className="mx-auto max-w-5xl px-4 py-3 sm:px-6 lg:px-8">
-          <ol className="flex items-center gap-1.5 text-sm text-gray-500">
+          <ol className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
             <li>
-              <Link href="/" className="hover:text-tl-700 transition-colors">
+              <Link href="/" className="hover:text-tl-700 dark:hover:text-tl-300 transition-colors">
                 trafico.live
               </Link>
             </li>
@@ -53,7 +53,7 @@ export default function AyudaLayout({ children }: AyudaLayoutProps) {
             <li>
               <Link
                 href="/ayuda"
-                className="flex items-center gap-1 hover:text-tl-700 transition-colors"
+                className="flex items-center gap-1 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
               >
                 <HelpCircle className="h-3.5 w-3.5" />
                 Centro de ayuda
@@ -67,15 +67,15 @@ export default function AyudaLayout({ children }: AyudaLayoutProps) {
       <main>{children}</main>
 
       {/* Footer CTA */}
-      <aside className="border-t border-gray-100 bg-white">
+      <aside className="border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
         <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8 text-center">
           <p
-            className="mb-1 text-base font-semibold text-gray-900"
+            className="mb-1 text-base font-semibold text-gray-900 dark:text-gray-100"
             style={{ fontFamily: "var(--font-exo2, 'Exo 2', sans-serif)" }}
           >
             ¿No encuentras lo que buscas?
           </p>
-          <p className="mb-4 text-sm text-gray-500">
+          <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
             Nuestro equipo está disponible en horario de oficina (España).
           </p>
           <Link

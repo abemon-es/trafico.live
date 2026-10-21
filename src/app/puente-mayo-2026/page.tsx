@@ -64,22 +64,22 @@ const KEY_DATES = [
     date: "Jueves 30 de abril",
     role: "Inicio del puente",
     note: "Tarde-noche: primera oleada de salidas desde las grandes ciudades. Hora punta 16:00–21:00.",
-    color: "border-orange-200 bg-orange-50 dark:bg-orange-900/20",
-    badgeColor: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200",
+    color: "border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20",
+    badgeColor: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800",
   },
   {
     date: "Viernes 1 de mayo",
     role: "Festivo nacional",
     note: "Día del Trabajador. Jornada completa de desplazamientos. Mayor densidad en carreteras de costa.",
-    color: "border-red-200 bg-red-50 dark:bg-red-900/20",
-    badgeColor: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
+    color: "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20",
+    badgeColor: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800",
   },
   {
     date: "Sábado 2 de mayo",
     role: "Puente largo",
     note: "Segundo día festivo en Madrid (Comunidad de Madrid). Doble festivo eleva el tráfico regional.",
     color: "border-tl-amber-200 dark:border-tl-amber-800 bg-tl-amber-50 dark:bg-tl-amber-900/20",
-    badgeColor: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
+    badgeColor: "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
   },
   {
     date: "Domingo 3 de mayo",
@@ -172,9 +172,9 @@ const MAIN_ROUTES = [
 ];
 
 const CONGESTION_COLOR: Record<string, string> = {
-  "muy alta": "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
-  alta: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200",
-  media: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200",
+  "muy alta": "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800",
+  alta: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800",
+  media: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800",
 };
 
 const TIPS = [
@@ -296,7 +296,7 @@ export default async function PuenteMayo2026Page() {
               </div>
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <span className="text-xs font-semibold bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                  <span className="text-xs font-semibold bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
                     Operación especial
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -320,7 +320,7 @@ export default async function PuenteMayo2026Page() {
           {/* LIVE STATS STRIP                                                 */}
           {/* ---------------------------------------------------------------- */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-100 p-4 flex items-center gap-3">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-100 dark:border-tl-800 p-4 flex items-center gap-3">
               <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
                 <Activity className="w-5 h-5 text-tl-600 dark:text-tl-400" />
               </div>
@@ -334,12 +334,12 @@ export default async function PuenteMayo2026Page() {
               </div>
               <Link
                 href="/incidencias"
-                className="ml-auto text-xs font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 flex items-center gap-1 flex-shrink-0"
+                className="ml-auto text-xs font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 flex items-center gap-1 flex-shrink-0"
               >
                 Ver <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-amber-100 p-4 flex items-center gap-3">
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-tl-amber-100 dark:border-tl-amber-800 p-4 flex items-center gap-3">
               <div className="p-2 bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-lg flex-shrink-0">
                 <AlertTriangle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />
               </div>
@@ -412,13 +412,13 @@ export default async function PuenteMayo2026Page() {
                   {AVOID_SLOTS.map((slot) => (
                     <div
                       key={slot.day}
-                      className="bg-white dark:bg-gray-900 border border-red-100 rounded-lg p-4"
+                      className="bg-white dark:bg-gray-900 border border-red-100 dark:border-red-800 rounded-lg p-4"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-2 mb-1">
                         <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                           {slot.day}
                         </span>
-                        <span className="text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full border border-red-200">
+                        <span className="text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full border border-red-200 dark:border-red-800">
                           {slot.hours}
                         </span>
                       </div>
@@ -442,13 +442,13 @@ export default async function PuenteMayo2026Page() {
                   {RECOMMENDED_SLOTS.map((slot) => (
                     <div
                       key={slot.day}
-                      className="bg-white dark:bg-gray-900 border border-green-100 rounded-lg p-4"
+                      className="bg-white dark:bg-gray-900 border border-green-100 dark:border-green-800 rounded-lg p-4"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-2 mb-1">
                         <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                           {slot.day}
                         </span>
-                        <span className="text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full border border-green-200">
+                        <span className="text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full border border-green-200 dark:border-green-800">
                           {slot.hours}
                         </span>
                       </div>
@@ -461,7 +461,7 @@ export default async function PuenteMayo2026Page() {
 
                 <Link
                   href="/mejor-hora"
-                  className="mt-4 flex items-center gap-2 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 transition-colors"
+                  className="mt-4 flex items-center gap-2 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
                 >
                   <Clock className="w-4 h-4" />
                   Calculadora: mejor hora para viajar
@@ -490,7 +490,7 @@ export default async function PuenteMayo2026Page() {
                 <Link
                   key={route.id}
                   href={`/carreteras/${route.id}`}
-                  className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 transition-all group"
+                  className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:shadow-md hover:border-tl-300 dark:hover:border-tl-700 transition-all group"
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-2">
@@ -558,14 +558,14 @@ export default async function PuenteMayo2026Page() {
           {/* ---------------------------------------------------------------- */}
           <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-5 mb-8">
             <div className="flex items-start gap-4">
-              <div className="p-2 bg-tl-amber-100 rounded-lg flex-shrink-0">
+              <div className="p-2 bg-tl-amber-100 dark:bg-tl-amber-900/30 rounded-lg flex-shrink-0">
                 <Fuel className="w-6 h-6 text-tl-amber-700 dark:text-tl-amber-300" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-tl-amber-900 mb-1">
+                <h3 className="font-semibold text-tl-amber-900 dark:text-tl-amber-100 mb-1">
                   Consulta el precio del combustible antes de salir
                 </h3>
-                <p className="text-sm text-tl-amber-800 leading-relaxed mb-3">
+                <p className="text-sm text-tl-amber-800 dark:text-tl-amber-200 leading-relaxed mb-3">
                   Las gasolineras en accesos a autopistas y áreas de servicio
                   suelen ser más caras durante los puentes. Repostar en tu
                   ciudad puede ahorrarte hasta 10 euros por depósito.
@@ -608,7 +608,7 @@ export default async function PuenteMayo2026Page() {
                   icon: AlertTriangle,
                   color: "text-red-600 dark:text-red-400",
                   bg: "bg-red-50 dark:bg-red-900/20",
-                  border: "border-red-100",
+                  border: "border-red-100 dark:border-red-800",
                 },
                 {
                   href: "/camaras",
@@ -616,7 +616,7 @@ export default async function PuenteMayo2026Page() {
                   icon: Camera,
                   color: "text-tl-600 dark:text-tl-400",
                   bg: "bg-tl-50 dark:bg-tl-900/20",
-                  border: "border-tl-100",
+                  border: "border-tl-100 dark:border-tl-800",
                 },
                 {
                   href: "/mejor-hora",
@@ -624,7 +624,7 @@ export default async function PuenteMayo2026Page() {
                   icon: Clock,
                   color: "text-green-600 dark:text-green-400",
                   bg: "bg-green-50 dark:bg-green-900/20",
-                  border: "border-green-100",
+                  border: "border-green-100 dark:border-green-800",
                 },
                 {
                   href: "/calculadora",
@@ -632,7 +632,7 @@ export default async function PuenteMayo2026Page() {
                   icon: Navigation,
                   color: "text-purple-600 dark:text-purple-400",
                   bg: "bg-purple-50 dark:bg-purple-900/20",
-                  border: "border-purple-100",
+                  border: "border-purple-100 dark:border-purple-800",
                 },
               ].map(({ href, label, icon: Icon, color, bg, border }) => (
                 <Link
@@ -688,21 +688,21 @@ export default async function PuenteMayo2026Page() {
             <div className="flex flex-wrap gap-2">
               <Link
                 href="/semana-santa-2026"
-                className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:text-tl-300 transition-colors flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 dark:hover:border-tl-700 hover:text-tl-700 dark:hover:text-tl-300 transition-colors flex items-center gap-1.5"
               >
                 <CalendarDays className="w-3.5 h-3.5" />
                 Semana Santa 2026
               </Link>
               <Link
                 href="/operaciones"
-                className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:text-tl-300 transition-colors flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 dark:hover:border-tl-700 hover:text-tl-700 dark:hover:text-tl-300 transition-colors flex items-center gap-1.5"
               >
                 <Lightbulb className="w-3.5 h-3.5" />
                 Todas las operaciones DGT
               </Link>
               <Link
                 href="/incidencias"
-                className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:text-tl-300 transition-colors flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 dark:hover:border-tl-700 hover:text-tl-700 dark:hover:text-tl-300 transition-colors flex items-center gap-1.5"
               >
                 <Activity className="w-3.5 h-3.5" />
                 Incidencias ahora

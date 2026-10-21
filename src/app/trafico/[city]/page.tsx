@@ -141,14 +141,14 @@ const INCIDENT_TYPE_LABELS: Record<string, string> = {
 };
 
 const INCIDENT_TYPE_COLORS: Record<string, string> = {
-  ACCIDENT: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
-  ROADWORK: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200",
-  CONGESTION: "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
-  HAZARD: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200",
-  VEHICLE_BREAKDOWN: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200",
+  ACCIDENT: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800",
+  ROADWORK: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800",
+  CONGESTION: "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800",
+  HAZARD: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800",
+  VEHICLE_BREAKDOWN: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800",
   WEATHER: "bg-tl-100 dark:bg-tl-900/30 text-tl-700 dark:text-tl-300 border-tl-200 dark:border-tl-800",
-  EVENT: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200",
-  CLOSURE: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200",
+  EVENT: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800",
+  CLOSURE: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800",
   OTHER: "bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800",
 };
 
@@ -279,10 +279,10 @@ export default async function TraficoCityPage({ params }: Props) {
   // Derive status colour for the header badge
   const statusColor =
     incidentCount === 0
-      ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200"
+      ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800"
       : incidentCount < 5
-      ? "bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800"
-      : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200";
+      ? "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300 border-tl-amber-200 dark:border-tl-amber-800"
+      : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800";
 
   const statusLabel =
     incidentCount === 0
@@ -352,12 +352,12 @@ export default async function TraficoCityPage({ params }: Props) {
                 </h1>
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   {/* Live badge */}
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                     Actualizado en tiempo real
                   </span>
                   {/* Timestamp */}
-                  <span className="text-gray-400 text-xs">
+                  <span className="text-gray-400 dark:text-gray-500 text-xs">
                     {formatTimestamp(now)} (hora Madrid)
                   </span>
                 </div>
@@ -383,7 +383,7 @@ export default async function TraficoCityPage({ params }: Props) {
               <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {incidentCount.toLocaleString("es-ES")}
               </div>
-              <div className="text-xs text-gray-400 mt-0.5">en {cityData.province}</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">en {cityData.province}</div>
             </div>
 
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 shadow-sm">
@@ -394,7 +394,7 @@ export default async function TraficoCityPage({ params }: Props) {
               <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {cameraCount.toLocaleString("es-ES")}
               </div>
-              <div className="text-xs text-gray-400 mt-0.5">
+              <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                 <Link
                   href={`/camaras/${city}`}
                   className="text-tl-600 dark:text-tl-400 hover:underline"
@@ -412,7 +412,7 @@ export default async function TraficoCityPage({ params }: Props) {
               <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {weatherCount.toLocaleString("es-ES")}
               </div>
-              <div className="text-xs text-gray-400 mt-0.5">
+              <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                 <Link href="/alertas-meteo" className="text-tl-600 dark:text-tl-400 hover:underline">
                   Ver alertas
                 </Link>
@@ -421,13 +421,13 @@ export default async function TraficoCityPage({ params }: Props) {
 
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 shadow-sm">
               <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs mb-1">
-                <Clock className="w-3.5 h-3.5 text-gray-400" />
+                <Clock className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
                 Última actualización
               </div>
               <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
                 {formatTimestamp(now)}
               </div>
-              <div className="text-xs text-gray-400 mt-0.5">Fuente DGT</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Fuente DGT</div>
             </div>
           </div>
 
@@ -452,7 +452,7 @@ export default async function TraficoCityPage({ params }: Props) {
             </div>
 
             {incidents.length === 0 ? (
-              <div className="bg-white dark:bg-gray-900 rounded-xl border border-green-200 p-8 text-center">
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-green-200 dark:border-green-800 p-8 text-center">
                 <div className="w-12 h-12 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Navigation className="w-6 h-6 text-green-500" />
                 </div>
@@ -487,7 +487,7 @@ export default async function TraficoCityPage({ params }: Props) {
                         ) : inc.type === "WEATHER" ? (
                           <CloudRain className="w-4 h-4 text-tl-500" />
                         ) : (
-                          <Radio className="w-4 h-4 text-gray-400" />
+                          <Radio className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -502,7 +502,7 @@ export default async function TraficoCityPage({ params }: Props) {
                               {inc.roadNumber}
                             </span>
                           )}
-                          <span className="text-xs text-gray-400 ml-auto">
+                          <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
                             {formatRelativeTime(new Date(inc.startedAt))}
                           </span>
                         </div>
@@ -528,7 +528,7 @@ export default async function TraficoCityPage({ params }: Props) {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <Link
                 href="/mapa"
-                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-tl-300 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-tl-300 dark:hover:border-tl-700 hover:shadow-sm transition-all group"
               >
                 <MapPin className="w-5 h-5 text-tl-600 dark:text-tl-400 flex-shrink-0" />
                 <div>
@@ -541,7 +541,7 @@ export default async function TraficoCityPage({ params }: Props) {
 
               <Link
                 href="/incidencias"
-                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-red-300 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-red-300 dark:hover:border-red-700 hover:shadow-sm transition-all group"
               >
                 <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
                 <div>
@@ -554,9 +554,9 @@ export default async function TraficoCityPage({ params }: Props) {
 
               <Link
                 href={`/camaras/${city}`}
-                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-indigo-300 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-sm transition-all group"
               >
-                <Camera className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+                <Camera className="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
                 <div>
                   <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-700">
                     Cámaras
@@ -567,7 +567,7 @@ export default async function TraficoCityPage({ params }: Props) {
 
               <Link
                 href="/radares"
-                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-orange-300 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-sm transition-all group"
               >
                 <Radio className="w-5 h-5 text-orange-500 dark:text-orange-400 flex-shrink-0" />
                 <div>
@@ -580,7 +580,7 @@ export default async function TraficoCityPage({ params }: Props) {
 
               <Link
                 href={`/gasolineras/baratas/${city}`}
-                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-green-300 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-green-300 dark:hover:border-green-700 hover:shadow-sm transition-all group"
               >
                 <Fuel className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
                 <div>
@@ -593,7 +593,7 @@ export default async function TraficoCityPage({ params }: Props) {
 
               <Link
                 href="/alertas-meteo"
-                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-sky-300 hover:shadow-sm transition-all group"
+                className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-sky-300 dark:hover:border-sky-700 hover:shadow-sm transition-all group"
               >
                 <CloudRain className="w-5 h-5 text-sky-500 flex-shrink-0" />
                 <div>
@@ -616,7 +616,7 @@ export default async function TraficoCityPage({ params }: Props) {
                 {railwayStationCount > 0 && (
                   <Link
                     href="/trenes/estaciones"
-                    className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-tl-300 hover:shadow-sm transition-all group"
+                    className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-tl-300 dark:hover:border-tl-700 hover:shadow-sm transition-all group"
                   >
                     <Train className="w-5 h-5 text-tl-500 flex-shrink-0" />
                     <div>
@@ -630,7 +630,7 @@ export default async function TraficoCityPage({ params }: Props) {
                 {airQualityStations.length > 0 && (
                   <Link
                     href="/calidad-aire"
-                    className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-green-300 hover:shadow-sm transition-all group"
+                    className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-green-300 dark:hover:border-green-700 hover:shadow-sm transition-all group"
                   >
                     <Wind className="w-5 h-5 text-green-500 flex-shrink-0" />
                     <div>
@@ -647,12 +647,12 @@ export default async function TraficoCityPage({ params }: Props) {
                   <Link
                     key={apt.id}
                     href="/aviacion"
-                    className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-sky-300 hover:shadow-sm transition-all group"
+                    className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-sky-300 dark:hover:border-sky-700 hover:shadow-sm transition-all group"
                   >
                     <Plane className="w-5 h-5 text-sky-500 flex-shrink-0" />
                     <div>
                       <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        {apt.name} {apt.iata && <span className="font-mono text-xs text-gray-400 ml-1">({apt.iata})</span>}
+                        {apt.name} {apt.iata && <span className="font-mono text-xs text-gray-400 dark:text-gray-500 ml-1">({apt.iata})</span>}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         {apt.statistics?.[0] ? `${(Number(apt.statistics[0].value) / 1_000_000).toFixed(1)}M pax/año` : "AENA"}
@@ -676,7 +676,7 @@ export default async function TraficoCityPage({ params }: Props) {
                   <Link
                     key={slug}
                     href={`/trafico/${slug}`}
-                    className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 hover:text-tl-700 dark:text-tl-300 transition-colors"
+                    className="px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:border-tl-300 dark:hover:border-tl-700 hover:text-tl-700 dark:hover:text-tl-300 transition-colors"
                   >
                     {data.name}
                   </Link>
@@ -696,7 +696,7 @@ export default async function TraficoCityPage({ params }: Props) {
               <details className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group">
                 <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors select-none text-sm">
                   {faq.q1}
-                  <ChevronRight className="w-4 h-4 text-gray-400 transition-transform group-open:rotate-90 flex-shrink-0 ml-2" />
+                  <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform group-open:rotate-90 flex-shrink-0 ml-2" />
                 </summary>
                 <div className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 leading-relaxed">
                   {faq.a1}
@@ -706,7 +706,7 @@ export default async function TraficoCityPage({ params }: Props) {
               <details className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group">
                 <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors select-none text-sm">
                   {faq.q2}
-                  <ChevronRight className="w-4 h-4 text-gray-400 transition-transform group-open:rotate-90 flex-shrink-0 ml-2" />
+                  <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform group-open:rotate-90 flex-shrink-0 ml-2" />
                 </summary>
                 <div className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 leading-relaxed">
                   {faq.a2}
@@ -718,7 +718,7 @@ export default async function TraficoCityPage({ params }: Props) {
           {/* Data source note */}
           <div className="bg-gray-50 dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
             <div className="flex items-start gap-3">
-              <Clock className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+              <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500 mt-0.5 flex-shrink-0" />
               <div>
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
                   Fuente y actualización de datos

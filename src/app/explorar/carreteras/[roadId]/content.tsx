@@ -368,7 +368,7 @@ export default function RoadDetailContent() {
           {cameras.length > 8 && (
             <Link
               href={`/explorar/infraestructura?tab=camaras&road=${encodeURIComponent(roadId)}`}
-              className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline"
+              className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline"
             >
               Ver todas las {cameras.length} cámaras
               <ChevronRight className="w-4 h-4" />
@@ -464,7 +464,7 @@ export default function RoadDetailContent() {
       <div className="mt-8">
         <Link
           href="/explorar/carreteras"
-          className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline text-sm"
+          className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline text-sm"
         >
           Volver al índice de carreteras
         </Link>

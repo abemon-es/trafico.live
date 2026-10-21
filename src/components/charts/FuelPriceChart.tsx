@@ -140,11 +140,11 @@ function ChartSkeleton() {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm animate-pulse">
       <div className="flex items-center justify-between mb-6">
-        <div className="h-5 w-48 bg-gray-200 rounded" />
+        <div className="h-5 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
         <div className="flex gap-2">
-          <div className="h-8 w-16 bg-gray-200 rounded-lg" />
-          <div className="h-8 w-16 bg-gray-200 rounded-lg" />
-          <div className="h-8 w-16 bg-gray-200 rounded-lg" />
+          <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+          <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+          <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded-lg" />
         </div>
       </div>
       <div className="h-[280px] bg-gray-100 dark:bg-gray-900 rounded-xl" />
@@ -177,7 +177,7 @@ export function FuelPriceChart({
   if (error || !data?.success || !data.history?.length) {
     return (
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
-        <p className="text-gray-400 text-sm text-center py-16">
+        <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-16">
           No hay datos históricos disponibles en este momento.
         </p>
       </div>
@@ -210,7 +210,7 @@ export function FuelPriceChart({
               className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                 days === Number(d)
                   ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
               }`}
             >
               {label}
@@ -226,7 +226,7 @@ export function FuelPriceChart({
           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-opacity ${
             visibleLines.diesel
               ? "border-tl-amber-400 bg-tl-amber-50 dark:bg-tl-amber-900/20 text-tl-amber-700 dark:text-tl-amber-300"
-              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 opacity-50"
+              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 dark:text-gray-500 opacity-50"
           }`}
         >
           <span className="w-2 h-2 rounded-full bg-tl-amber-500" />
@@ -237,7 +237,7 @@ export function FuelPriceChart({
           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-opacity ${
             visibleLines.gasolina95
               ? "border-tl-400 bg-tl-50 dark:bg-tl-900/20 text-tl-700 dark:text-tl-300"
-              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 opacity-50"
+              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 dark:text-gray-500 opacity-50"
           }`}
         >
           <span className="w-2 h-2 rounded-full bg-tl-600" />
@@ -247,8 +247,8 @@ export function FuelPriceChart({
           onClick={() => toggleLine("gasolina98")}
           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-opacity ${
             visibleLines.gasolina98
-              ? "border-violet-400 bg-violet-50 text-violet-700"
-              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 opacity-50"
+              ? "border-violet-400 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300"
+              : "border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-gray-400 dark:text-gray-500 opacity-50"
           }`}
         >
           <span className="w-2 h-2 rounded-full bg-violet-600" />
@@ -332,7 +332,7 @@ export function FuelPriceChart({
       </ResponsiveContainer>
 
       {/* Footer note */}
-      <p className="text-xs text-gray-400 mt-4 text-right">
+      <p className="text-xs text-gray-400 dark:text-gray-500 mt-4 text-right">
         Media nacional · Península y Baleares · Datos oficiales MITERD
       </p>
     </div>

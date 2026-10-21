@@ -184,7 +184,7 @@ export function CreateKeyModal({ isOpen, userTier, onClose, onCreated }: CreateK
                             : "border-tl-300 dark:border-tl-600"
                         }`}
                       >
-                        {tier === t && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        {tier === t && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-white" />}
                       </div>
                       <TierBadge tier={t} />
                     </label>

@@ -147,7 +147,7 @@ const RISK_LEVEL_CONFIG: Record<
 > = {
   HIGH: {
     label: "Alto",
-    badgeClass: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200",
+    badgeClass: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800",
     rowClass: "border-l-4 border-l-red-400",
   },
   VERY_HIGH: {
@@ -157,12 +157,12 @@ const RISK_LEVEL_CONFIG: Record<
   },
   MEDIUM: {
     label: "Medio",
-    badgeClass: "bg-tl-amber-100 text-tl-amber-800 border-tl-amber-200 dark:border-tl-amber-800",
+    badgeClass: "bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-800 dark:text-tl-amber-200 border-tl-amber-200 dark:border-tl-amber-800",
     rowClass: "border-l-4 border-l-tl-amber-400",
   },
   LOW: {
     label: "Bajo",
-    badgeClass: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200",
+    badgeClass: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800",
     rowClass: "border-l-4 border-l-green-400",
   },
 };
@@ -320,7 +320,7 @@ export default async function CiclistasPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                     {cyclistRiskZones.map((zone) => {
                       const config =
                         RISK_LEVEL_CONFIG[zone.severity] ??
@@ -399,7 +399,7 @@ export default async function CiclistasPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                     {yearRows.map((row) => (
                       <tr key={row.year} className="hover:bg-gray-50 dark:hover:bg-gray-950">
                         <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -436,7 +436,7 @@ export default async function CiclistasPage() {
                               {row.delta}%
                             </span>
                           ) : (
-                            <span className="text-gray-400">—</span>
+                            <span className="text-gray-400 dark:text-gray-500">—</span>
                           )}
                         </td>
                       </tr>
@@ -486,7 +486,7 @@ export default async function CiclistasPage() {
                   <span className="font-medium text-gray-900 dark:text-gray-100">
                     {item.question}
                   </span>
-                  <ChevronRight className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-90" />
+                  <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500 transition-transform group-open:rotate-90" />
                 </summary>
                 <div className="px-5 pb-4 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   {item.answer}
@@ -501,7 +501,7 @@ export default async function CiclistasPage() {
           <div className="flex items-start gap-3">
             <Info className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 mt-0.5 shrink-0" />
             <div>
-              <p className="font-medium text-tl-amber-800 mb-1">
+              <p className="font-medium text-tl-amber-800 dark:text-tl-amber-200 mb-1">
                 Nota informativa
               </p>
               <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300">

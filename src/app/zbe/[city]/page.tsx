@@ -466,7 +466,7 @@ function toDecimalNum(val: unknown): number | null {
 function statusBadge(status: ZBEStatus) {
   if (status === "activa") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 rounded-full text-sm font-semibold">
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 rounded-full text-sm font-semibold">
         <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
         Activa
       </span>
@@ -474,7 +474,7 @@ function statusBadge(status: ZBEStatus) {
   }
   if (status === "planificada") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-tl-amber-100 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800 rounded-full text-sm font-semibold">
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-tl-amber-100 dark:bg-tl-amber-900/30 text-tl-amber-700 dark:text-tl-amber-300 border border-tl-amber-200 dark:border-tl-amber-800 rounded-full text-sm font-semibold">
         <span className="w-2 h-2 bg-tl-amber-500 rounded-full" />
         Planificada
       </span>
@@ -505,9 +505,9 @@ function accessLabel(value: AccessValue) {
 }
 
 function accessRowClass(value: AccessValue) {
-  if (value === "permitido") return "bg-green-50 dark:bg-green-900/20 border-green-100";
-  if (value === "restringido") return "bg-tl-amber-50 dark:bg-tl-amber-900/20 border-tl-amber-100";
-  return "bg-red-50 dark:bg-red-900/20 border-red-100";
+  if (value === "permitido") return "bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-800";
+  if (value === "restringido") return "bg-tl-amber-50 dark:bg-tl-amber-900/20 border-tl-amber-100 dark:border-tl-amber-800";
+  return "bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800";
 }
 
 function accessTextClass(value: AccessValue) {
@@ -681,7 +681,7 @@ export default async function ZBECityPage({ params }: Props) {
               )}
 
               {/* Fine */}
-              <div className="bg-white dark:bg-gray-900 rounded-lg border border-red-100 p-4 flex items-start gap-3">
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-red-100 dark:border-red-800 p-4 flex items-start gap-3">
                 <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg flex-shrink-0">
                   <Euro className="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
@@ -709,7 +709,7 @@ export default async function ZBECityPage({ params }: Props) {
               </div>
 
               {/* Who can enter */}
-              <div className="bg-white dark:bg-gray-900 rounded-lg border border-green-100 p-4 flex items-start gap-3">
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-green-100 dark:border-green-800 p-4 flex items-start gap-3">
                 <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg flex-shrink-0">
                   <Car className="w-5 h-5 text-green-600 dark:text-green-400" />
                 </div>
@@ -734,7 +734,7 @@ export default async function ZBECityPage({ params }: Props) {
             </p>
 
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-              <div className="grid grid-cols-[1fr_auto_auto] divide-y divide-gray-100">
+              <div className="grid grid-cols-[1fr_auto_auto] divide-y divide-gray-100 dark:divide-gray-800">
                 {/* Header */}
                 <div className="col-span-3 grid grid-cols-[1fr_auto_auto] bg-gray-50 dark:bg-gray-950 px-4 py-2.5">
                   <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Etiqueta ambiental</span>
@@ -826,15 +826,15 @@ export default async function ZBECityPage({ params }: Props) {
               </div>
 
               {cfg.status === "activa" && (
-                <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-100 rounded-lg p-3 mt-3">
-                  <p className="text-sm text-tl-amber-800">
+                <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-100 dark:border-tl-amber-800 rounded-lg p-3 mt-3">
+                  <p className="text-sm text-tl-amber-800 dark:text-tl-amber-200">
                     <strong>Episodios de contaminación:</strong> En episodios de alta contaminación declarados por el Ayuntamiento, las restricciones pueden ampliarse a vehículos con etiqueta C o B. Consulta el portal municipal para alertas en tiempo real.
                   </p>
                 </div>
               )}
 
               {cfg.status !== "activa" && (
-                <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-100 rounded-lg p-3 mt-3">
+                <div className="bg-tl-50 dark:bg-tl-900/20 border border-tl-100 dark:border-tl-800 rounded-lg p-3 mt-3">
                   <p className="text-sm text-tl-800 dark:text-tl-200">
                     <strong>Nota:</strong> Esta ZBE está en fase de planificación o desarrollo. Los horarios indicados son orientativos y pueden variar cuando entre en vigor. Consulta el Ayuntamiento de {cfg.name} para la información oficial más actualizada.
                   </p>
@@ -886,7 +886,7 @@ export default async function ZBECityPage({ params }: Props) {
               {cfg.evChargersCity && (
                 <Link
                   href={`/carga-ev/${cfg.evChargersCity}`}
-                  className="flex items-start gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-tl-300 hover:shadow-sm transition-all group"
+                  className="flex items-start gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-tl-300 dark:hover:border-tl-700 hover:shadow-sm transition-all group"
                 >
                   <div className="p-2 bg-tl-50 dark:bg-tl-900/20 rounded-lg flex-shrink-0">
                     <Zap className="w-5 h-5 text-tl-600 dark:text-tl-400" />
@@ -919,7 +919,7 @@ export default async function ZBECityPage({ params }: Props) {
               {/* Map with filter */}
               <Link
                 href={`/gasolineras/mapa?ciudad=${city}`}
-                className="flex items-start gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-purple-300 hover:shadow-sm transition-all group"
+                className="flex items-start gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-sm transition-all group"
               >
                 <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex-shrink-0">
                   <MapPin className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -939,12 +939,12 @@ export default async function ZBECityPage({ params }: Props) {
 
               {/* DB zone details */}
               {dbZone && (
-                <div className="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200">
+                <div className="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
                   <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg flex-shrink-0">
                     <Info className="w-5 h-5 text-green-700 dark:text-green-400" />
                   </div>
                   <div>
-                    <p className="font-semibold text-green-900 text-sm">{dbZone.name}</p>
+                    <p className="font-semibold text-green-900 dark:text-green-100 text-sm">{dbZone.name}</p>
                     <p className="text-xs text-green-700 dark:text-green-400 mt-0.5">
                       Zona registrada en nuestra base de datos oficial.
                       {dbZone.sourceUrl && (
@@ -980,7 +980,7 @@ export default async function ZBECityPage({ params }: Props) {
                 >
                   <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors select-none">
                     {item.question}
-                    <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2 transition-transform group-open:rotate-90" />
+                    <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0 ml-2 transition-transform group-open:rotate-90" />
                   </summary>
                   <div className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 leading-relaxed">
                     {item.answer}

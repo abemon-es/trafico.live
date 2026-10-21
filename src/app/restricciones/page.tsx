@@ -260,14 +260,14 @@ export default async function RestriccionesPage() {
               Consulta el calendario completo de restricciones en{" "}
               <Link
                 href="/operaciones"
-                className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline"
+                className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline"
               >
                 Operaciones Especiales
               </Link>{" "}
               y las restricciones para profesionales en{" "}
               <Link
                 href="/profesional/restricciones"
-                className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 hover:underline"
+                className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 hover:underline"
               >
                 portal profesional
               </Link>

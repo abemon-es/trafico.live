@@ -188,7 +188,7 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
       {/* Back button */}
       <Link
         href="/maritimo/combustible"
-        className="inline-flex items-center gap-2 text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 mb-6"
+        className="inline-flex items-center gap-2 text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver al listado

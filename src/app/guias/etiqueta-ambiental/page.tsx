@@ -228,7 +228,7 @@ export default function GuiaEtiquetaAmbientalPage() {
                         <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
                           {label.vehicles.map((v) => (
                             <li key={v} className="flex items-start gap-2">
-                              <CheckCircle className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                              <CheckCircle className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0 mt-0.5" />
                               {v}
                             </li>
                           ))}
@@ -259,7 +259,7 @@ export default function GuiaEtiquetaAmbientalPage() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                         Vehiculos incluidos
                       </p>
                       <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
@@ -269,7 +269,7 @@ export default function GuiaEtiquetaAmbientalPage() {
                       </ul>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
                         Restricciones
                       </p>
                       <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
@@ -311,13 +311,13 @@ export default function GuiaEtiquetaAmbientalPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                        <tr><td className="px-4 py-2">Gasolina</td><td className="px-4 py-2">Euro 4, 5, 6</td><td className="px-4 py-2">Desde ene 2006</td><td className="px-4 py-2 text-center"><span className="px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold">C</span></td></tr>
-                        <tr><td className="px-4 py-2">Gasolina</td><td className="px-4 py-2">Euro 3</td><td className="px-4 py-2">Ene 2000 – dic 2005</td><td className="px-4 py-2 text-center"><span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold">B</span></td></tr>
-                        <tr><td className="px-4 py-2">Diesel</td><td className="px-4 py-2">Euro 6</td><td className="px-4 py-2">Desde sep 2015</td><td className="px-4 py-2 text-center"><span className="px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold">C</span></td></tr>
-                        <tr><td className="px-4 py-2">Diesel</td><td className="px-4 py-2">Euro 4, 5</td><td className="px-4 py-2">Ene 2006 – ago 2015</td><td className="px-4 py-2 text-center"><span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold">B</span></td></tr>
-                        <tr><td className="px-4 py-2">Hibrido no enchufable</td><td className="px-4 py-2">Cualquiera</td><td className="px-4 py-2">Cualquiera</td><td className="px-4 py-2 text-center"><span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-xs font-semibold">ECO</span></td></tr>
-                        <tr><td className="px-4 py-2">Electrico / Hidrogeno</td><td className="px-4 py-2">N/A</td><td className="px-4 py-2">Cualquiera</td><td className="px-4 py-2 text-center"><span className="px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 text-xs font-semibold">0</span></td></tr>
-                        <tr><td className="px-4 py-2">GNC / GNL / GLP</td><td className="px-4 py-2">Cualquiera</td><td className="px-4 py-2">Cualquiera</td><td className="px-4 py-2 text-center"><span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-xs font-semibold">ECO</span></td></tr>
+                        <tr><td className="px-4 py-2">Gasolina</td><td className="px-4 py-2">Euro 4, 5, 6</td><td className="px-4 py-2">Desde ene 2006</td><td className="px-4 py-2 text-center"><span className="px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 text-xs font-semibold">C</span></td></tr>
+                        <tr><td className="px-4 py-2">Gasolina</td><td className="px-4 py-2">Euro 3</td><td className="px-4 py-2">Ene 2000 – dic 2005</td><td className="px-4 py-2 text-center"><span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 text-xs font-semibold">B</span></td></tr>
+                        <tr><td className="px-4 py-2">Diesel</td><td className="px-4 py-2">Euro 6</td><td className="px-4 py-2">Desde sep 2015</td><td className="px-4 py-2 text-center"><span className="px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 text-xs font-semibold">C</span></td></tr>
+                        <tr><td className="px-4 py-2">Diesel</td><td className="px-4 py-2">Euro 4, 5</td><td className="px-4 py-2">Ene 2006 – ago 2015</td><td className="px-4 py-2 text-center"><span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 text-xs font-semibold">B</span></td></tr>
+                        <tr><td className="px-4 py-2">Hibrido no enchufable</td><td className="px-4 py-2">Cualquiera</td><td className="px-4 py-2">Cualquiera</td><td className="px-4 py-2 text-center"><span className="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-xs font-semibold">ECO</span></td></tr>
+                        <tr><td className="px-4 py-2">Electrico / Hidrogeno</td><td className="px-4 py-2">N/A</td><td className="px-4 py-2">Cualquiera</td><td className="px-4 py-2 text-center"><span className="px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-200 text-xs font-semibold">0</span></td></tr>
+                        <tr><td className="px-4 py-2">GNC / GNL / GLP</td><td className="px-4 py-2">Cualquiera</td><td className="px-4 py-2">Cualquiera</td><td className="px-4 py-2 text-center"><span className="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-xs font-semibold">ECO</span></td></tr>
                       </tbody>
                     </table>
                   </div>
@@ -473,7 +473,7 @@ export default function GuiaEtiquetaAmbientalPage() {
                       <p className="text-sm text-gray-500 dark:text-gray-400">Que ciudades tienen ZBE y como funcionan</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                  <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                 </Link>
               </div>
 

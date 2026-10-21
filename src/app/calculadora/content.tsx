@@ -774,7 +774,7 @@ export default function CalculadoraContent() {
                     className={`rounded-lg border px-3 py-2.5 text-xs font-semibold transition-all text-left ${
                       isSelected
                         ? `${d.bgColor} ${d.borderColor} ${d.color} shadow-sm`
-                        : "border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-950"
+                        : "border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-950"
                     }`}
                   >
                     {d.label}
@@ -1042,14 +1042,14 @@ export default function CalculadoraContent() {
           <div className="flex flex-wrap gap-2 text-xs">
             <Link
               href="/precio-gasolina-hoy"
-              className="inline-flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:border-tl-300 hover:text-tl-600 dark:text-tl-400 transition-colors"
+              className="inline-flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:border-tl-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors"
             >
               <Fuel className="w-3 h-3" />
               Precio gasolina hoy
             </Link>
             <Link
               href="/precio-diesel-hoy"
-              className="inline-flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:border-tl-300 hover:text-tl-600 dark:text-tl-400 transition-colors"
+              className="inline-flex items-center gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:border-tl-300 hover:text-tl-600 dark:hover:text-tl-400 transition-colors"
             >
               <Fuel className="w-3 h-3" />
               Precio diésel hoy

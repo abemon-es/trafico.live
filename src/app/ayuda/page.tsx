@@ -52,15 +52,15 @@ export default function AyudaPage() {
       />
 
       {/* Hero */}
-      <section className="bg-white border-b border-gray-100">
+      <section className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
         <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 lg:px-8">
           <h1
-            className="mb-3 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl"
+            className="mb-3 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl"
             style={{ fontFamily: "var(--font-exo2, 'Exo 2', sans-serif)" }}
           >
             Centro de ayuda
           </h1>
-          <p className="mb-8 max-w-xl text-base text-gray-500 leading-relaxed">
+          <p className="mb-8 max-w-xl text-base text-gray-500 dark:text-gray-400 leading-relaxed">
             Guías, respuestas frecuentes y documentación técnica para sacar el máximo partido
             a trafico.live.
           </p>
@@ -68,7 +68,7 @@ export default function AyudaPage() {
           {/* Search input */}
           <div className="relative max-w-xl">
             <Search
-              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500"
               aria-hidden="true"
             />
             <input
@@ -77,14 +77,14 @@ export default function AyudaPage() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar artículos…"
               aria-label="Buscar artículos de ayuda"
-              className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-11 text-sm text-gray-900 placeholder-gray-400 shadow-sm outline-none transition-colors focus:border-tl-400 focus:ring-2 focus:ring-tl-100"
+              className="w-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 py-3 pl-11 pr-11 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 shadow-sm outline-none transition-colors focus:border-tl-400 focus:ring-2 focus:ring-tl-100"
             />
             {query && (
               <button
                 type="button"
                 onClick={() => setQuery("")}
                 aria-label="Limpiar búsqueda"
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -102,7 +102,7 @@ export default function AyudaPage() {
 
         {/* Results count */}
         {(query || category) && (
-          <p className="mb-5 text-sm text-gray-500">
+          <p className="mb-5 text-sm text-gray-500 dark:text-gray-400">
             {filtered.length === 0
               ? "Sin resultados para esa búsqueda."
               : `${filtered.length} artículo${filtered.length !== 1 ? "s" : ""} encontrado${filtered.length !== 1 ? "s" : ""}`}
@@ -117,8 +117,8 @@ export default function AyudaPage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-gray-200 py-16 text-center">
-            <p className="text-sm text-gray-400">
+          <div className="rounded-xl border border-dashed border-gray-200 dark:border-gray-800 py-16 text-center">
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               No hay artículos que coincidan con tu búsqueda.
             </p>
             <button
@@ -127,7 +127,7 @@ export default function AyudaPage() {
                 setQuery("");
                 setCategory(null);
               }}
-              className="mt-3 text-sm text-tl-600 underline-offset-2 hover:underline"
+              className="mt-3 text-sm text-tl-600 dark:text-tl-400 underline-offset-2 hover:underline"
             >
               Ver todos los artículos
             </button>

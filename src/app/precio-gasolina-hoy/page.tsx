@@ -494,7 +494,7 @@ export default async function PrecioGasolinaHoyPage() {
             <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 text-center">
               <Link
                 href="/gasolineras/terrestres"
-                className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 text-sm font-medium inline-flex items-center gap-1"
+                className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 text-sm font-medium inline-flex items-center gap-1"
               >
                 Ver todas las gasolineras
                 <ChevronRight className="w-4 h-4" />
@@ -542,7 +542,7 @@ export default async function PrecioGasolinaHoyPage() {
                             <tr key={p.scope} className="border-b border-gray-50 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors">
                               <td className="py-3 px-2">
                                 {province ? (
-                                  <Link href={`/gasolineras/precios/${province.slug}`} className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 font-medium flex items-center gap-1 w-fit">
+                                  <Link href={`/gasolineras/precios/${province.slug}`} className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium flex items-center gap-1 w-fit">
                                     {province.name}
                                     <ChevronRight className="w-3 h-3 opacity-60" />
                                   </Link>
@@ -571,7 +571,7 @@ export default async function PrecioGasolinaHoyPage() {
             {/* Remaining provinces — collapsed by default */}
             {remainingProvinces.length > 0 && (
               <details className="group mt-2">
-                <summary className="cursor-pointer list-none flex items-center gap-2 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 py-2">
+                <summary className="cursor-pointer list-none flex items-center gap-2 text-sm font-medium text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 py-2">
                   <ChevronRight className="w-4 h-4 transition-transform group-open:rotate-90" />
                   Ver todas las provincias ({remainingProvinces.length} restantes)
                 </summary>
@@ -598,7 +598,7 @@ export default async function PrecioGasolinaHoyPage() {
                           <tr key={p.scope} className="border-b border-gray-50 hover:bg-gray-50 dark:hover:bg-gray-950 transition-colors">
                             <td className="py-3 px-2">
                               {province ? (
-                                <Link href={`/gasolineras/precios/${province.slug}`} className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:text-tl-300 font-medium flex items-center gap-1 w-fit">
+                                <Link href={`/gasolineras/precios/${province.slug}`} className="text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium flex items-center gap-1 w-fit">
                                   {province.name}
                                   <ChevronRight className="w-3 h-3 opacity-60" />
                                 </Link>
