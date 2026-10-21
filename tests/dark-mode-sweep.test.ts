@@ -10,6 +10,9 @@
  *    opacity: `bg-X-50 dark:bg-X-900/200`. Status dots, legend swatches and
  *    bars showed the palest tint in light mode and an invalid class in dark
  *    (112 lines in 33 files until 2026-10-21). No opacity is ever ≥ 100.
+ *    Without an opacity it made a four-digit shade: `bg-gray-500` became
+ *    `bg-gray-50 dark:bg-gray-9500`, near-white in light mode and nothing in
+ *    dark (8 fallback bars and chips until 2026-10-21). No shade has 4 digits.
  * 3. `bg-X-50/NN` became `bg-X-50 dark:bg-X-900/20/NN`: two opacities, an
  *    invalid class, so the top fuel-ranking rows stayed light in dark mode.
  * 4. A page wrapper `min-h-screen bg-gray-50` with no dark background: every
@@ -74,7 +77,8 @@ const COLOUR = "[a-z]+(?:-[a-z]+)*";
 const BROKEN = new RegExp(
   "bg-white dark:bg-gray-\\d+\\/(10|20)\\b" +
     `|\\b(?:bg|text|border|ring|from|via|to|fill|stroke|divide|outline|shadow|placeholder|decoration|accent|caret)-${COLOUR}-\\d{2,3}\\/(?:\\d{3,}|\\d+\\/\\d+)\\b` +
-    '|min-h-screen bg-gray-50"',
+    '|min-h-screen bg-gray-50"' +
+    `|\\b(?:bg|text|border|ring|from|via|to|fill|stroke|divide|outline|shadow|placeholder|decoration|accent|caret)-${COLOUR}-\\d{4,}\\b`,
 );
 
 function* sources(dir: string): Generator<string> {
@@ -98,6 +102,8 @@ assert.ok(!BROKEN.test('dotClass: "bg-tl-amber-500",'));
 assert.ok(!BROKEN.test('className="bg-green-50/50 dark:bg-green-900/20"'));
 assert.ok(BROKEN.test('<div className="min-h-screen bg-gray-50">'));
 assert.ok(!BROKEN.test('<div className="min-h-screen bg-gray-50 dark:bg-gray-950">'));
+assert.ok(BROKEN.test('const bgColor = colors[item.name] || "bg-gray-50 dark:bg-gray-9500";'), "a four-digit shade");
+assert.ok(!BROKEN.test('className="transition duration-1000 bg-gray-500"'), "a duration is not a shade");
 
 // Class strings on a line: closed quotes, the tail of a template literal that
 // goes on to the next line, or the whole line inside one (no quote at all).
@@ -253,13 +259,13 @@ assert.deepEqual(mapEntryTooLight('{\n    color: "bg-gray-500",\n    badgeText: 
  */
 const WHITE_OVER_INTERPOLATED: Record<string, string> = {
   "src/app/gasolineras/historico/content.tsx tab.activeBg": "measured: 6.97 / 5.89 / 5.22:1 (#151)",
-  "src/app/estaciones-aforo/content.tsx imdColor(selectedStation.imd)": "to review",
-  "src/app/clima/estacion/[id]/page.tsx (computed)": "to review",
-  "src/app/clima/provincia/[slug]/page.tsx (computed)": "to review",
-  "src/app/cortes-trafico/page.tsx (computed)": "to review",
-  "src/app/estadisticas/content.tsx risk.bg": "to review",
-  "src/components/fuel/PriceAlertForm.tsx btnClass": "to review",
-  "src/components/incidents/IncidentFilters.tsx color": "to review",
+  "src/app/estaciones-aforo/content.tsx imdColor(selectedStation.imd)": "measured: 4.51–6.97:1 (small text; was 1.91–4.51)",
+  "src/app/clima/estacion/[id]/page.tsx (computed)": "measured: 3.20–3.81:1 (text-2xl bold, large; was 2.13–3.81)",
+  "src/app/clima/provincia/[slug]/page.tsx (computed)": "measured: 3.20–3.81:1 (text-2xl bold, large; was 2.13–3.81)",
+  "src/app/cortes-trafico/page.tsx (computed)": "measured: red-600 4.77 / tl-amber-600 6.79:1, unchanged",
+  "src/app/estadisticas/content.tsx risk.bg": "measured: 4.77–5.22:1 (small text; was 1.91–4.77)",
+  "src/components/fuel/PriceAlertForm.tsx btnClass": "measured: tl-amber-600 6.79 / tl-600 6.97:1, unchanged",
+  "src/components/incidents/IncidentFilters.tsx color": "measured: 4.51–6.97:1 (small text; was 1.03–6.97)",
 };
 const whiteOverInterpolated = (rel: string, line: string) =>
   (line.match(/`[^`]*`|`[^`]*$/g) ?? []).flatMap((t) => {

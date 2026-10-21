@@ -319,7 +319,7 @@ function IncidentTypeChart({
       </h2>
       <div className="space-y-3">
         {data.map((item, idx) => {
-          const bgColor = typeColors[item.type] || "bg-gray-50 dark:bg-gray-9500";
+          const bgColor = typeColors[item.type] || "bg-gray-500";
           return (
             <div key={idx} className="flex items-center gap-3">
               <div className="w-28 text-sm text-gray-600 dark:text-gray-400 truncate" title={item.label}>
@@ -391,7 +391,7 @@ function SeverityChart({
       <div className="space-y-3">
         {data.map((item, idx) => {
           const percentage = total > 0 ? Math.round((item.count / total) * 100) : 0;
-          const bgColor = severityColors[item.severity] || "bg-gray-50 dark:bg-gray-9500";
+          const bgColor = severityColors[item.severity] || "bg-gray-500";
           return (
             <div key={idx} className="flex items-center gap-3">
               <div className="w-20 text-sm text-gray-600 dark:text-gray-400">{item.label}</div>
