@@ -16,21 +16,10 @@
  * value differs, and a rollback unless exactly --expect rows changed.
  */
 
-import ExcelJS from "exceljs";
-import { unlinkSync, writeFileSync } from "fs";
-import { tmpdir } from "os";
-import { join } from "path";
 import pg from "pg";
-import { YEARS, downloadXlsx } from "../tasks/accident-microdata/collector.js";
-import { resolveColumns, zoneIsUrban } from "../tasks/accident-microdata/columns.js";
-
-interface FileRow {
-  rowNum: number;
-  province: string | null;
-  road: string | null;
-  km: string | null;
-  isUrban: boolean | null;
-}
+import { YEARS } from "../tasks/accident-microdata/collector.js";
+import { zoneIsUrban } from "../tasks/accident-microdata/columns.js";
+import { kmKey, readOfficialRows } from "../tasks/accident-microdata/official-file.js";
 
 interface DbRow {
   id: string;
@@ -41,65 +30,9 @@ interface DbRow {
   isUrban: boolean | null;
 }
 
-const cell = (v: unknown): string | undefined => {
-  if (v == null) return undefined;
-  if (typeof v === "object" && v && "richText" in v) return (v as { richText: { text: string }[] }).richText.map((t) => t.text).join("").trim() || undefined;
-  if (typeof v === "object" && v && "result" in v) return cell((v as { result: unknown }).result);
-  const s = String(v).trim();
-  return s || undefined;
-};
-/**
- * Two decimals, rounded half up the way the table's numeric(7,2) rounded the
- * import's value (71.175 → 71.18); toFixed() works on the binary float and
- * gives 71.17.
- */
-const kmKey = (n: number | null | undefined) => (n == null || isNaN(n) ? null : (Math.round(n * 100 + 1e-6) / 100).toFixed(2));
-
-/** The data rows of a year's official file, numbered as the import numbered them. */
-async function readFile(year: number, urls: string[]): Promise<FileRow[]> {
-  let buf: Buffer | null = null;
-  for (const url of urls) {
-    buf = await downloadXlsx(url);
-    if (buf) break;
-  }
-  if (!buf) throw new Error(`${year}: no file downloaded`);
-  const path = join(tmpdir(), `dgt-zone-${year}.xlsx`);
-  writeFileSync(path, buf);
-  try {
-    const reader = new ExcelJS.stream.xlsx.WorkbookReader(path, { sharedStrings: "cache", worksheets: "emit" });
-    for await (const ws of reader) {
-      let col: ReturnType<typeof resolveColumns> | null = null;
-      const rows: FileRow[] = [];
-      let seen = 0;
-      for await (const row of ws) {
-        const values = row.values as unknown[];
-        if (!col) {
-          if (++seen > 30) break;
-          const joined = values.map((v) => String(cell(v) ?? "").toUpperCase()).join(",");
-          const hits = ["ANYO", "COD_PROVINCIA", "HORA", "CARRETERA", "TOTAL_MU", "TIPO_VIA"].filter((k) => joined.includes(k)).length;
-          if (hits >= 3) col = resolveColumns(values.slice(1).map((v) => cell(v)));
-          continue;
-        }
-        if (!values || values.length < 3) continue;
-        const get = (i: number) => (i < 0 ? undefined : cell(values[i + 1]));
-        const prov = get(col.codProvincia);
-        const kmNum = get(col.km) != null ? Number(get(col.km)) : undefined;
-        const urban = zoneIsUrban(get(col.zonaAgrupada), get(col.zona));
-        rows.push({
-          rowNum: rows.length + 1,
-          province: prov && /^\d+$/.test(prov) ? prov.padStart(2, "0") : null,
-          road: get(col.carretera) ?? null,
-          km: kmNum != null && kmNum >= 0 && kmNum < 100000 ? kmKey(kmNum) : null,
-          isUrban: urban ?? null,
-        });
-      }
-      if (col) return rows;
-    }
-    throw new Error(`${year}: no data worksheet`);
-  } finally {
-    try { unlinkSync(path); } catch { /* ignore */ }
-  }
-}
+/** The data rows of a year's official file, with their zone. */
+const readFile = (year: number, urls: string[]) =>
+  readOfficialRows(year, urls, (r) => ({ isUrban: zoneIsUrban(r.col("zonaAgrupada"), r.col("zona")) ?? null }));
 
 async function main() {
   const args = process.argv.slice(2);
