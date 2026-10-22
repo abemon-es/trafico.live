@@ -20,7 +20,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { log, logError, inferRoadType } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
-import { resolveColumns, zoneIsUrban } from "./columns.js";
+import { deathsByUserType, resolveColumns, zoneIsUrban } from "./columns.js";
 
 const TASK = "accident-microdata";
 
@@ -258,7 +258,7 @@ function mapSurface(raw: string | undefined): string | undefined {
 }
 
 // ── Severity derivation ───────────────────────────────────────────────────
-function deriveSeverity(fatalities: number, hospitalized: number, minorInjury: number): string {
+export function deriveSeverity(fatalities: number, hospitalized: number, minorInjury: number): string {
   if (fatalities > 0) return "fatal";
   if (hospitalized > 0) return "hospitalized";
   if (minorInjury > 0) return "minor";
@@ -387,6 +387,7 @@ async function importYear(
   let rowNum = 0;
   let headers: (string | undefined)[] = [];
   let COL: Record<string, number> = {};
+  let HEADER_INDEX = new Map<string, number>();
   let headerParsed = false;
 
   const flushBatch = async () => {
@@ -419,6 +420,7 @@ async function importYear(
         if (!headerParsed) {
           headers = values.slice(1).map((v) => (v ? String(v).trim() : undefined));
           COL = resolveColumns(headers);
+          HEADER_INDEX = new Map(headers.map((h, i) => [h?.toUpperCase() ?? "", i] as [string, number]).filter(([h]) => h));
           // Deaths and injuries at 30 days or not at all: never 24 h figures,
           // and never a silent 0 for a missing column.
           if (COL.muertos < 0 || COL.gravesHosp < 0 || COL.leves < 0) {
@@ -525,6 +527,8 @@ async function importYear(
           involvesBus: (getNum(COL.bus) ?? 0) > 0,
           involvesBicycle: (getNum(COL.bici) ?? 0) > 0,
           involvesPedestrian: (getNum(COL.peaton) ?? 0) > 0,
+          // Deaths at 30 days by user type (TOT_*_MU30DF), NULL when the year's file lacks the column.
+          ...deathsByUserType((name) => getVal(HEADER_INDEX.get(name) ?? -1), (name) => HEADER_INDEX.has(name)),
         });
 
         if (batch.length >= BATCH_SIZE) {
