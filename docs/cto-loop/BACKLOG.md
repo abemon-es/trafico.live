@@ -90,6 +90,96 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (106) — isUrban row by row from the DGT files, and an importer that can't switch to 24 h deaths
+
+**#187 gated** (`25cf76ae`, deployed 04:17Z): the 3 pages carry the title
+and og:title of the page, the CMO's description and og:description,
+`noindex, follow`, and the canonical.
+
+**Signal:** degraded, with 2 new entries, both explained.
+- charger: the daily 06:00 run hit the infocar.dgt.es 502 (external, already
+  known); the EV data stays as of yesterday.
+- voyage-detector SILENT: the 04:00Z run was killed when #186's collector
+  deploy recreated collector-frequent at 04:17Z. It runs again at 05:00Z,
+  check at 05:12Z.
+
+**Microdata importer, design** (official DGT 2023 file, read on compute
+through the importer's own fetch; no prod write):
+- **Coordinates: none in the source** (CARRETERA + KM only). Geocoding is a
+  different project.
+- **Per-accident vehicle involvement: none.** The file has TOTAL_VEHICULOS
+  and deaths by user type (TOT_{PEAT,BICI,CICLO,MOTO,TUR,FURG,CAM_MENOS3500,
+  CAM_MAS3500,BUS,VMP,OTRO}_MU24H/_MU30DF). TABLA_VEHICULOS_23 and
+  TABLA_PERSONAS_23 are 404. The `involves*` flags can't be filled from the
+  DGT; the vehicle pages need a CMO product decision.
+- **Zone (importer bug):** ZONA comes before ZONA_AGRUPADA and only codes
+  1/2 are mapped. 2023: ZONA 1=35,330, 2=1,411, 3=64,521, 4=44; AGRUPADA
+  1=35,330, 2=65,976. The DB matches: false 35,330, true+NULL 65,976.
+- **Fatalities:** DB 2023 = 1806 = TOTAL_MU30DF (official). Today's code would
+  take TOTAL_MU24H (1539), so a re-import would switch measure silently.
+- **roadType:** TIPO_VIA has 14 codes (9 = 62,738, probably «Calle»); the
+  code table is in «Diccionario_Tabla_Accidentes».
+- **Plan (CTO):**
+  1. isUrban without a re-import, per year verified against the official
+     file;
+  2. importer: ZONA_AGRUPADA, *_30DF, TIPO_VIA from the dictionary, with a
+     test against the 2023 header;
+  3. vehicles after the CMO decides.
+- **Row key:** the `sourceId` suffix is the file's ID_ACCIDENTE (2023: 1…101,306,
+  distinct, matching road and km). Step 1 goes **row by row** (CTO): a temp
+  table + UPDATE … FROM, keyed on (year, rowNum), with province, road and km
+  matching. A year with any mismatch isn't touched. One transaction per year
+  with --expect, after the CTO's backup.
+- **CMO: option 2.** The 3 vehicle pages are rebuilt around «fallecidos a 30
+  días por tipo de usuario», in PRs:
+  - A: isUrban + importer;
+  - B: schema (11 Int columns);
+  - C: backfill by key;
+  - D: pages, with the CMO's copy rules.
+  They stay noindex and «Mientras tanto» until checked live.
+- **CTO, order A → B → C → D.**
+  - B: I write it, the CTO reviews. `ADD COLUMN … integer NULL` with no
+    DEFAULT (metadata only), a single migration starting with `SET LOCAL
+    lock_timeout = '5s'`, how it's applied in the PR body, and no NOT
+    NULL or index.
+  - Any index D needs goes in its own migration, CONCURRENTLY, outside a
+    transaction.
+  - A: the head with the 2019–2023 dry run (matched / mismatched / to
+    change per year); the CTO takes the backup.
+
+**This PR (A, CTO + CMO):**
+- **`tasks/accident-microdata/columns.ts` (pure):**
+  - `findColIndex` by candidate priority and exact name: the root of both
+    bugs;
+  - zone from ZONA_AGRUPADA (fallback ZONA 1 against 2–4); deaths and
+    injuries **30 days only**;
+  - the importer refuses a year without those columns, never a silent 0 or a
+    24 h figure.
+- **`scripts/fix-microdata-zone.ts`:** row by row against the official file,
+  keyed on (year, rowNum), with province, road and km agreeing. A year with
+  any mismatch isn't touched. The apply goes one year at a time: temp table +
+  UPDATE … FROM, rolled back unless exactly --expect rows change.
+- **Dry run, 2019–2023, 0 mismatched in every year.** The only change is
+  NULL→true: 2019 65,178 · 2020 45,267 · 2021 56,521 · 2022 63,065 · 2023
+  64,565, total **294,596**. No existing value is wrong.
+  - The first pass had 332–466 mismatches a year: km compared as 71.17
+    against 71.18. The importer stored 71.175 and the column's numeric(7,2)
+    rounded it half up, while `toFixed()` rounds the binary float down. The
+    script now rounds the same way the column does; no tolerance.
+- **Test `accident-microdata-columns`** against the 2023 header row:
+  ZONA_AGRUPADA, 30-day columns only (no 24H anywhere), vehicles -1, priority
+  over file order, and the importer's guard.
+- **Checks on compute:** 4 tests ok, collector tsc 626, lint 64,
+  check-src-lib ok.
+- **TIPO_VIA from the dictionary:** left for C. The code table is in the
+  separate «Diccionario_Tabla_Accidentes» file, and C rewrites by key
+  anyway.
+
+**Apply (CTO backup of id + isUrban first):** per year, `--year Y --apply
+--expect N` with the counts above.
+
+---
+
 ## Cycle 2026-10-22 (105) — the vehicle pages' title and description say what they show
 
 **#186 loaded** (CTO):
