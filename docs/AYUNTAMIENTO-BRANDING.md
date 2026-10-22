@@ -81,7 +81,7 @@ VALUES
   ('toledo', 'Toledo',
    'https://assets.trafico.live/municipios/toledo-logo.svg',
    '#d40000', '#a00000',
-   'movilidad@toledo.es',
+   'contacto@example.org',
    'BASE');
 ```
 
