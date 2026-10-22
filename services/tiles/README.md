@@ -25,12 +25,12 @@ Browser (MapLibre GL JS)
 
 ## Stack
 
-- **Server:** hetzner-prod (168.119.34.248)
+- **Server:** hetzner-prod (<compute-public-ip>)
 - **Container:** `trafico-tiles` (nginx:alpine + custom config)
 - **Network:** Coolify's `coolify` Docker network
 - **Routing:** Traefik v3.6 via file provider (`/data/coolify/proxy/dynamic/tiles.yaml`)
 - **SSL:** Let's Encrypt via Traefik ACME
-- **DNS:** `tiles.trafico.live` → A → 168.119.34.248 (Cloudflare, DNS-only)
+- **DNS:** `tiles.trafico.live` → A → <compute-public-ip> (Cloudflare, DNS-only)
 
 ## Data
 
