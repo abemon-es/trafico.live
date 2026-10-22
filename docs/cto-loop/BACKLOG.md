@@ -117,6 +117,60 @@ a fixed 10/30 min from its last run, so every daily and weekly task was
 Checks: status-page (new), heartbeat-success and public-docs ok · web tsc
 11 · lint 64.
 
+**Shipped:** #205, merged as 88c649fb. The CTO checked the 86 moved
+thresholds are identical, so /api/health is unchanged. Web deployed 15:25Z.
+
+**Live gate (green):**
+- /api/status/collectors: overall «degraded» (was «down»); 47 healthy, 3
+  degraded (the partials), 4 down: exactly aemet-forecast,
+  aemet-historical, charger, detector.
+- /status: `noindex, follow`; «sin éxito registrado» on those 4 panels.
+- /api/health unchanged (degraded, staleCount 4).
+
+---
+
+## Cycle 2026-10-22 (121) — the collectors' 18 high advisories: 2 reachable from outside data
+
+**CSO's question:** of the 18 high advisories in the collector's dependencies,
+which sit on a path that takes external input?
+- **Method:** the audit JSON, `npm ls` in the runtime image (all 18 ship;
+  `npm prune --omit=dev` doesn't remove them), and a search for the call
+  sites.
+
+**Reachable (to fix):**
+1. **ws 8.20.0** (direct), the AIS WebSocket client (`shared/ws-client.ts`,
+   frames from aisstream.io). A memory-exhaustion DoS from tiny fragments is
+   fixed in ≥8.21.0; an uninitialized-memory disclosure in ≥8.20.1. A
+   malicious upstream could OOM collector-ais.
+2. **protobufjs 7.5.5** (via gtfs-realtime-bindings), the GTFS-RT decoders
+   (`tasks/transit-realtime`, `tasks/transit-rt-shared/parser.ts`). The
+   unbounded-recursion DoS is on the decode path, fed by third-party feeds.
+   The code-generation advisories are schema-side, not reachable. Fix: an
+   npm override to ≥7.6.5.
+
+**Not reachable: risk accepted (CTO as CSO, 2026-10-22).** Re-check at the
+next audit or on **2026-11-21**, whichever comes first, and before any of
+these packages starts receiving external input:
+- fast-xml-builder: the builder; nothing here builds XML.
+- axios, typesense, form-data: only calls to our own Typesense, with the URL
+  from the environment.
+- fast-uri, hono, mysql2, deepmerge-ts, defu, @prisma/config, prisma: the
+  Prisma CLI, dev and config chain, off the query path.
+- protobufjs-cli, linkify-it, markdown-it: the bindings' code-generation
+  toolchain, never run.
+- tmp: names come from code, not from the XLSX.
+- brace-expansion: glob patterns come from code.
+
+**Next: 23-10, after the nightly compaction (CTO).** One PR with:
+- ws ^8.21.0 and an npm override for protobufjs ≥7.6.5;
+- a decode test on a recorded GTFS-RT frame, plus an oversized or deeply
+  nested frame that must be rejected without crashing;
+- the AIS client against a local ws server;
+- npm audit before and after.
+
+It deploys through the collectors' guard. Then ais and transit-realtime
+must be fresh within one cycle.
+
 ---
 
 ## Cycle 2026-10-22 (120) — search showed ended incidents as current
