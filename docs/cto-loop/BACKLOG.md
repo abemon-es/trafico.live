@@ -150,6 +150,23 @@ own text on hubs).
   allocator keeps what was freed until a compaction or a restart (CTO's
   call).
 
+**Shipped:** #202, merged as c83efb88. Collectors 12:57Z, web 13:03Z.
+
+**Live gate (green):**
+- The 10 newest incidents created after the deploy: 10/10 in search, all
+  isActive:true.
+- The collection, 4,293 documents = 4,293 isActive:true = 4,293 active in
+  the DB.
+- Pruned per run: 303 (the deploy gap), then 27, 98, 66, 53. About 1,500
+  incidents end every 2 h: the DGT and SCT feeds churn.
+- 0 «incidents prune failed»; the sync's heartbeat carries
+  `incidentsPruned`.
+- /api/search still returns incident hits through the filter.
+
+**Tonight, 03:00–05:00 Madrid (CTO):** `POST /operations/db/compact` with
+a 30 min timeout. Resident memory and the six queries' p95 before and after;
+a restart only if it frees nothing.
+
 Checks: typesense-incidents (new), run-lock, heartbeat-success and
 public-docs ok · collector tsc 626 · web tsc 11 · lint 64.
 
