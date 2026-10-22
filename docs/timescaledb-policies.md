@@ -66,7 +66,7 @@ There are no FK references *into* any of the 4 hypertables from other models.
 
 ## Inspecting Policies
 
-Connect as `trafico_admin` and run:
+Connect as `<admin-role>` and run:
 
 ```sql
 -- List all hypertables in the schema

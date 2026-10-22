@@ -129,7 +129,7 @@ The iter-4 entity work (8 new pages + 95K rebuilt) created a new URL grammar (`/
 ### Operational notes
 
 - **OpenSky** cron `*/4 → */10` (commit earlier in this iter) — daily quota was being busted at 720/400. Effective at next UTC midnight; until then 429s continue from the carried-over count.
-- **Trafico-typesense** watchdog cron continues running every 10 min on database-primary; container has been healthy since the iter-1 rescue.
+- **Trafico-typesense** watchdog cron continues running every 10 min on <db-host>; container has been healthy since the iter-1 rescue.
 - **VesselPosition** working-set ~4M rows (post-purge); cleanup-realtime (iter 2) keeps it bounded going forward. VACUUM FULL deferred — table still 64GB on disk, statistics current, dead-tuple slots reusable.
 
 ### One-line state summary
@@ -283,7 +283,7 @@ No implicit allow on misconfig.
 
 ### Investigated, not yet shipped
 
-- **Why `trafico-typesense` vanished from database-primary** — `journalctl --since '14 days ago'` had no entries for the container. Either docker logs were rotated or the container was removed >14d ago via a sysadmin script. The container is now back with `restart=unless-stopped` + `mem_limit=2GB` + healthcheck (verified via `docker inspect`), so an OOM-kill or natural crash will auto-recover. Still worth adding a `docker compose up -d` watchdog cron and a deploy-system rule that flags missing critical containers. Deferred to iter 4 — needs the `abemon-es/serve` repo touch.
+- **Why `trafico-typesense` vanished from <db-host>** — `journalctl --since '14 days ago'` had no entries for the container. Either docker logs were rotated or the container was removed >14d ago via a sysadmin script. The container is now back with `restart=unless-stopped` + `mem_limit=2GB` + healthcheck (verified via `docker inspect`), so an OOM-kill or natural crash will auto-recover. Still worth adding a `docker compose up -d` watchdog cron and a deploy-system rule that flags missing critical containers. Deferred to iter 4 — needs the `abemon-es/serve` repo touch.
 
 ### Deferred
 
@@ -308,9 +308,9 @@ No implicit allow on misconfig.
 |---|---|---|---|
 | `https://trafico.live/` and every route | **500** | **200** | Cron job `trafico-live-isr-cleanup` v1 ran `find /app/.next/server/app -delete` on a too-broad glob, removing `*.js` build artifacts (page.js, route.js) inside the running container at 11:11Z → 4-min outage. Container kept restarting against broken filesystem. **Fix already patched by sysadmin at 11:17Z (cron v2 only touches .html/.body/.meta/.rsc).** Container needed an image rebuild to recover — ran `cd /opt/trafico && ./deploy.sh`, healthy in 6.5 min (build 395s + start 30s). |
 | `https://tiles.trafico.live/spain.pmtiles` | **502** | **200** | `tiles-tiles-1` + `tiles-martin-1` containers had been stopped (only `tiles-nginx-exporter` was running). Restarted via `cd /opt/trafico/services/tiles && docker compose up -d`. |
-| `https://tiles.trafico.live/dynamic/*` | **502** | **200** | `services/tiles/nginx.conf:3-5` had `upstream martin { server 10.100.0.3:3088; }` — wrong host (database-primary) and wrong port (nothing bound to 3088 anywhere). Patched to `server martin:3000;` via docker DNS. Verified `/dynamic/catalog` returns full Martin TileJSON. |
+| `https://tiles.trafico.live/dynamic/*` | **502** | **200** | `services/tiles/nginx.conf:3-5` had `upstream martin { server 10.100.0.3:3088; }` — wrong host (<db-host>) and wrong port (nothing bound to 3088 anywhere). Patched to `server martin:3000;` via docker DNS. Verified `/dynamic/catalog` returns full Martin TileJSON. |
 | `ais-stream` collector data freshness | 15.4 d stale | live | Container was Up 11 days but WebSocket had silently disconnected; stats counter frozen for 15.4 d. `docker restart collector-ais` reconnected to `wss://stream.aisstream.io/v0/stream` and "first message confirmed healthy." Need follow-up: WebSocket auto-reconnect logic to prevent silent stall. |
-| Typesense at `10.100.0.3:6442` | **ECONNREFUSED** | **200** | The `trafico-typesense` container did not exist on database-primary (only the volume was orphaned). The compose at `/opt/trafico-compose.yml` had the spec; `docker compose up -d trafico-typesense` brought it up; ran `TASK=typesense-sync` from `collector-daily` and rebuilt 22 collections in 88s (gas_stations 12,362; ev_chargers 12,115; cameras 1,920; radars 737; voyages 10,000; port_calls 10,000; cities 3,459; etc). **Open question:** what removed the container? Worth investigating before iter 3. |
+| Typesense at `10.100.0.3:6442` | **ECONNREFUSED** | **200** | The `trafico-typesense` container did not exist on <db-host> (only the volume was orphaned). The compose at `/opt/trafico-compose.yml` had the spec; `docker compose up -d trafico-typesense` brought it up; ran `TASK=typesense-sync` from `collector-daily` and rebuilt 22 collections in 88s (gas_stations 12,362; ev_chargers 12,115; cameras 1,920; radars 737; voyages 10,000; port_calls 10,000; cities 3,459; etc). **Open question:** what removed the container? Worth investigating before iter 3. |
 | Cmd+K search | empty results sitewide | working | Verified `/api/search?q=madrid` returns 200 with real results when Referer/Origin sent. Same-origin auth correctly silent-rejects external queries (separate UX gap flagged in iter 1). |
 
 ### P1 code shipped on `audit/iter-2-stability`
@@ -335,7 +335,7 @@ No implicit allow on misconfig.
 ### Deferred (iter 3+)
 
 - **AIS WebSocket auto-recovery** — restart unblocked it once but a silent reconnect logic is needed so a 15-day blackout never repeats. `services/collector/tasks/ais-stream/collector.ts` + shared `ws-client.ts`.
-- **Why did `trafico-typesense` container disappear?** Audit `/var/log/docker.log` + sysadmin actions on database-primary. May need to add a `docker compose up -d` heartbeat to the deploy system.
+- **Why did `trafico-typesense` container disappear?** Audit `/var/log/docker.log` + sysadmin actions on <db-host>. May need to add a `docker compose up -d` heartbeat to the deploy system.
 - **`andorra` camera cadence gating** — fetched every 5min despite being a static catalog. Code change inside the andorra collector to gate cameras to daily.
 - **`accident-microdata` annual schedule** — 2024 DGT XLSX release will not auto-import.
 - **`ourairports-runways` weekly schedule** — `public/data/runways.json` decays.

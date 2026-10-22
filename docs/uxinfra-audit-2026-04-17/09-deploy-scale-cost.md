@@ -137,7 +137,7 @@ ssh compute '/opt/deployer/scripts/rollback.sh trafico-live'
 | Layer | Limit | Notes |
 |-------|-------|-------|
 | PgBouncer (transaction mode) | 25 pool connections | CLAUDE.md confirms "25-conn pool" |
-| PostgreSQL `trafico-postgres` | ~100 max_connections (4GB shared) | Estimated from 4GB allocation |
+| PostgreSQL `<db-container>` | ~100 max_connections (4GB shared) | Estimated from 4GB allocation |
 | Effective req/s ceiling | ~200–400 req/s | At 5ms avg query latency with 25 connections |
 
 PgBouncer transaction pooling is the primary bottleneck. 25 pool connections @ 5ms avg = 5,000 queries/s theoretical; but Next.js RSC pages often fire 3–8 queries, so real req/s ceiling is ~600–1,600 page requests/s before queuing begins.
@@ -199,7 +199,7 @@ During a deploy, `next build` runs directly on `compute` with 4GB RAM cap. At 11
 
 | Data | Method | Frequency | Offsite |
 |------|--------|-----------|---------|
-| `trafico-postgres` (PostGIS) | pg_dump via PgBackWeb | Hourly (inferred from platform policy) | Daily to Cloudflare R2 (30d) |
+| `<db-container>` (PostGIS) | pg_dump via PgBackWeb | Hourly (inferred from platform policy) | Daily to Cloudflare R2 (30d) |
 | Redis :6441 (trafico cache) | RDB hourly | Hourly | Daily R2 |
 | Typesense collections (26) | Daily snapshot | Daily | Daily R2 |
 | `.env` / `.env.collectors` | age-encrypted in Git + R2 secrets backup | On change | Git + R2 |

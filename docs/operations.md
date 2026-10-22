@@ -5,7 +5,7 @@
 | Server | SSH | Role |
 |--------|-----|------|
 | hetzner-prod | `ssh compute` | Coolify host, app + collectors |
-| hetzner-dev | `ssh database-primary` | PostgreSQL, PgBouncer, Redis |
+| hetzner-dev | `ssh <db-host>` | PostgreSQL, PgBouncer, Redis |
 
 ## Deployment
 
@@ -76,11 +76,11 @@ and `run-collector.sh` were retired on 2026-10-20.
 
 ## Secrets Management
 
-### trafico_admin PostgreSQL password
+### <admin-role> PostgreSQL password
 
-The `trafico_admin` superuser password is stored on compute in `/etc/default/trafico-admin` (mode 0600, root:root only).
+The `<admin-role>` superuser password is stored on compute in `/etc/default/trafico-admin` (mode 0600, root:root only).
 
-Any script that needs `trafico_admin` credentials must source this file before connecting:
+Any script that needs `<admin-role>` credentials must source this file before connecting:
 
 ```bash
 # Shell scripts / cron jobs
@@ -94,7 +94,7 @@ import os
 DB_PASS = os.environ['TRAFICO_ADMIN_PASSWORD']
 ```
 
-Scripts that use `trafico_admin`:
+Scripts that use `<admin-role>`:
 - `enricher/enrich-fast.py` — vessel owner enrichment (run manually)
 - `scripts/enrich-vessel-owners.py` — vessel owner enrichment (remote DB)
 - `scripts/enrich-vessel-owners-local.py` — vessel owner enrichment (local tunnel)
@@ -105,7 +105,7 @@ ssh compute
 . /etc/default/trafico-admin && python3 /opt/trafico/enricher/enrich-fast.py
 ```
 
-To rotate the password: `ALTER ROLE trafico_admin PASSWORD '...'` in psql, then update `/etc/default/trafico-admin`.
+To rotate the password: `ALTER ROLE <admin-role> PASSWORD '...'` in psql, then update `/etc/default/trafico-admin`.
 
 ## Database Operations
 
@@ -113,17 +113,17 @@ To rotate the password: `ALTER ROLE trafico_admin PASSWORD '...'` in psql, then 
 
 ```bash
 # Via PgBouncer (standard)
-ssh compute "docker exec coolify-db psql -h 10.100.0.3 -p 6436 -U apps le_trafico"
+ssh compute "docker exec coolify-db psql -h 10.100.0.3 -p 6436 -U apps <db>"
 
 # Direct PG (for migrations, schema changes)
-ssh compute "docker exec coolify-db psql -h 10.100.0.3 -p 5435 -U apps le_trafico"
+ssh compute "docker exec coolify-db psql -h 10.100.0.3 -p 5435 -U apps <db>"
 ```
 
 ### Run Prisma Migrations
 
 ```bash
 # Locally (with DATABASE_URL pointing to direct PG, not PgBouncer)
-DATABASE_URL="postgresql://apps:PASSWORD@hetzner-dev:5435/le_trafico" npx prisma migrate deploy
+DATABASE_URL="postgresql://apps:PASSWORD@hetzner-dev:5435/<db>" npx prisma migrate deploy
 ```
 
 ### Prisma Studio
@@ -136,7 +136,7 @@ npm run db:studio
 ### Check Data Freshness
 
 ```bash
-ssh compute "docker exec coolify-db psql -h 10.100.0.3 -p 6436 -U apps le_trafico -c \"
+ssh compute "docker exec coolify-db psql -h 10.100.0.3 -p 6436 -U apps <db> -c \"
   SELECT 'incidents' as table_name, COUNT(*) as total, MAX(\\\"startedAt\\\") as latest FROM \\\"TrafficIncident\\\" WHERE \\\"isActive\\\" = true
   UNION ALL
   SELECT 'v16', COUNT(*), MAX(\\\"activatedAt\\\") FROM \\\"V16BeaconEvent\\\" WHERE \\\"isActive\\\" = true
@@ -208,5 +208,5 @@ ssh compute "docker logs atgqhoy0dfhohmdheh2rd1r5-manual-1774956936 --tail 100"
 ### Database Unreachable
 
 1. Check WireGuard: `ssh compute "ping -c1 10.100.0.3"`
-2. Check PgBouncer: `ssh database-primary "docker ps | grep pgbouncer"`
-3. Check PostgreSQL: `ssh database-primary "docker ps | grep postgres"`
+2. Check PgBouncer: `ssh <db-host> "docker ps | grep pgbouncer"`
+3. Check PostgreSQL: `ssh <db-host> "docker ps | grep postgres"`
