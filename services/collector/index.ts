@@ -13,6 +13,12 @@ import * as Sentry from "@sentry/node";
 import { getPrisma, getPool } from "./shared/prisma.js";
 import { heartbeat, markRunStarted } from "./shared/heartbeat.js";
 import { errorCause } from "./shared/error-cause.js";
+import { acquireRunLock, type RunLock } from "./shared/run-lock.js";
+
+// Tasks that live as one long process (the AIS stream), not as runs: a
+// recreate would leave the old process's key for up to 3 min and the new one
+// would skip. They take no run lock.
+const SINGLE_FLIGHT_EXEMPT = new Set(["ais-stream"]);
 
 const TASK = process.env.TASK;
 
@@ -203,8 +209,25 @@ async function main() {
   console.log(`[dispatcher] Starting task: ${TASK} at ${new Date().toISOString()}`);
   // The heartbeat as the previous run left it; the catch below reads it too.
   let before: { lastRunAt: Date; status: string; meta: unknown } | null = null;
+  let runLock: RunLock | null = null;
 
   try {
+    // One run of a task at a time, across containers (shared/run-lock.ts):
+    // health-check recovery, the schedule and a manual docker exec all take it.
+    if (!SINGLE_FLIGHT_EXEMPT.has(TASK!)) {
+      const lock = await acquireRunLock(TASK!, {
+        onLost: () => console.warn(`[dispatcher] Task ${TASK}: run lock lost (renewal failed); another run may start`),
+      });
+      if (lock.acquired === false) {
+        console.warn(
+          `[dispatcher] Task ${TASK}: run in flight elsewhere (lock ${lock.holder.token ?? "?"}, held ${lock.holder.ageSeconds ?? "?"} s) — skipped`
+        );
+        return;
+      }
+      if (lock.acquired === null) console.warn(`[dispatcher] Task ${TASK}: run lock unavailable (${lock.reason}); running without it`);
+      else runLock = lock.lock;
+    }
+
     const prisma = getPrisma();
 
     // Capture pre-run heartbeat timestamp so we can detect collectors that
@@ -334,9 +357,11 @@ async function main() {
         ...(Array.isArray(fingerprint) ? { fingerprint: fingerprint.map(String) } : {}),
       });
     }
+    await runLock?.release();
     await Sentry.flush(2000);
     process.exit(1);
   } finally {
+    await runLock?.release();
     const pool = getPool();
     if (pool) {
       await pool.end().catch(() => {});

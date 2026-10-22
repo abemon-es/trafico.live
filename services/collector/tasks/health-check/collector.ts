@@ -15,6 +15,9 @@
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
+import { errorCause } from "../../shared/error-cause.js";
+import { acquireRunLock } from "../../shared/run-lock.js";
+import { readBackoff, recoveryDue, recoveryWaitMinutes, type BackoffEntry } from "./backoff.js";
 
 const TASK = "health-check";
 
@@ -139,19 +142,48 @@ export async function run(prisma: PrismaClient): Promise<void> {
     }
   }
 
-  // Auto-recovery: run stale tasks inline
-  const recoverable = stale.filter(s => s.task !== null);
+  // Auto-recovery: run stale tasks inline. Each run takes the task's run lock
+  // (shared/run-lock.ts), so it never overlaps the task's own schedule. An
+  // upstream failure backs off (./backoff.ts), and every failure is recorded
+  // on the task's row the way the dispatcher records it: until 2026-10-22 a
+  // failed recovery left only the task's own heartbeat, without its cause.
+  const previous = await prisma.collectorHeartbeat
+    .findUnique({ where: { task: TASK }, select: { meta: true } })
+    .catch(() => null);
+  const backoff: Record<string, BackoffEntry> = readBackoff(previous?.meta);
+  const recoverable = stale.filter((s): s is typeof s & { task: string } => s.task !== null);
+  // A table that is fresh again needs no backoff.
+  for (const task of Object.keys(backoff)) if (!recoverable.some((s) => s.task === task)) delete backoff[task];
   if (recoverable.length > 0) {
     log(TASK, `Triggering ${recoverable.length} recovery task(s)...`);
 
     for (const s of recoverable) {
+      const entry = backoff[s.task];
+      if (entry && !recoveryDue(entry, Date.now())) {
+        log(TASK, `Recovery: ${s.task} skipped, upstream failing (${entry.failures} in a row, next try ${recoveryWaitMinutes(entry.failures)} min after ${entry.lastAt})`);
+        continue;
+      }
+      const lock = await acquireRunLock(s.task);
+      if (lock.acquired === false) {
+        log(TASK, `Recovery: ${s.task} skipped, run in flight (lock ${lock.holder.token ?? "?"}, held ${lock.holder.ageSeconds ?? "?"} s)`);
+        continue;
+      }
+      if (lock.acquired === null) log(TASK, `Recovery: run lock unavailable (${lock.reason}); running ${s.task} without it`);
       try {
         log(TASK, `Recovery: running ${s.task} for stale ${s.table}...`);
         const taskModule = await import(`../${s.task}/collector.js`);
         await taskModule.run(prisma);
+        delete backoff[s.task];
         log(TASK, `Recovery: ${s.task} completed successfully`);
       } catch (err) {
-        logError(TASK, `Recovery failed for ${s.task}:`, (err as Error).message);
+        const message = err instanceof Error ? err.message : String(err);
+        const cause = errorCause(err);
+        logError(TASK, `Recovery failed for ${s.task}:`, message);
+        await heartbeat(prisma, s.task, "error", { crashed: true, message, recoveredBy: TASK, ...(cause ? { cause } : {}) });
+        if (cause === "upstream") backoff[s.task] = { failures: (entry?.failures ?? 0) + 1, lastAt: new Date().toISOString() };
+        else delete backoff[s.task];
+      } finally {
+        if (lock.acquired === true) await lock.lock.release();
       }
     }
   }
@@ -165,5 +197,6 @@ export async function run(prisma: PrismaClient): Promise<void> {
     empty: empty.length,
     errors: errors.length,
     ...(errors.length > 0 && { errorDetails: errors.slice(0, 5) }),
+    ...(Object.keys(backoff).length > 0 && { recoveryBackoff: backoff }),
   });
 }
