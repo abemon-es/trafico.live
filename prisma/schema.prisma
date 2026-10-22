@@ -2703,12 +2703,16 @@ model AirQualityReading {
 // ============================================
 
 model CollectorHeartbeat {
-  task         String   @id
-  lastRunAt    DateTime @default(now()) @db.Timestamptz
-  status       String   // 'ok' | 'error' | 'partial'
-  meta         Json?
-  errorMessage String?
-  updatedAt    DateTime @updatedAt @db.Timestamptz
+  task          String    @id
+  lastRunAt     DateTime  @default(now()) @db.Timestamptz
+  // The last run that wrote its data (status ok or partial). /api/health
+  // computes age and stale on it: a task that runs and fails keeps
+  // lastRunAt fresh, and its data still gets old (2026-10-22).
+  lastSuccessAt DateTime? @db.Timestamptz
+  status        String // 'ok' | 'error' | 'partial'
+  meta          Json?
+  errorMessage  String?
+  updatedAt     DateTime  @updatedAt @db.Timestamptz
 
   @@map("collector_heartbeats")
 }

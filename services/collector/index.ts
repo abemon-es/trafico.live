@@ -10,6 +10,7 @@
 import * as Sentry from "@sentry/node";
 import { getPrisma, getPool } from "./shared/prisma.js";
 import { heartbeat, markRunStarted } from "./shared/heartbeat.js";
+import { errorCause } from "./shared/error-cause.js";
 
 // Initialize Sentry for collector error tracking
 // GlitchTip uses UUID keys with hyphens; Sentry SDK requires \w+ — strip hyphens
@@ -212,6 +213,8 @@ async function runTypesenseSync(
 async function main() {
   const startTime = Date.now();
   console.log(`[dispatcher] Starting task: ${TASK} at ${new Date().toISOString()}`);
+  // The heartbeat as the previous run left it; the catch below reads it too.
+  let before: { lastRunAt: Date; status: string; meta: unknown } | null = null;
 
   try {
     const prisma = getPrisma();
@@ -220,10 +223,10 @@ async function main() {
     // returned successfully without writing their own heartbeat (e.g. empty
     // upstream feed → early return). Without this, a healthy job that
     // produces no rows looks identical to a stuck job from the alert side.
-    const beforeHeartbeat = await prisma.collectorHeartbeat
-      .findUnique({ where: { task: TASK! }, select: { lastRunAt: true } })
-      .then((r) => r?.lastRunAt ?? null)
+    before = await prisma.collectorHeartbeat
+      .findUnique({ where: { task: TASK! }, select: { lastRunAt: true, status: true, meta: true } })
       .catch(() => null);
+    const beforeHeartbeat = before?.lastRunAt ?? null;
 
     // Run the primary collector
     const taskModule = await import(`./tasks/${TASK}/collector.js`);
@@ -312,22 +315,30 @@ async function main() {
     // failure. (Found 2026-08-21: aemet-historical had been crashing on an
     // AEMET socket error while its heartbeat still said "ok".) Applies to all
     // 53 tasks, not just the one that exposed it.
+    const message = error instanceof Error ? error.message : String(error);
+    const cause = errorCause(error);
     try {
-      await heartbeat(getPrisma(), TASK!, "error", {
-        crashed: true,
-        message: error instanceof Error ? error.message : String(error),
-      });
+      await heartbeat(getPrisma(), TASK!, "error", { crashed: true, message, ...(cause ? { cause } : {}) });
     } catch (hbError) {
       console.error(`[dispatcher] Could not write failure heartbeat:`, hbError);
     }
 
-    // An error may carry its own GlitchTip grouping (e.g. AemetKeyExpiredError:
-    // one issue per task however many runs hit it).
-    const fingerprint = (error as { fingerprint?: unknown } | null)?.fingerprint;
-    Sentry.captureException(error, {
-      tags: { task: TASK!, layer: "collector" },
-      ...(Array.isArray(fingerprint) ? { fingerprint: fingerprint.map(String) } : {}),
-    });
+    // An upstream outage goes to GlitchTip once, on the run that finds it;
+    // while it lasts each run logs a warning and the heartbeat stays "error"
+    // with cause "upstream", so /api/health shows the task stale once its
+    // last success is past the threshold.
+    const beforeCause = (before?.meta as { cause?: unknown } | null | undefined)?.cause;
+    if (cause === "upstream" && before?.status === "error" && beforeCause === "upstream") {
+      console.warn(`[dispatcher] Task ${TASK}: upstream still failing (${message}); reported when it started`);
+    } else {
+      // An error may carry its own GlitchTip grouping (e.g. AemetKeyExpiredError:
+      // one issue per task however many runs hit it).
+      const fingerprint = (error as { fingerprint?: unknown } | null)?.fingerprint;
+      Sentry.captureException(error, {
+        tags: { task: TASK!, layer: "collector", ...(cause ? { cause } : {}) },
+        ...(Array.isArray(fingerprint) ? { fingerprint: fingerprint.map(String) } : {}),
+      });
+    }
     await Sentry.flush(2000);
     process.exit(1);
   } finally {

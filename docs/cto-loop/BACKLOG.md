@@ -90,6 +90,43 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (115) — /api/health measures age from the last success (`lastSuccessAt`)
+
+**Why:** a failed run refreshed lastRunAt, so a task failing every run never
+went stale. On 2026-10-22 detector had failed for 16 h (the DGT infocar host
+answering 502) while /api/health said «healthy». CTO decision.
+
+**What changes:**
+- `CollectorHeartbeat.lastSuccessAt` (migration
+  `20261022090000_heartbeat_last_success`, applied by hand before the merge).
+  It is set by every ok or partial heartbeat; a partial run wrote its data
+  (incident is partial whenever SCT or DT-GV is down). The backfill copies
+  lastRunAt for rows whose last run succeeded; failed ones stay NULL.
+- /api/health: age and stale count from the last success. That is lastRunAt
+  when the last run didn't fail, and lastSuccessAt when it did (NULL = no
+  success on record = stale). This also holds while the collector image
+  still predates the column: the web deploys minutes after a merge, the
+  collectors when their guard allows. Each row gains `lastSuccessAt`, plus
+  `cause` when an error is someone else's.
+- `cause: "upstream"` (`shared/error-cause.ts`): a third-party 5xx, timeout
+  or dropped connection. A 4xx, an expired key or a bug of ours has none.
+- The dispatcher reports an upstream outage to GlitchTip once, on the run
+  that finds it. While it lasts, each run logs a warning.
+- `errorMessage` now carries the crash message too: before, only
+  `meta.error` was read, so every crash left it empty. URL queries are
+  redacted (they can carry a key); 300 chars at most.
+- `tiles/deploy.sh`: its DNS instruction gives the real IP again; an operator
+  needs it there (CTO).
+
+Checks: heartbeat-success (new), heartbeat-progress, health-public-meta and
+public-docs ok · collector tsc 626 against a client regenerated with the
+column · web tsc 11 · lint 64.
+
+**Follow-up:** the public /status page (`src/lib/heartbeat.ts`) still ages
+tasks from lastRunAt.
+
+---
+
 ## Cycle 2026-10-22 (114) — collectors: the webhook deploys them; `bin/deploy-collectors.sh` retired
 
 - The server's webhook already deploys the collectors on every merge to

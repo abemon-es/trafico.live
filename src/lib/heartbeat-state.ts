@@ -39,6 +39,17 @@ export function runState(meta: unknown, lastRunAt: Date | null, now: number): Ru
   return { running: progressAgeSeconds <= PROGRESS_FRESH_SECONDS, progressAgeSeconds };
 }
 
+/**
+ * When the task last wrote its data. A row whose last run didn't fail was
+ * written by that run, so it is lastRunAt; a failed one keeps lastSuccessAt
+ * (null: no success on record). Reading lastRunAt there also covers a
+ * collector image that predates the column (2026-10-22: the web deploys
+ * minutes, the collectors up to 75 min, after a merge).
+ */
+export function lastSuccess(status: string, lastRunAt: Date | null, lastSuccessAt: Date | null): Date | null {
+  return status === "error" ? lastSuccessAt : lastRunAt ?? lastSuccessAt;
+}
+
 /** The stale flag /api/health reports: overdue (or never finished) and not running. */
 export function isStale(ageSeconds: number | null, threshold: number, run: RunState): boolean {
   return (ageSeconds === null || ageSeconds > threshold) && !run.running;
