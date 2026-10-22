@@ -90,6 +90,47 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (112) — C applied; the pages say the deaths are at 30 days, and since when
+
+**C (#193) applied**, after the CTO's backup of the 466,123 rows:
+- **The first deploy through `bin/deploy-collectors.sh`:**
+  - DRY_RUN: it waited 60 s for opensky on collector-realtime;
+  - real run: 6 services one by one, 1–2 s down each, no run lost, nothing
+    skipped.
+- **The dry run inside the new image** was identical. Apply:
+  2019 104080 · 2020 72959 · 2021 89862 · 2022 97916 · 2023 101306,
+  committed 06:02–06:08Z.
+- **Check:**
+  - fatalities and hospitalized = HistoricalAccidents in all 5 years
+    (1755/1370/1533/1746/1806 and 8613/6681/7784/8502/9265);
+  - on every row the 12 types add up to fatalities;
+  - a second dry run gives 0.
+  - CTO change-log server#639.
+
+**This PR (CMO):**
+- the dated note in the /analisis and /analisis/accidentes FAQs: «Desde el
+  22-10-2026, las cifras de fallecidos son a 30 días, el estándar de la DGT;
+  antes se mostraban a 24 horas…»;
+- «Fallecidos en 30 días o en el acto» → «Fallecidos a 30 días» on
+  /estadisticas/accidentes and its provinces;
+- guard in `accident-microdata-claims`: no copy says «24 h(oras)» or «en el
+  acto» next to «fallecidos», except the note.
+
+**Found by building copies from `git ls-files` only:**
+- `accident-year-claims` scanned `src/mcp`, which is ignored and missing
+  from any real checkout. The test would have crashed there; it now skips
+  missing directories.
+- #191 left one web tsc error on main: an unused `@ts-expect-error` on the
+  `.mjs` import. That PR ran neither web tsc nor a tracked-only copy.
+  Fixed; web tsc is back to 11.
+
+Checks: 4 tests ok, web tsc 11, lint 64.
+
+**Next:** D, the 3 vehicle pages built on «fallecidos a 30 días por tipo de
+usuario».
+
+---
+
 ## Cycle 2026-10-22 (111) — AccidentMicrodata on the DGT's 30-day figures, with deaths by user type
 
 **#192 merged** (`0383be89`).
