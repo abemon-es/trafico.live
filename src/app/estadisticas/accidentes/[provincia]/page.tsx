@@ -1,12 +1,12 @@
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { AlertTriangle, Users, Activity, TrendingDown, TrendingUp, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import * as fs from "fs";
 import * as path from "path";
 import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { PROVINCES } from "@/lib/geo/ine-codes";
-import { provinceSlug } from "@/lib/geo/slugify";
+import { provinceSlug, provinceSlugByCode } from "@/lib/geo/slugify";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { provinceAccidentYears, spanText } from "@/lib/accident-years";
 import { AccidentChart } from "./AccidentChart";
@@ -317,7 +317,17 @@ export default async function ProvinciaAccidentesPage({ params }: PageProps) {
   const { provincia } = await params;
   const province = getProvinceBySlug(provincia);
 
-  if (!province) notFound();
+  if (!province) {
+    // The Province table's slugs («alicante», «baleares», «valencia»…) 308 to
+    // the one this route resolves. The 52 annual articles linked them, and 5
+    // ended in a 404 (2026-10-22).
+    const alias = isBuildWithoutDb()
+      ? null
+      : await prisma.province.findFirst({ where: { slug: provincia }, select: { code: true } }).catch(() => null);
+    const canonical = alias ? provinceSlugByCode(alias.code) : null;
+    if (canonical && canonical !== provincia) permanentRedirect(`/estadisticas/accidentes/${canonical}`);
+    notFound();
+  }
 
   const data = await fetchProvinceAccidents(province.code);
 
