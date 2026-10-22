@@ -90,6 +90,54 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (104) — the province accident table goes from 2021–2023 to 2014–2024
+
+**#185 applied** (CMO OK, CTO backup of the 52 rows):
+- dry run on the deployed collector: 52 / 0 refused; `--apply --expect 52`
+  committed at **03:54:15Z**;
+- read-only afterwards: 52 with «en sus vías» and the direct link to the
+  province page, none with `/analisis/accidentes/`, `/provincias/` or
+  «definitivos»; updatedAt unchanged; a second dry run finds 0 to correct;
+- live: Alicante, Álava and Madrid answer 200, and their links too
+  (`alicantealacant`, `alavaaraba`, which used to be 404s).
+
+**#184 gated:** the 3 vehicle pages show only the pending view, noindex.
+/baliza-v-16 has the new title and the 30 minutes, with no 16–48 h and no
+Waylet. The leftover is camiones's static `<title>` and description; the CMO
+asked for a small PR, queued.
+
+**This PR (L1):**
+- **`tasks/historical-accidents/plan.ts` (pure):**
+  - the years with a `dataNote` stay out (2011–2013, 24 h deaths);
+  - it creates only the missing (year, province) rows: the existing ones are
+    matched by key, since NULL roadType never collides in the unique key;
+  - an existing row that differs is reported, never overwritten.
+- **`collector.ts`:** reads the JSON from the image (`/app/data`) or the
+  repo, and writes everything with one `createMany` (all or none). Heartbeat
+  `partial` if anything differs.
+- **Dockerfile.cron:** `COPY data/historical-accidents.json`.
+- **crontabs/weekly:** `15 6 1 * *`. Threshold `historical-accidents`
+  2764800 s (32 d).
+- **`scripts/historical-accidents-dry-run.ts`:** read-only. Today it gives
+  **416 to create** (2014–2020 and 2024, 52 each), **156 unchanged**,
+  **0 mismatched**, and skips 2011–2013.
+- **Test `historical-accidents-load`:** fails if any of this goes wrong.
+- **Checks on compute:** 5 tests ok, collector tsc 626, web tsc 11, lint
+  64, check-src-lib ok.
+
+**Load (CTO, after merge + deploy):**
+1. a backup of HistoricalAccidents (156 rows);
+2. the dry run in collector-weekly;
+3. `TASK=historical-accidents npx tsx index.ts`;
+4. a read-only count: 572 rows, 2014–2024, 52 per year.
+
+After that, the pages read «2014-2024» on their own, and the trend FAQ reads
+«1785 en 2024, frente a 1688 en 2014».
+
+**Queued:** the vehicle pages' metadata (CMO); the microdata importer (L1).
+
+---
+
 ## Cycle 2026-10-22 (103) — the 52 annual articles: their province link reaches a page, and there will be no more of them
 
 **#183 gated** (`1e6c1c0e`, deployed 03:33:29Z):

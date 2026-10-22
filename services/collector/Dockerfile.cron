@@ -66,6 +66,8 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./
 
 COPY services/collector/ ./
+# The DGT's yearly figures per province, loaded by TASK=historical-accidents.
+COPY data/historical-accidents.json ./data/historical-accidents.json
 
 # Shared libs imported by collector tasks via ../../../../src/lib/*.js.
 # In the monorepo, that path resolves from services/collector/tasks/<task>/

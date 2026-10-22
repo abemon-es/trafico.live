@@ -46,3 +46,8 @@
 # services/collector/package.json, register "monthly-report" in index.ts,
 # move the upload to MinIO with a public URL, then uncomment.
 #0 3 1 * * TASK=monthly-report NODE_OPTIONS=--max-old-space-size=1024 npx tsx index.ts 2>&1
+
+# DGT yearly accident figures per province (data/historical-accidents.json):
+# inserts the years still missing, overwrites nothing. Monthly, so a new DGT
+# year in the JSON lands without a manual run.
+15 6 1 * * TASK=historical-accidents npx tsx index.ts 2>&1
