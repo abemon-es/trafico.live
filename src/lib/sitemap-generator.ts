@@ -1266,8 +1266,21 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "monthly",
       priority: 0.75,
     },
-    // /inteligencia/motociclistas, /camiones and /ciclistas-y-peatones are noindex
-    // until the accident import fills the vehicle flags (2026-10-22).
+    {
+      url: `${BASE_URL}/inteligencia/motociclistas`,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
+    {
+      url: `${BASE_URL}/inteligencia/camiones`,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
+    {
+      url: `${BASE_URL}/inteligencia/ciclistas-y-peatones`,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
     // Prediction pages
     {
       url: `${BASE_URL}/prediccion/precio-combustible`,

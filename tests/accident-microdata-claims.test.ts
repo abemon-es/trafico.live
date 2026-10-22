@@ -3,24 +3,26 @@
  * 466,123 rows:
  *   - latitude/longitude are empty;
  *   - the six involves* flags (car, motorcycle, truck, bus, bicycle,
- *     pedestrian) are false in every row;
- *   - isUrban is 63 % NULL;
+ *     pedestrian) are false in every row: the DGT doesn't publish the
+ *     vehicles involved in each accident;
+ *   - since the backfill of 2026-10-22, the 12 *Deaths30d columns hold the
+ *     DGT's deaths at 30 days by user type, 2019–2023;
  *   - there are no data on the people involved, only counts.
  *
- *   1. /inteligencia/camiones, /motociclistas and /ciclistas-y-peatones show
- *      every accident behind a vehicle title, so they are noindex, out of
- *      the sitemap, without a Dataset schema, and their banner says so (not
- *      «en procesamiento»: nothing is processing). The CMO decided this.
+ *   1. /inteligencia/camiones, /motociclistas and /ciclistas-y-peatones count
+ *      the people of their user types killed, from those columns: never
+ *      accidents «con camión» or «de moto», never the involves* flags. They
+ *      are indexable and in the sitemap while the data are there (CMO,
+ *      2026-10-22);
  *   2. /analisis doesn't claim «geolocalización» or «perfil de los implicados»;
+ *   3. while a page's columns can't be read it renders VehicleDataPending,
+ *      before any chart, noindex unless it is the build's copy (no DB, served
+ *      once after each deploy): the title, the notice and links to the
+ *      analyses that use every accident, with no chart and no computed
+ *      sentence (CMO, 2026-10-22);
  *   4. deaths are at 30 days everywhere: no copy says «24 horas» or «en el
  *      acto» next to «fallecidos», except the dated note that explains the
- *      change (CMO, 2026-10-22), on /analisis and /analisis/accidentes;
- *   3. while a page's flags are empty it renders VehicleDataPending, before
- *      any data query or chart: the title, the notice and links to the
- *      analyses that use every accident, with no chart and no computed
- *      sentence (CMO, 2026-10-22).
- *
- * When the import fills the flags, this test changes with the pages.
+ *      change (CMO, 2026-10-22), on /analisis and /analisis/accidentes.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:accident-microdata
@@ -34,27 +36,59 @@ import { fileURLToPath } from "node:url";
 const HERE = typeof __dirname !== "undefined" ? __dirname : dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
 const read = (rel: string) => readFileSync(join(ROOT, rel), "utf8");
+// Code only: doc comments explain what the pages replaced.
+const code = (rel: string) =>
+  read(rel)
+    .split("\n")
+    .filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l))
+    .join("\n");
 
 const BANNER = "Todavía no tenemos el desglose por tipo de vehículo: la tabla muestra todos los accidentes con víctimas.";
-const VEHICLE_PAGES = ["camiones", "motociclistas", "ciclistas-y-peatones"];
 const sitemap = read("src/lib/sitemap-generator.ts");
 
-for (const slug of VEHICLE_PAGES) {
-  const rel = `src/app/inteligencia/${slug}/page.tsx`;
-  const page = read(rel);
-  assert.match(page, /robots: \{ index: false, follow: true \}/, `${rel} is noindex`);
-  assert.ok(!/"@type": "Dataset"/.test(page), `${rel} claims a Dataset of vehicle accidents`);
-  assert.ok(!/en procesamiento|siendo actualizada/.test(page), `${rel} says the data are being processed`);
-  assert.ok(page.includes(BANNER), `${rel} says it shows all accidents`);
-  assert.ok(!sitemap.includes(`/inteligencia/${slug}\``), `${rel} is in the sitemap`);
+// 1. Deaths by user type, from the 30-day columns.
+const FIELDS: Record<string, string[]> = {
+  camiones: ["lightTruckDeaths30d", "heavyTruckDeaths30d"],
+  motociclistas: ["motorcycleDeaths30d", "mopedDeaths30d"],
+  "ciclistas-y-peatones": ["pedestrianDeaths30d", "cyclistDeaths30d"],
+};
+const VEHICLE_ACCIDENT = /accidentes? (con|de) (cami[oó]n|camiones|motos?|motocicletas?|bicicletas?|ciclistas?)|involves[A-Z]|hasVehicleFlag|accident-vehicles/i;
+const shared = code("src/components/insights/UserTypeDeathsPage.tsx");
+assert.ok(shared.includes("Cuenta personas, no accidentes."), "the pages say they count people");
+assert.ok(shared.includes("Fallecidos a 30 días, el estándar de la DGT"), "the pages say the deaths are at 30 days");
+assert.ok(/"@type": "Dataset"/.test(shared) && shared.includes("temporalCoverage: `${d.from}/${d.to}`"), "the Dataset's years come from the data");
+for (const rel of ["src/components/insights/UserTypeDeathsPage.tsx", "src/components/insights/UserTypeDeathsCharts.tsx", "src/lib/user-type-deaths.ts"]) {
+  assert.ok(!VEHICLE_ACCIDENT.test(code(rel)), `${rel} speaks of vehicle accidents`);
 }
+for (const [slug, fields] of Object.entries(FIELDS)) {
+  const rel = `src/app/inteligencia/${slug}/page.tsx`;
+  const page = code(rel);
+  assert.ok(!VEHICLE_ACCIDENT.test(page), `${rel} speaks of vehicle accidents`);
+  for (const f of fields) assert.ok(page.includes(`field: "${f}"`), `${rel} shows ${f}`);
+  assert.ok(page.includes(`hasUserTypeDeaths("${fields[0]}")`), `${rel} checks its columns first`);
+  assert.ok(!/\d{4}\s*[-–]\s*\d{4}|\b20(19|2[0-9])\b/.test(page), `${rel} hardcodes a year`);
+  assert.ok(sitemap.includes(`/inteligencia/${slug}\``), `${rel} is in the sitemap`);
 
-// 3. No vehicle chart or vehicle prose without vehicle data.
-// Code only: the doc comment explains the trucks and cyclists it replaces.
-const pending = read("src/components/insights/VehicleDataPending.tsx")
-  .split("\n")
-  .filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l))
-  .join("\n");
+  // 3. Without data: the pending view, noindex, before the page.
+  const body = page.slice(page.indexOf("export default async function"));
+  const guard = body.indexOf("<VehicleDataPending");
+  assert.ok(guard > 0 && guard < body.indexOf("<UserTypeDeathsPage"), `${rel} renders VehicleDataPending without data`);
+  assert.ok(!/export const metadata\b/.test(page), `${rel} has static metadata`);
+  const meta = page.slice(page.indexOf("export async function generateMetadata"), page.indexOf("export default async function"));
+  const pendingMeta = meta.slice(meta.indexOf("if (!d)"), meta.indexOf("const title"));
+  const filled = meta.slice(meta.indexOf("const title"));
+  assert.ok(meta.indexOf("if (!d)") > 0 && pendingMeta.length > 0 && filled.includes("introSentence"), `${rel}: metadata without and with data`);
+  assert.equal((pendingMeta.match(/VEHICLE_DATA_PENDING_DESCRIPTION/g) ?? []).length, 2, `${rel}: description and og:description say the data is missing`);
+  assert.ok(pendingMeta.includes("...(isBuildWithoutDb() ? {} : { robots: { index: false, follow: true } })"), `${rel} is noindex without data, but not in the build's copy`);
+  assert.ok(!/robots/.test(filled), `${rel} is noindex with data`);
+}
+assert.ok(read("src/app/inteligencia/camiones/page.tsx").includes("no a todas las víctimas de los accidentes en los que intervino un camión"), "/camiones says whom it counts");
+const hub = code("src/app/inteligencia/page.tsx");
+assert.ok(!VEHICLE_ACCIDENT.test(hub), "/inteligencia speaks of vehicle accidents");
+for (const t of ["Motoristas fallecidos", "Ocupantes de camión fallecidos", "Peatones y ciclistas fallecidos"]) assert.ok(hub.includes(`title: "${t}"`), `/inteligencia card ${t}`);
+
+// 3. The pending view: no vehicle chart or vehicle prose.
+const pending = code("src/components/insights/VehicleDataPending.tsx");
 assert.ok(pending.includes(BANNER), "the pending view carries the notice");
 assert.ok(pending.includes("Todavía no tenemos el desglose por tipo de vehículo. Mientras tanto, los análisis de accidentes de trafico.live usan todos los accidentes con víctimas."), "the pending description, as the CMO wrote it");
 assert.ok(pending.includes("Mientras tanto, estos análisis usan todos los accidentes con víctimas:"));
@@ -63,28 +97,6 @@ for (const href of ["/inteligencia/hora-punta-y-accidentes", "/inteligencia/lluv
 }
 assert.ok(!/Chart|recharts|@\/components\/charts|prisma|toLocaleString/.test(pending), "the pending view has no chart and no figure");
 assert.ok(!/cami[oó]n|moto|ciclist|peat[oó]n|atropell/i.test(pending), "the pending view has no vehicle prose of its own");
-const FLAGS: Record<string, string[]> = {
-  camiones: ["involvesTruck"],
-  motociclistas: ["involvesMotorcycle"],
-  "ciclistas-y-peatones": ["involvesBicycle", "involvesPedestrian"],
-};
-for (const [slug, flags] of Object.entries(FLAGS)) {
-  const rel = `src/app/inteligencia/${slug}/page.tsx`;
-  const page = read(rel);
-  const body = page.slice(page.indexOf("export default async function"));
-  const guard = body.indexOf("return <VehicleDataPending");
-  assert.ok(guard > 0, `${rel} renders VehicleDataPending without vehicle data`);
-  for (const f of flags) assert.ok(body.slice(0, guard).includes(`hasVehicleFlag("${f}")`), `${rel} checks ${f} first`);
-  // The metadata follows the same check: no title or description promising
-  // a vehicle analysis while there is none (CMO, 2026-10-22).
-  assert.ok(!/export const metadata\b/.test(page), `${rel} has static metadata`);
-  const meta = page.slice(page.indexOf("export async function generateMetadata"), page.indexOf("export default async function"));
-  for (const f of flags) assert.ok(meta.includes(`hasVehicleFlag("${f}")`), `${rel} metadata checks ${f}`);
-  assert.equal((meta.match(/VEHICLE_DATA_PENDING_DESCRIPTION/g) ?? []).length, 2, `${rel}: description and og:description say the data is missing`);
-  const firstQuery = body.search(/await get[A-Za-z]+Data\(\)/);
-  const firstJsx = body.indexOf("return (");
-  assert.ok(firstQuery > guard && firstJsx > guard, `${rel} queries or renders vehicle charts before the check`);
-}
 
 // 4. 30-day deaths, and the note on the change.
 const NOTE = "Desde el 22-10-2026, las cifras de fallecidos son a 30 días, el estándar de la DGT; antes se mostraban a 24 horas, por eso son más altas que en versiones anteriores de esta página.";
@@ -110,4 +122,7 @@ const analisis = read("src/app/analisis/page.tsx");
 assert.ok(!/geolocalizaci[oó]n|perfil de los implicados/.test(analisis), "/analisis claims what the microdata don't hold");
 assert.ok(analisis.includes("un registro por accidente con víctimas"), "/analisis says what they do hold");
 
-console.log(`accident-microdata: ok (${VEHICLE_PAGES.length} vehicle pages noindex, out of the sitemap, and chart-free without vehicle data; /analisis claims only what the table holds)`);
+const faq = read("src/app/analisis/accidentes/page.tsx");
+assert.ok(faq.includes("también por tipo de usuario (peatones, ciclistas, motoristas, ocupantes de turismo o de camión…). No incluye datos de cada persona implicada."), "/analisis/accidentes says what the microdata hold");
+
+console.log(`accident-microdata: ok (${Object.keys(FIELDS).length} user-type pages count people from the 30-day columns, noindex and chart-free without them; /analisis claims only what the table holds)`);

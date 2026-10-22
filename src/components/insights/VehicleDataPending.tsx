@@ -1,9 +1,9 @@
 /**
- * A vehicle page while AccidentMicrodata has no vehicle types
- * (src/lib/accident-vehicles.ts): its title, the notice, and the analyses
- * that do use every accident. No charts and no computed sentences: with the
- * flags empty they were all-accident figures under a truck, motorcycle or
- * cyclist title (CMO, 2026-10-22).
+ * /inteligencia/camiones, /motociclistas and /ciclistas-y-peatones while their
+ * deaths-by-user-type columns can't be read (src/lib/user-type-deaths.ts: the
+ * Docker build has no DB, or the query fails): the title, the notice, and the
+ * analyses that use every accident. No charts and no computed sentences
+ * (CMO, 2026-10-22).
  */
 
 import Link from "next/link";

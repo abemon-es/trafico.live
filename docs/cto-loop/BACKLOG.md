@@ -90,6 +90,45 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (113) — D: the three vehicle pages count deaths at 30 days by user type
+
+**What changes (CMO rules, CMO OK on the head pending):**
+- /inteligencia/camiones, /motociclistas and /ciclistas-y-peatones are
+  rebuilt on the 12 `*Deaths30d` columns that C filled: people of each
+  user type killed in the accident or the 30 days after, never «accidentes
+  con camión» or «de moto» (the DGT doesn't publish the vehicles involved).
+  Series: trucks ≤ 3,500 kg / > 3,500 kg · motorcycle / moped ·
+  pedestrians / cyclists, each kept apart.
+- One shared page (`UserTypeDeathsPage`): an intro sentence from the data,
+  stat cards, deaths by year, hour and day of week, urban/interurban, the
+  top 10 provinces, a method note («Cuenta personas, no accidentes»), and a
+  Dataset schema whose years come from the data. The truck page says once
+  that it counts truck occupants, not every victim of a crash with a truck.
+- Metadata from the data; indexable and back in the sitemap. Without the
+  columns (the build has no DB, or the query fails) the pages show
+  VehicleDataPending; noindex only when the DB answered, so the build's
+  copy, served once after each deploy, is never noindex (`src/lib/db.ts`).
+- /inteligencia hub cards and the /analisis/accidentes FAQ on the
+  microdata: new CMO copy («también por tipo de usuario…»; the dated note
+  stays at the end).
+- Gone: the old charts on the involves* flags (`moto-charts.tsx`) and
+  `src/lib/accident-vehicles.ts`.
+
+**Data, read-only render through the new lib (2019–2023):** truck occupants
+55 + 226 (2023: 11 + 42, 2.9 % of all deaths); motorcyclists 1943 and
+moped riders 185 (2023: 455 + 30, 26.9 %); pedestrians 1643 and cyclists
+385 (2023: 353 + 90, 24.5 %). 52 provinces, 24 hours, 7 days; the six
+queries take ~1 s for the three pages. pmvDeaths30d is NULL for 2019 only
+(no VMP column in that file); none of these pages uses it.
+
+Checks: `accident-microdata-claims` rewritten for the new pages, plus
+columns, year-claims and public-docs: 4 ok · web tsc 11 · lint 64.
+
+**Next:** CMO OK on the head, then CTO merge and the live gate (the three
+pages 200, indexable, intro sentence present, in the sitemap).
+
+---
+
 ## Cycle 2026-10-22 (112) — C applied; the pages say the deaths are at 30 days, and since when
 
 **C (#193) applied**, after the CTO's backup of the 466,123 rows:

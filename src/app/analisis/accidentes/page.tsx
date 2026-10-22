@@ -80,7 +80,7 @@ const faqItems = (years: { provincial: YearSpan | null; microdata: YearSpan | nu
   {
     question: "¿Qué información contienen los microdatos de la DGT?",
     answer:
-      "Los microdatos de accidentalidad de la DGT incluyen, por cada accidente con víctimas en carretera: fecha, hora, tipo de vía, punto kilométrico, número de vehículos y personas implicadas, fallecidos, heridos graves y leves, y circunstancias del accidente (colisión frontal, salida de calzada, atropello…). Están anonimizados y se publican bajo licencia abierta CC-BY. Desde el 22-10-2026, las cifras de fallecidos son a 30 días, el estándar de la DGT; antes se mostraban a 24 horas, por eso son más altas que en versiones anteriores de esta página.",
+      "Un registro por cada accidente con víctimas: fecha y hora, provincia y municipio, carretera y punto kilométrico cuando la vía está inventariada, tipo de accidente según la codificación de la DGT (por ejemplo, colisión frontal, salida de la vía o atropello), condiciones meteorológicas, de luz y del firme, número de vehículos implicados y número de fallecidos a 30 días, heridos hospitalizados y heridos leves, también por tipo de usuario (peatones, ciclistas, motoristas, ocupantes de turismo o de camión…). No incluye datos de cada persona implicada. Desde el 22-10-2026, las cifras de fallecidos son a 30 días, el estándar de la DGT; antes se mostraban a 24 horas, por eso son más altas que en versiones anteriores de esta página.",
   },
   {
     question: "¿Desde cuándo hay datos disponibles?",
