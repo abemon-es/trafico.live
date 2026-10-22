@@ -155,7 +155,7 @@ export default function PrediccionHubPage() {
             },
             {
               title: "Análisis de accidentes",
-              description: "Siniestralidad histórica por provincia. DGT 2011-2024.",
+              description: "Siniestralidad histórica por provincia. Datos DGT.",
               href: "/analisis/accidentes",
               icon: AlertTriangle,
             },

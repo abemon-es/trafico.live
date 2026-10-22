@@ -274,7 +274,7 @@ const ENDPOINT_CATEGORIES: EndpointCategory[] = [
       {
         method: "GET",
         path: "/api/accidentes/microdata",
-        description: "Microdatos de siniestralidad DGT: accidentes con víctimas desde 2015. Formato tidy CSV/JSON.",
+        description: "Microdatos de siniestralidad DGT: un registro por accidente con víctimas. Formato tidy CSV/JSON.",
         tier: "PRO",
       },
       {

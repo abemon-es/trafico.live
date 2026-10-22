@@ -225,7 +225,7 @@ export default function AnalisisCarreterasHubPage() {
           items={[
             {
               title: "Accidentes por provincia",
-              description: "Siniestralidad histórica en las 52 provincias. DGT 2011-2024.",
+              description: "Siniestralidad histórica en las 52 provincias. Datos DGT por año.",
               href: "/analisis/accidentes",
               icon: AlertTriangle,
             },
