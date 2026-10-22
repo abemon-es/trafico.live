@@ -12,6 +12,9 @@
  *      the sitemap, without a Dataset schema, and their banner says so (not
  *      «en procesamiento»: nothing is processing). The CMO decided this.
  *   2. /analisis doesn't claim «geolocalización» or «perfil de los implicados»;
+ *   4. deaths are at 30 days everywhere: no copy says «24 horas» or «en el
+ *      acto» next to «fallecidos», except the dated note that explains the
+ *      change (CMO, 2026-10-22), on /analisis and /analisis/accidentes;
  *   3. while a page's flags are empty it renders VehicleDataPending, before
  *      any data query or chart: the title, the notice and links to the
  *      analyses that use every accident, with no chart and no computed
@@ -24,7 +27,7 @@
  */
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -81,6 +84,26 @@ for (const [slug, flags] of Object.entries(FLAGS)) {
   const firstQuery = body.search(/await get[A-Za-z]+Data\(\)/);
   const firstJsx = body.indexOf("return (");
   assert.ok(firstQuery > guard && firstJsx > guard, `${rel} queries or renders vehicle charts before the check`);
+}
+
+// 4. 30-day deaths, and the note on the change.
+const NOTE = "Desde el 22-10-2026, las cifras de fallecidos son a 30 días, el estándar de la DGT; antes se mostraban a 24 horas, por eso son más altas que en versiones anteriores de esta página.";
+for (const rel of ["src/app/analisis/page.tsx", "src/app/analisis/accidentes/page.tsx"]) assert.ok(read(rel).includes(NOTE), `${rel} explains the move to 30 days`);
+{
+  const walk = (dir: string): string[] =>
+    readdirSync(join(ROOT, dir)).flatMap((n) => {
+      const rel = `${dir}/${n}`;
+      return statSync(join(ROOT, rel)).isDirectory() ? walk(rel) : /\.(ts|tsx)$/.test(n) ? [rel] : [];
+    });
+  const hits = [...walk("src"), ...walk("services/collector/tasks/insights")].flatMap((rel) =>
+    read(rel)
+      .replaceAll(NOTE, "")
+      .split("\n")
+      .map((l, i) => ({ l, i }))
+      .filter(({ l }) => /fallec/i.test(l) && /\b24 ?h(oras)?\b|en el acto/i.test(l))
+      .map(({ l, i }) => `${rel}:${i + 1}: ${l.trim().slice(0, 100)}`)
+  );
+  assert.deepEqual(hits, [], `deaths described at 24 h:\n${hits.join("\n")}`);
 }
 
 const analisis = read("src/app/analisis/page.tsx");

@@ -38,7 +38,7 @@ const FAQ_ITEMS = [
   {
     question: "¿Qué fuentes de datos se utilizan en los análisis?",
     answer:
-      "Los análisis de accidentes se basan en los microdatos de accidentalidad de la DGT: un registro por accidente con víctimas, con fecha y hora, provincia y municipio, carretera y punto kilométrico cuando la vía está inventariada, tipo de accidente, condiciones meteorológicas, de luz y del firme, número de vehículos implicados y número de fallecidos y heridos. Los datos de intensidad de tráfico provienen del visor del Ministerio de Transportes (IMD anual por tramo), que publica datos desde 2017.",
+      "Los análisis de accidentes se basan en los microdatos de accidentalidad de la DGT: un registro por accidente con víctimas, con fecha y hora, provincia y municipio, carretera y punto kilométrico cuando la vía está inventariada, tipo de accidente, condiciones meteorológicas, de luz y del firme, número de vehículos implicados y número de fallecidos y heridos. Desde el 22-10-2026, las cifras de fallecidos son a 30 días, el estándar de la DGT; antes se mostraban a 24 horas, por eso son más altas que en versiones anteriores de esta página. Los datos de intensidad de tráfico provienen del visor del Ministerio de Transportes (IMD anual por tramo), que publica datos desde 2017.",
   },
   {
     question: "¿Con qué frecuencia se actualizan los datos?",

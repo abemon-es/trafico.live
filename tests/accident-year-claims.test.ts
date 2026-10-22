@@ -17,7 +17,7 @@
  */
 
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -56,7 +56,9 @@ for (const rel of DB_PAGES) {
   assert.ok(/from "@\/lib\/accident-years"/.test(text), `${rel} reads its years from the database`);
   assert.ok(!/export const metadata\b/.test(text), `${rel} has static metadata: its years can't come from the database`);
   lines.forEach((l, i) => {
-    assert.ok(!/\b20[0-3]\d\b/.test(l), `${rel}:${i + 1} writes a year by hand: ${l.trim().slice(0, 120)}`);
+    // A dated note («Desde el 22-10-2026, …») is a date, not a data range.
+    const noDates = l.replace(/\b\d{2}-\d{2}-20\d\d\b/g, "");
+    assert.ok(!/\b20[0-3]\d\b/.test(noDates), `${rel}:${i + 1} writes a year by hand: ${l.trim().slice(0, 120)}`);
   });
 }
 
@@ -66,6 +68,7 @@ const FALSE_FORMS = /\b2011\s*[-–]\s*2024\b|\bdesde (el año )?(2011|2015)\b|\
 let scanned = 0;
 const offenders: string[] = [];
 function* files(dir: string): Generator<string> {
+  if (!existsSync(dir)) return; // src/mcp isn't in every checkout
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     if (statSync(p).isDirectory()) yield* files(p);
