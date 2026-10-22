@@ -1,6 +1,7 @@
 import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { observedEnd } from "@/lib/incident-time";
 import { applyRateLimit } from "@/lib/api-utils";
 import { getFromCache, setInCache } from "@/lib/redis";
 
@@ -54,6 +55,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(cached, { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } });
     }
 
+    const now = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     startDate.setHours(0, 0, 0, 0);
@@ -84,6 +86,8 @@ export async function GET(request: NextRequest) {
         id: true,
         startedAt: true,
         endedAt: true,
+        lastSeenAt: true,
+        isActive: true,
         latitude: true,
         longitude: true,
         provinceName: true,
@@ -138,7 +142,9 @@ export async function GET(request: NextRequest) {
           // Calculate time difference (in minutes)
           const v16Time = v16.activatedAt.getTime();
           const incidentStart = incident.startedAt.getTime();
-          const incidentEnd = incident.endedAt?.getTime() || incidentStart + 3600000; // Default 1hr
+          // Observed end (src/lib/incident-time.ts). It used to fall back to start + 1 h whenever
+          // endedAt was NULL, which is 99 % of ended incidents.
+          const incidentEnd = observedEnd(incident, now).getTime();
 
           // Check if V16 was activated during or near the incident
           let timeDiffMinutes: number;

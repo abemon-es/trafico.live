@@ -1,6 +1,7 @@
 import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { observedEnd } from "@/lib/incident-time";
 import { getFromCache, setInCache } from "@/lib/redis";
 import { applyRateLimit } from "@/lib/api-utils";
 
@@ -107,8 +108,10 @@ export async function GET(request: NextRequest) {
       // Find incidents active at this time slot
       const activeAtSlot = incidents.filter((inc) => {
         const incStart = inc.startedAt;
-        const incEnd = inc.endedAt || inc.lastSeenAt || (inc.isActive ? now : inc.lastSeenAt);
-        return incStart <= slotEnd && (incEnd ? incEnd >= slotTime : true);
+        // Observed end, not the declared one: an incident that went away early
+        // but declared an end in 2029 drew as active until 2029 (src/lib/incident-time.ts).
+        const incEnd = observedEnd(inc, now);
+        return incStart <= slotEnd && incEnd >= slotTime;
       });
 
       timelineSlots.push({

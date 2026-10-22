@@ -51,6 +51,7 @@
     "test:run-lock": "tsx tests/run-lock.test.ts",
     "test:typesense-incidents": "tsx tests/typesense-incidents.test.ts",
     "test:status-page": "tsx tests/status-page.test.ts",
+    "test:incident-time": "tsx tests/incident-time.test.ts",
     "test:public-docs": "tsx tests/public-docs-no-internals.test.ts",
     "test:final-urls": "tsx tests/internal-links-final-urls.test.ts",
     "test:fuel-cleanup": "tsx tests/fuel-articles-cleanup.test.ts",
