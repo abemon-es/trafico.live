@@ -15,11 +15,11 @@
  *      are indexable and in the sitemap while the data are there (CMO,
  *      2026-10-22);
  *   2. /analisis doesn't claim «geolocalización» or «perfil de los implicados»;
- *   3. while a page's columns can't be read it renders VehicleDataPending,
- *      before any chart, noindex unless it is the build's copy (no DB, served
- *      once after each deploy): the title, the notice and links to the
- *      analyses that use every accident, with no chart and no computed
- *      sentence (CMO, 2026-10-22);
+ *   3. when the data can't be read a page renders UserTypeDeathsUnavailable,
+ *      before any chart, noindex: the title, a neutral notice and links to
+ *      the analyses that use every accident, with no chart and no computed
+ *      sentence (CMO, 2026-10-22). The pages render per request, so the
+ *      build (no DB) leaves no noindex copy behind;
  *   4. deaths are at 30 days everywhere: no copy says «24 horas» or «en el
  *      acto» next to «fallecidos», except the dated note that explains the
  *      change (CMO, 2026-10-22), on /analisis and /analisis/accidentes.
@@ -43,7 +43,7 @@ const code = (rel: string) =>
     .filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l))
     .join("\n");
 
-const BANNER = "Todavía no tenemos el desglose por tipo de vehículo: la tabla muestra todos los accidentes con víctimas.";
+const NOTICE = "Los datos de fallecidos no están disponibles en este momento. Inténtalo de nuevo en unos minutos.";
 const sitemap = read("src/lib/sitemap-generator.ts");
 
 // 1. Deaths by user type, from the 30-day columns.
@@ -57,6 +57,7 @@ const shared = code("src/components/insights/UserTypeDeathsPage.tsx");
 assert.ok(shared.includes("Cuenta personas, no accidentes."), "the pages say they count people");
 assert.ok(shared.includes("Fallecidos a 30 días, el estándar de la DGT"), "the pages say the deaths are at 30 days");
 assert.ok(/"@type": "Dataset"/.test(shared) && shared.includes("temporalCoverage: `${d.from}/${d.to}`"), "the Dataset's years come from the data");
+assert.ok(code("src/lib/user-type-deaths.ts").includes("getOrCompute(`user-type-deaths:"), "the figures are cached in Redis");
 for (const rel of ["src/components/insights/UserTypeDeathsPage.tsx", "src/components/insights/UserTypeDeathsCharts.tsx", "src/lib/user-type-deaths.ts"]) {
   assert.ok(!VEHICLE_ACCIDENT.test(code(rel)), `${rel} speaks of vehicle accidents`);
 }
@@ -65,21 +66,22 @@ for (const [slug, fields] of Object.entries(FIELDS)) {
   const page = code(rel);
   assert.ok(!VEHICLE_ACCIDENT.test(page), `${rel} speaks of vehicle accidents`);
   for (const f of fields) assert.ok(page.includes(`field: "${f}"`), `${rel} shows ${f}`);
-  assert.ok(page.includes(`hasUserTypeDeaths("${fields[0]}")`), `${rel} checks its columns first`);
+  assert.ok(page.includes("const data = () => userTypeDeaths(fieldsKey(CONFIG));"), `${rel} reads its fields`);
+  assert.ok(page.includes(`export const dynamic = "force-dynamic";`) && !/export const revalidate\b/.test(page), `${rel} has a build copy`);
   assert.ok(!/\d{4}\s*[-–]\s*\d{4}|\b20(19|2[0-9])\b/.test(page), `${rel} hardcodes a year`);
   assert.ok(sitemap.includes(`/inteligencia/${slug}\``), `${rel} is in the sitemap`);
 
-  // 3. Without data: the pending view, noindex, before the page.
+  // 3. Without data: the neutral view, noindex, before the page.
   const body = page.slice(page.indexOf("export default async function"));
-  const guard = body.indexOf("<VehicleDataPending");
-  assert.ok(guard > 0 && guard < body.indexOf("<UserTypeDeathsPage"), `${rel} renders VehicleDataPending without data`);
+  const guard = body.indexOf("<UserTypeDeathsUnavailable");
+  assert.ok(guard > 0 && guard < body.indexOf("<UserTypeDeathsPage"), `${rel} renders UserTypeDeathsUnavailable without data`);
   assert.ok(!/export const metadata\b/.test(page), `${rel} has static metadata`);
   const meta = page.slice(page.indexOf("export async function generateMetadata"), page.indexOf("export default async function"));
   const pendingMeta = meta.slice(meta.indexOf("if (!d)"), meta.indexOf("const title"));
   const filled = meta.slice(meta.indexOf("const title"));
   assert.ok(meta.indexOf("if (!d)") > 0 && pendingMeta.length > 0 && filled.includes("introSentence"), `${rel}: metadata without and with data`);
-  assert.equal((pendingMeta.match(/VEHICLE_DATA_PENDING_DESCRIPTION/g) ?? []).length, 2, `${rel}: description and og:description say the data is missing`);
-  assert.ok(pendingMeta.includes("...(isBuildWithoutDb() ? {} : { robots: { index: false, follow: true } })"), `${rel} is noindex without data, but not in the build's copy`);
+  assert.equal((pendingMeta.match(/USER_TYPE_DEATHS_UNAVAILABLE/g) ?? []).length, 2, `${rel}: description and og:description say the data is missing`);
+  assert.match(pendingMeta, /robots: \{ index: false, follow: true \}/, `${rel} is noindex without data`);
   assert.ok(!/robots/.test(filled), `${rel} is noindex with data`);
 }
 assert.ok(read("src/app/inteligencia/camiones/page.tsx").includes("no a todas las víctimas de los accidentes en los que intervino un camión"), "/camiones says whom it counts");
@@ -87,10 +89,10 @@ const hub = code("src/app/inteligencia/page.tsx");
 assert.ok(!VEHICLE_ACCIDENT.test(hub), "/inteligencia speaks of vehicle accidents");
 for (const t of ["Motoristas fallecidos", "Ocupantes de camión fallecidos", "Peatones y ciclistas fallecidos"]) assert.ok(hub.includes(`title: "${t}"`), `/inteligencia card ${t}`);
 
-// 3. The pending view: no vehicle chart or vehicle prose.
-const pending = code("src/components/insights/VehicleDataPending.tsx");
-assert.ok(pending.includes(BANNER), "the pending view carries the notice");
-assert.ok(pending.includes("Todavía no tenemos el desglose por tipo de vehículo. Mientras tanto, los análisis de accidentes de trafico.live usan todos los accidentes con víctimas."), "the pending description, as the CMO wrote it");
+// 3. The neutral view: no vehicle chart or vehicle prose.
+const pending = code("src/components/insights/UserTypeDeathsUnavailable.tsx");
+assert.ok(pending.includes(NOTICE), "the notice, as the CMO wrote it");
+assert.ok(!/desglose por tipo de veh[ií]culo/.test(pending), "the old notice is gone");
 assert.ok(pending.includes("Mientras tanto, estos análisis usan todos los accidentes con víctimas:"));
 for (const href of ["/inteligencia/hora-punta-y-accidentes", "/inteligencia/lluvia-y-accidentes", "/analisis/accidentes"]) {
   assert.ok(pending.includes(`href: "${href}"`), `the pending view links ${href}`);

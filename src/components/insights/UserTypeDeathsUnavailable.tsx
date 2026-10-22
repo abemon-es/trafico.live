@@ -1,21 +1,18 @@
 /**
- * /inteligencia/camiones, /motociclistas and /ciclistas-y-peatones while their
- * deaths-by-user-type columns can't be read (src/lib/user-type-deaths.ts: the
- * Docker build has no DB, or the query fails): the title, the notice, and the
- * analyses that use every accident. No charts and no computed sentences
- * (CMO, 2026-10-22).
+ * /inteligencia/camiones, /motociclistas and /ciclistas-y-peatones when their
+ * deaths by user type can't be read (src/lib/user-type-deaths.ts returns
+ * null): the title, a neutral notice, and the analyses that use every
+ * accident. No charts and no computed sentences. The pages are noindex while
+ * it shows (CMO, 2026-10-22).
  */
 
 import Link from "next/link";
 import { ChevronRight, Info, type LucideIcon } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
-export const VEHICLE_DATA_PENDING =
-  "Todavía no tenemos el desglose por tipo de vehículo: la tabla muestra todos los accidentes con víctimas.";
-
-/** The pages' description and og:description while the data is missing (CMO). */
-export const VEHICLE_DATA_PENDING_DESCRIPTION =
-  "Todavía no tenemos el desglose por tipo de vehículo. Mientras tanto, los análisis de accidentes de trafico.live usan todos los accidentes con víctimas.";
+/** The notice, and the pages' description and og:description while it shows (CMO). */
+export const USER_TYPE_DEATHS_UNAVAILABLE =
+  "Los datos de fallecidos no están disponibles en este momento. Inténtalo de nuevo en unos minutos.";
 
 const MEANWHILE = [
   { title: "Hora punta y accidentes", href: "/inteligencia/hora-punta-y-accidentes" },
@@ -23,7 +20,7 @@ const MEANWHILE = [
   { title: "Análisis de accidentes", href: "/analisis/accidentes" },
 ];
 
-export function VehicleDataPending({
+export function UserTypeDeathsUnavailable({
   title,
   icon: Icon,
   breadcrumbs,
@@ -46,7 +43,7 @@ export function VehicleDataPending({
       <div className="bg-tl-50 dark:bg-tl-950/30 border border-tl-200 dark:border-tl-800 rounded-xl p-4">
         <div className="flex items-start gap-2">
           <Info className="w-4 h-4 text-tl-600 dark:text-tl-400 mt-0.5 shrink-0" />
-          <p className="text-sm font-medium text-tl-800 dark:text-tl-200">{VEHICLE_DATA_PENDING}</p>
+          <p className="text-sm font-medium text-tl-800 dark:text-tl-200">{USER_TYPE_DEATHS_UNAVAILABLE}</p>
         </div>
       </div>
 

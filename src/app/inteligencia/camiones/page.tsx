@@ -4,21 +4,20 @@
  * Built on deaths at 30 days by user type (src/lib/user-type-deaths.ts,
  * src/components/insights/UserTypeDeathsPage.tsx). The DGT doesn't publish
  * the vehicles involved in each accident, so this page counts people killed,
- * never accidents (CMO, 2026-10-22). When those columns can't be read it shows
- * VehicleDataPending.
+ * never accidents (CMO, 2026-10-22). When they can't be read it shows
+ * UserTypeDeathsUnavailable, noindex.
  */
 
 import type { Metadata } from "next";
 import { Truck } from "lucide-react";
-import { VEHICLE_DATA_PENDING_DESCRIPTION, VehicleDataPending } from "@/components/insights/VehicleDataPending";
+import { USER_TYPE_DEATHS_UNAVAILABLE, UserTypeDeathsUnavailable } from "@/components/insights/UserTypeDeathsUnavailable";
 import { UserTypeDeathsPage, fieldsKey, introSentence, type UserTypeDeathsConfig } from "@/components/insights/UserTypeDeathsPage";
-import { hasUserTypeDeaths, userTypeDeaths } from "@/lib/user-type-deaths";
-import { isBuildWithoutDb } from "@/lib/db";
+import { userTypeDeaths } from "@/lib/user-type-deaths";
 
-// 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
-// page prerenders the pending view, and the revalidate window is how long
-// that blank copy survives every deploy.
-export const revalidate = 300;
+// Rendered per request, so there is no build copy: the build has no DB, and
+// its copy would be the noindex fallback, served after every deploy. The
+// figures come from Redis (an hour; src/lib/user-type-deaths.ts).
+export const dynamic = "force-dynamic";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -36,22 +35,18 @@ const CONFIG: UserTypeDeathsConfig = {
     "Cuenta a los conductores y pasajeros de camiones fallecidos, no a todas las víctimas de los accidentes en los que intervino un camión: la DGT no publica qué vehículos intervienen en cada accidente.",
 };
 
-async function data() {
-  return (await hasUserTypeDeaths("lightTruckDeaths30d")) ? userTypeDeaths(fieldsKey(CONFIG)) : null;
-}
+const data = () => userTypeDeaths(fieldsKey(CONFIG));
 
 export async function generateMetadata(): Promise<Metadata> {
   const d = await data();
   const url = `${BASE_URL}/inteligencia/camiones`;
   if (!d) {
-    // noindex only when the DB answered: the build's copy (no DB) is served
-    // once after every deploy, and must not be noindex (src/lib/db.ts).
     return {
       title: CONFIG.title,
-      description: VEHICLE_DATA_PENDING_DESCRIPTION,
-      ...(isBuildWithoutDb() ? {} : { robots: { index: false, follow: true } }),
+      description: USER_TYPE_DEATHS_UNAVAILABLE,
+      robots: { index: false, follow: true },
       alternates: { canonical: url },
-      openGraph: { title: CONFIG.title, description: VEHICLE_DATA_PENDING_DESCRIPTION, url, siteName: "trafico.live", locale: "es_ES", type: "website" },
+      openGraph: { title: CONFIG.title, description: USER_TYPE_DEATHS_UNAVAILABLE, url, siteName: "trafico.live", locale: "es_ES", type: "website" },
     };
   }
   const title = `Ocupantes de camión fallecidos en España ${d.from}-${d.to}`;
@@ -68,7 +63,7 @@ export default async function CamionesPage() {
   const d = await data();
   if (!d) {
     return (
-      <VehicleDataPending
+      <UserTypeDeathsUnavailable
         title={CONFIG.title}
         icon={Truck}
         breadcrumbs={[

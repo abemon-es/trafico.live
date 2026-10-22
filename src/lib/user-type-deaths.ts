@@ -8,6 +8,7 @@
 
 import { cache } from "react";
 import { prisma, isBuildWithoutDb } from "@/lib/db";
+import { getOrCompute } from "@/lib/redis";
 
 export type DeathField =
   | "pedestrianDeaths30d"
@@ -44,20 +45,20 @@ export interface UserTypeDeaths {
 type SumRow = { _sum: Partial<Record<DeathField, number | null>> };
 const sums = (row: SumRow, fields: DeathField[]) => Object.fromEntries(fields.map((f) => [f, row._sum[f] ?? 0]));
 
-/** Whether any row has these columns filled. */
-export const hasUserTypeDeaths = cache(async (field: DeathField): Promise<boolean> => {
-  if (isBuildWithoutDb()) return false;
-  try {
-    return (await prisma.accidentMicrodata.findFirst({ where: { [field]: { not: null } }, select: { id: true } })) != null;
-  } catch (err) {
-    console.warn(`[user-type-deaths] ${field} unavailable:`, err instanceof Error ? err.name : typeof err);
-    return false;
-  }
+/** The figures change once a year, with a new DGT file: an hour in Redis. */
+const TTL_SECONDS = 3600;
+
+/**
+ * The deaths for these fields (comma-separated), or null when no row has them
+ * or the DB can't be read. A null reads back from Redis as a miss, so a
+ * failure lasts one request.
+ */
+export const userTypeDeaths = cache(async (fieldsKey: string): Promise<UserTypeDeaths | null> => {
+  if (isBuildWithoutDb()) return null;
+  return getOrCompute(`user-type-deaths:v1:${fieldsKey}`, TTL_SECONDS, () => compute(fieldsKey.split(",") as DeathField[]));
 });
 
-export const userTypeDeaths = cache(async (fieldsKey: string): Promise<UserTypeDeaths | null> => {
-  const fields = fieldsKey.split(",") as DeathField[];
-  if (isBuildWithoutDb()) return null;
+async function compute(fields: DeathField[]): Promise<UserTypeDeaths | null> {
   try {
     const _sum = Object.fromEntries(fields.map((f) => [f, true])) as Record<DeathField, true>;
     const filled = { OR: fields.map((f) => ({ [f]: { not: null } })) };
@@ -95,4 +96,4 @@ export const userTypeDeaths = cache(async (fieldsKey: string): Promise<UserTypeD
     console.warn("[user-type-deaths] unavailable:", err instanceof Error ? err.name : typeof err);
     return null;
   }
-});
+}
