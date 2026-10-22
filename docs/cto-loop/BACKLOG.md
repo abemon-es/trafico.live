@@ -90,6 +90,53 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (111) — AccidentMicrodata on the DGT's 30-day figures, with deaths by user type
+
+**#192 merged** (`0383be89`).
+- **The installed backups:** nothing to update. db-primary runs the server
+  repo's scripts, not these, and the enricher runs nowhere.
+- **DataForSEO:** no rotation (CSO). Only root and MJ log in on compute,
+  and no container mounts the host's /tmp.
+- **New rule:** no wildcard `rm` over ssh; the CTO gets the exact list.
+
+**Correction of cycle 106.** I said the table held 30-day deaths (1806 in
+2023). That figure was HistoricalAccidents. **AccidentMicrodata held the 24 h
+columns:** 2023 had 1539 deaths, 9509 hospitalized and 124,289 minor
+injuries, exactly TOTAL_MU24H/HG24H/HL24H. #188 made the importer 30-day, so
+a new year would have mixed measures in the table.
+
+**This PR (C):**
+- **`scripts/backfill-microdata-deaths.ts`**, row by row with A's key and
+  guard. It writes:
+  - the 12 deaths-by-user-type columns from TOT_*_MU30DF;
+  - **fatalities, hospitalized and minorInjury from *_30DF**;
+  - **severity** recomputed from them.
+  Every row's 12 types must add up to TOTAL_MU30DF; a year with any mismatch
+  isn't touched.
+- **`tasks/accident-microdata/official-file.ts`:** the shared reader.
+  fix-microdata-zone uses it too; its re-run dry run gives **0 to change**,
+  which is A's regression check.
+- **Importer:** new years carry the 12 columns. `DEATHS_BY_USER_TYPE` is
+  the one list.
+- **Dry run, 2019–2023:** **0 key, 0 sum mismatches**; to change: every row,
+  466,123.
+  - The 30-day totals equal HistoricalAccidents: deaths 1755/1370/1533/1746/1806,
+    hospitalized 8613/6681/7784/8502/9265.
+  - Severity hospitalized→fatal 154–236 a year, minor→fatal 9–21.
+  - 2019 has no VMP column, so it stays NULL.
+- **Tests:** `accident-microdata-columns` covers the 12 headers, the schema
+  order and the strict parse. Collector tsc 626, check-src-lib ok, lint 64.
+
+**Visible effect (CMO):** the pages that read AccidentMicrodata (87 queries:
+/inteligencia, radiografía, puntos negros, /api/accidentes/microdata) go from
+24 h to 30-day deaths, +17 %. They then agree with the province pages.
+
+**Apply (CTO):** back up the 466,123 rows (the 4 totals and severity), then
+`--year Y --apply --expect N` per year. It goes in the image with the next
+collector deploy, through `bin/deploy-collectors.sh`.
+
+---
+
 ## Cycle 2026-10-22 (110) — database settings only from the environment, and no private addresses in the public docs
 
 **#191 merged** (`01684e42`). The CTO checked it before the merge (names,

@@ -11,7 +11,10 @@
  *   3. the candidate order is the priority, matched by exact name;
  *   4. zoneIsUrban(): ZONA_AGRUPADA 1/2, else ZONA 1 vs 2–4;
  *   5. the importer resolves its columns here and refuses a year without the
- *      30-day columns.
+ *      30-day columns;
+ *   6. the 12 deaths-by-user-type fields map to headers the 2023 table has,
+ *      match the schema's fields, and parse strictly (a missing column is
+ *      NULL, an empty cell 0, anything else not a count throws).
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:microdata-columns
@@ -21,7 +24,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { findColIndex, resolveColumns, zoneIsUrban } from "../services/collector/tasks/accident-microdata/columns";
+import { DEATHS_BY_USER_TYPE, deathsByUserType, findColIndex, resolveColumns, zoneIsUrban } from "../services/collector/tasks/accident-microdata/columns";
 
 const HERE = typeof __dirname !== "undefined" ? __dirname : dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
@@ -71,5 +74,24 @@ assert.ok(importer.includes("COL = resolveColumns(headers);"));
 assert.ok(importer.includes("zoneIsUrban(getVal(COL.zonaAgrupada), getVal(COL.zona))"));
 assert.ok(/COL\.muertos < 0 \|\| COL\.gravesHosp < 0 \|\| COL\.leves < 0/.test(importer), "refuses a year without 30-day columns");
 assert.ok(!/function findColIndex/.test(importer), "one column finder");
+
+// 6. Deaths by user type.
+for (const [field, name] of Object.entries(DEATHS_BY_USER_TYPE)) {
+  assert.ok(HEADER_2023.includes(name), `${field}: ${name} is not in the 2023 table`);
+  assert.ok(name.endsWith("_MU30DF"), `${field} reads ${name}, not a 30-day column`);
+}
+const schema = readFileSync(join(ROOT, "prisma/schema.prisma"), "utf8");
+const model = schema.slice(schema.indexOf("model AccidentMicrodata {"), schema.indexOf("}", schema.indexOf("model AccidentMicrodata {")));
+assert.deepEqual(Object.keys(DEATHS_BY_USER_TYPE), [...model.matchAll(/^\s+(\w+Deaths30d)\s/gm)].map((m) => m[1]), "the schema's 12 fields, in order");
+const row: Record<string, string | undefined> = { TOT_PEAT_MU30DF: "2", TOT_MOTO_MU30DF: "1", TOT_TUR_MU30DF: undefined };
+const has = (n: string) => n !== "TOT_VMP_MU30DF";
+const parsed = deathsByUserType((n) => row[n], has);
+assert.equal(parsed.pedestrianDeaths30d, 2);
+assert.equal(parsed.motorcycleDeaths30d, 1);
+assert.equal(parsed.carDeaths30d, 0, "an empty cell is 0");
+assert.equal(parsed.pmvDeaths30d, null, "a column the file lacks is NULL");
+assert.throws(() => deathsByUserType(() => "1.5", () => true), /not a count/);
+assert.throws(() => deathsByUserType(() => "-1", () => true), /not a count/);
+assert.ok(importer.includes("...deathsByUserType("), "the importer fills the 12 columns on new years");
 
 console.log("microdata-columns: ok (2023 header: ZONA_AGRUPADA, 30-day casualties, no 24 h, no vehicle columns)");

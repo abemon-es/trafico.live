@@ -89,3 +89,48 @@ export function zoneIsUrban(agrupada: string | undefined, zona: string | undefin
   }
   return undefined;
 }
+
+/**
+ * AccidentMicrodata's 30-day deaths by user type (prisma/schema.prisma) and
+ * the DGT header each one comes from: people of that type killed in the
+ * accident, not the vehicles involved (the DGT publishes no such field).
+ */
+export const DEATHS_BY_USER_TYPE = {
+  pedestrianDeaths30d: "TOT_PEAT_MU30DF",
+  cyclistDeaths30d: "TOT_BICI_MU30DF",
+  mopedDeaths30d: "TOT_CICLO_MU30DF",
+  motorcycleDeaths30d: "TOT_MOTO_MU30DF",
+  carDeaths30d: "TOT_TUR_MU30DF",
+  vanDeaths30d: "TOT_FURG_MU30DF",
+  lightTruckDeaths30d: "TOT_CAM_MENOS3500_MU30DF",
+  heavyTruckDeaths30d: "TOT_CAM_MAS3500_MU30DF",
+  busDeaths30d: "TOT_BUS_MU30DF",
+  pmvDeaths30d: "TOT_VMP_MU30DF",
+  otherVehicleDeaths30d: "TOT_OTRO_MU30DF",
+  unspecifiedDeaths30d: "TOT_SINESPECIF_MU30DF",
+} as const;
+
+export type DeathField = keyof typeof DEATHS_BY_USER_TYPE;
+
+/**
+ * The 12 counts of one row, from a header lookup: an integer, 0 for an empty
+ * cell, or null when the file has no such column (not every year has every
+ * type). Throws on a value that isn't a whole number ≥ 0.
+ */
+export function deathsByUserType(
+  header: (name: string) => string | undefined,
+  has: (name: string) => boolean
+): Record<DeathField, number | null> {
+  const out = {} as Record<DeathField, number | null>;
+  for (const [field, name] of Object.entries(DEATHS_BY_USER_TYPE) as [DeathField, string][]) {
+    if (!has(name)) {
+      out[field] = null;
+      continue;
+    }
+    const raw = header(name);
+    const n = raw == null ? 0 : Number(raw);
+    if (!Number.isInteger(n) || n < 0) throw new Error(`${name}: «${raw}» is not a count`);
+    out[field] = n;
+  }
+  return out;
+}
