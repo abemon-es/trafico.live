@@ -83,6 +83,7 @@ const STALE_THRESHOLDS: Record<string, number> = {
   "transit-gtfs": 691200,      // Sunday 06:00
   "dgt-extras": 691200,        // Sunday 06:30 (probes empty endpoints — heartbeats anyway)
   "imd": 691200,               // Sunday 07:00
+  "historical-accidents": 2764800, // monthly 1st 06:15 (crontabs/weekly) → 32d
   // default for any unlisted task — purposefully tight so new collectors
   // surface in /api/health within hours, not days
   "_default": 14400,
