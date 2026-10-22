@@ -23,6 +23,8 @@ import {
   Footprints,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { VehicleDataPending } from "@/components/insights/VehicleDataPending";
+import { hasVehicleFlag } from "@/lib/accident-vehicles";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import {
@@ -224,6 +226,11 @@ async function getPageData() {
 // ---------------------------------------------------------------------------
 
 export default async function CiclistasYPeatonesPage() {
+  // No vehicle types in the microdata yet: the title, the notice and the
+  // analyses that use every accident, no charts (src/lib/accident-vehicles.ts).
+  if (!((await hasVehicleFlag("involvesBicycle")) && (await hasVehicleFlag("involvesPedestrian")))) {
+    return <VehicleDataPending title="Seguridad de ciclistas y peatones" icon={Users} breadcrumbs={[{ name: "Inicio", href: "/" }, { name: "Inteligencia", href: "/inteligencia/lluvia-y-accidentes" }, { name: "Ciclistas y peatones", href: "/inteligencia/ciclistas-y-peatones" }]} />;
+  }
   const { cyclist, pedestrian } = await getPageData();
 
   // Night fatality stats for pedestrians

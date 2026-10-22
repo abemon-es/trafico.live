@@ -21,6 +21,8 @@ import {
   BarChart3,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { VehicleDataPending } from "@/components/insights/VehicleDataPending";
+import { hasVehicleFlag } from "@/lib/accident-vehicles";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import {
@@ -270,6 +272,11 @@ async function getMotoData() {
 // ---------------------------------------------------------------------------
 
 export default async function MotociclistasPage() {
+  // No vehicle types in the microdata yet: the title, the notice and the
+  // analyses that use every accident, no charts (src/lib/accident-vehicles.ts).
+  if (!((await hasVehicleFlag("involvesMotorcycle")))) {
+    return <VehicleDataPending title="Seguridad vial para motociclistas" icon={Shield} breadcrumbs={[{ name: "Inicio", href: "/" }, { name: "Inteligencia", href: "/inteligencia/lluvia-y-accidentes" }, { name: "Motociclistas", href: "/inteligencia/motociclistas" }]} />;
+  }
   const data = await getMotoData();
 
   const trendDirection =

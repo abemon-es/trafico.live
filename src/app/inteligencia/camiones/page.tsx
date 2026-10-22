@@ -23,6 +23,8 @@ import {
   Eye,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { VehicleDataPending } from "@/components/insights/VehicleDataPending";
+import { hasVehicleFlag } from "@/lib/accident-vehicles";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import {
@@ -308,6 +310,11 @@ async function getTruckData() {
 // ---------------------------------------------------------------------------
 
 export default async function CamionesPage() {
+  // No vehicle types in the microdata yet: the title, the notice and the
+  // analyses that use every accident, no charts (src/lib/accident-vehicles.ts).
+  if (!((await hasVehicleFlag("involvesTruck")))) {
+    return <VehicleDataPending title="Seguridad vial del transporte pesado" icon={Truck} breadcrumbs={[{ name: "Inicio", href: "/" }, { name: "Inteligencia", href: "/inteligencia/lluvia-y-accidentes" }, { name: "Camiones", href: "/inteligencia/camiones" }]} />;
+  }
   const data = await getTruckData();
 
   const trendPct =

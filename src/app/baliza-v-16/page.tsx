@@ -21,7 +21,7 @@ export const revalidate = 86400;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Baliza V-16 DGT 2026 | Homologadas y Precio",
+  title: "Baliza V-16 conectada DGT 2026: homologadas y normativa",
   description:
     "Todo sobre la baliza V-16 conectada, la única válida desde el 1 de enero de 2026 (DGT 3.0): qué es, cómo funciona y cómo comprobar si la tuya está homologada.",
   path: "/baliza-v-16",
@@ -77,7 +77,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "¿Cuánto dura la batería de una baliza V-16?",
-    a: "La normativa exige un mínimo de 30 minutos de funcionamiento, pero la mayoría de modelos homologados ofrecen entre 16 y 48 horas de autonomía. Los modelos con batería recargable USB (microUSB o USB-C) son los más prácticos para tener siempre cargados.",
+    a: "La normativa exige un mínimo de 30 minutos de funcionamiento. Los modelos con batería recargable USB (microUSB o USB-C) son los más prácticos para tener siempre cargados.",
   },
   {
     q: "¿Puedo usar la misma baliza en varios vehículos?",
@@ -85,7 +85,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "¿Dónde comprar una baliza V-16 homologada?",
-    a: "Las balizas V-16 homologadas están disponibles en grandes superficies (El Corte Inglés, Carrefour, Leroy Merlin), tiendas de automoción (Norauto, Aurgi), estaciones de servicio (Repsol Waylet) y Amazon España. Verifica siempre el número de homologación antes de comprar.",
+    a: "Las balizas V-16 homologadas están disponibles en grandes superficies (El Corte Inglés, Carrefour, Leroy Merlin), tiendas de automoción (Norauto, Aurgi), estaciones de servicio y Amazon España. Verifica siempre el número de homologación antes de comprar.",
   },
   {
     q: "¿Funciona la baliza V-16 con la app DGT 3.0?",
