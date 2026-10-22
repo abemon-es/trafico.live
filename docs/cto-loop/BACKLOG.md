@@ -125,7 +125,18 @@ exactly for 2019–2023, but was never loaded beyond 2021–2023.
   back the false forms. It fails on main's files.
 - **Checks on compute:** 4 tests ok, web tsc 11, lint 64.
 
-**Needs:** CMO OK on the copy before the merge (54 titles change).
+**CMO OK on the copy**, with one fix in the same PR: the hub FAQ said the
+DGT data cover interurban roads only, but the totals are all roads. It now
+says «Sí. Los datos de la DGT incluyen accidentes con víctimas en vías
+interurbanas y urbanas.», with no split (see the L1 item on `isUrban`).
+
+**CTO review, both points done:**
+- **Cost, measured with EXPLAIN (ANALYZE, BUFFERS), read-only.** Prisma's
+  `aggregate` on the microdata wraps it in an `OFFSET` subquery that scans
+  all 466,123 entries of the year index (68 ms). A plain `min/max` is two
+  probes (0.067 ms), and the helper now uses it. HistoricalAccidents has 156
+  rows: 0.1–0.2 ms. No new index needed.
+- **The `catch`es log** `[accident-years] … unavailable: <error type>`.
 
 **Queued:**
 - **L1 (CTO, prod write):** the 2014–2020 and 2024 years of
@@ -133,11 +144,17 @@ exactly for 2019–2023, but was never loaded beyond 2021–2023.
   at 24 h with no hospital split, so a load keeps the series homogeneous
   (2014+). The `historical-accidents` task has no schedule and looks for
   `data/` outside the image.
-- **Content (CMO):**
-  - the hub FAQ says the DGT data cover interurban roads only, but the
-    totals (101,306 accidents with victims in 2023) are all roads;
-  - /baliza-v-16 says «a partir del 1 de julio de 2026»: check it against the
-    rule in force.
+- **L1 (CMO: yes, 2024 first, then 2014–2020).** Load the wider range. The
+  PR puts the data in the image and gives the task a schedule; CTO.
+- **L1** `AccidentMicrodata.isUrban` is empty for 64 % of rows (2023: 1,411
+  urban, 35,330 interurban, 64,565 unknown). The importer's zone mapping
+  needs fixing, and /inteligencia/ciclistas-y-peatones relies on it.
+- **L2, next (CMO, BOE checked):** under RD 159/2021, first transitional
+  provision, the connected V-16 has been the only valid device since
+  **1-01-2026**. /baliza-v-16 says 1-07-2026: the metadata, 6 FAQ answers,
+  the hero and a countdown to 2026-07-01. `V16InfoSection` says it has been
+  mandatory «desde el 1 de julio de 2021». Every mention on the site goes in
+  one PR, with the CMO's text.
 
 ---
 

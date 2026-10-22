@@ -93,8 +93,10 @@ const faqItems = (years: { provincial: YearSpan | null; microdata: YearSpan | nu
   },
   {
     question: "¿Se incluyen accidentes en vías urbanas?",
-    answer:
-      "Los datos de la DGT solo incluyen accidentes con víctimas en carreteras interurbanas. Los accidentes en vías urbanas son competencia de la Dirección General de Tráfico local y no están integrados en el mismo sistema de recopilación.",
+    // Not «solo interurbanas»: the totals (101,306 accidents with victims in
+    // 2023) are all roads. No split: AccidentMicrodata.isUrban is empty for
+    // 64 % of rows (2023: 1,411 urban, 35,330 interurban, 64,565 unknown).
+    answer: "Sí. Los datos de la DGT incluyen accidentes con víctimas en vías interurbanas y urbanas.",
   },
   {
     question: "¿Cómo interpretar la tendencia de fallecidos?",

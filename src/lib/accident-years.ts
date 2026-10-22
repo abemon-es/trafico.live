@@ -17,6 +17,11 @@ function span(min: number | null | undefined, max: number | null | undefined): Y
   return min != null && max != null ? { from: min, to: max } : null;
 }
 
+/** The page then claims no range; the log says why (the error's type only). */
+function unavailable(what: string, err: unknown): void {
+  console.warn(`[accident-years] ${what} unavailable:`, err instanceof Error ? err.name : typeof err);
+}
+
 /** «2021-2023», «2023», or null when there is no data (a build without a DB). */
 export function spanText(s: YearSpan | null): string | null {
   if (!s) return null;
@@ -27,15 +32,20 @@ export function spanText(s: YearSpan | null): string | null {
 export const accidentYears = cache(async (): Promise<{ provincial: YearSpan | null; microdata: YearSpan | null }> => {
   if (isBuildWithoutDb()) return { provincial: null, microdata: null };
   try {
+    // Plain min/max on the microdata: two index probes (0.07 ms). Prisma's
+    // aggregate wraps it in an OFFSET subquery that scans all 466k rows of
+    // the year index (68 ms), measured on 2026-10-22.
     const [provincial, microdata] = await Promise.all([
       prisma.historicalAccidents.aggregate({ _min: { year: true }, _max: { year: true } }),
-      prisma.accidentMicrodata.aggregate({ _min: { year: true }, _max: { year: true } }),
+      prisma.$queryRaw<{ from: number | null; to: number | null }[]>`
+        SELECT min(year) AS "from", max(year) AS "to" FROM "AccidentMicrodata"`,
     ]);
     return {
       provincial: span(provincial._min.year, provincial._max.year),
-      microdata: span(microdata._min.year, microdata._max.year),
+      microdata: span(microdata[0]?.from, microdata[0]?.to),
     };
-  } catch {
+  } catch (err) {
+    unavailable("accident years", err);
     return { provincial: null, microdata: null };
   }
 });
@@ -50,7 +60,8 @@ export const provinceAccidentYears = cache(async (provinceCode: string): Promise
       _max: { year: true },
     });
     return span(r._min.year, r._max.year);
-  } catch {
+  } catch (err) {
+    unavailable("province accident years", err);
     return null;
   }
 });
@@ -65,7 +76,8 @@ export const nationalFatalities = cache(async (): Promise<{ year: number; fatali
       orderBy: { year: "asc" },
     });
     return rows.map((r) => ({ year: r.year, fatalities: r._sum.fatalities ?? 0 }));
-  } catch {
+  } catch (err) {
+    unavailable("fatalities by year", err);
     return [];
   }
 });

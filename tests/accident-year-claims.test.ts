@@ -37,7 +37,11 @@ function codeLines(path: string): string[] {
   const src = readFileSync(join(ROOT, "src/lib/accident-years.ts"), "utf8");
   assert.match(src, /return s\.from === s\.to \? String\(s\.from\) : `\$\{s\.from\}-\$\{s\.to\}`;/, "spanText's format");
   assert.match(src, /historicalAccidents\.aggregate\(\{ _min: \{ year: true \}, _max: \{ year: true \} \}\)/);
-  assert.match(src, /accidentMicrodata\.aggregate\(\{ _min: \{ year: true \}, _max: \{ year: true \} \}\)/);
+  // The microdata span as a plain min/max: Prisma's aggregate scans the
+  // whole year index (68 ms against 0.07 ms on 466k rows).
+  assert.match(src, /SELECT min\(year\) AS "from", max\(year\) AS "to" FROM "AccidentMicrodata"/);
+  assert.ok(!/accidentMicrodata\.aggregate/.test(src), "no Prisma aggregate over the microdata");
+  assert.equal((src.match(/catch \(err\) \{\n\s+unavailable\(/g) ?? []).length, 3, "every failure is logged");
 }
 
 // 2. The pages fed by HistoricalAccidents.
