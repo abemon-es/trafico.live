@@ -243,7 +243,16 @@ if (( NO_REMOTE == 0 )); then
           new_7d_issues: ([$i[] | select(.first > $now - 604800)]
                    | sort_by(-.count) | .[0:8]
                    | map(. + {first: (.first | todate), last: (.last | todate)})),
-          counts: (map({(.id): .count}) | add // {})
+          counts: (map({(.id): .count}) | add // {}),
+          # supercronic has had no DSN since #198 (collectors recreated
+          # 2026-10-22T09:27:08Z). Its issues cannot be resolved with the
+          # read-only token, so they stay open and quiet: a lastSeen after
+          # the cutoff means a job reached the Sentry of supercronic without
+          # the dispatcher.
+          supercronic_regression: ([$i[]
+                   | select((.title | test("^error running command: exit status"))
+                            and .last > ("2026-10-22T09:27:08Z" | fromdateiso8601))]
+                   | map({short, count, last: (.last | todate)}))
         }
     end' <<<"${GT_RAW:-null}" 2>/dev/null)"
   GLITCHTIP="$(json_or_null "$GLITCHTIP")"
@@ -273,10 +282,13 @@ SILENT="$(jq -n \
     | ($health.collectors // [])
       | map(select(.status != "ok" or .stale == true))
       | map(. + {
-          # True silent failure: data is stale, yet Docker sees nothing wrong
-          # anywhere. This is the AIS blackout signature — a healthcheck that
-          # only proves PID 1 is alive while the data pipeline is dead.
-          silent_failure: (.stale == true and ($sick | length) == 0),
+          # True silent failure: data is stale, yet nothing anywhere says so.
+          # This is the AIS blackout signature — a healthcheck that only proves
+          # PID 1 is alive while the data pipeline is dead. A task whose last
+          # run recorded "error" is failing loudly, not silently: since
+          # lastSuccessAt (#197) it is stale while it keeps running and
+          # reporting its error.
+          silent_failure: (.stale == true and .status != "error" and ($sick | length) == 0),
           unhealthy_containers: $sick
         })
       | sort_by(if .status == "error" then 0 elif .stale then 1 else 2 end)
@@ -384,7 +396,7 @@ if (( PRETTY )); then
     "",
     "degraded collectors:",
     (.degraded_collectors[]? |
-      "  \(if .silent_failure then "[SILENT] " else "" end)\(.task)  status=\(.status) stale=\(.stale) age=\(.ageSeconds)s  \(.errorMessage // "")\(if .running == true then "  running, slow but alive: last progress \(.progressAgeSeconds)s ago" elif (.meta | type) == "object" and .meta.runStartedAt then "  run started \(.meta.runStartedAt), not finished (running, or killed mid-run)" else "" end)"),
+      "  \(if .silent_failure then "[SILENT] " else "" end)\(.task)  status=\(.status) stale=\(.stale) \(if .ageSeconds == null then "no success on record" else "age=\(.ageSeconds)s" end)\(if .lastRunAt and .ageSeconds == null then " (ran \(now - (.lastRunAt | sub("\\.[0-9]+"; "") | fromdateiso8601) | floor)s ago)" else "" end)\(if .cause then " cause=\(.cause)" else "" end)  \(.errorMessage // "")\(if .running == true then "  running, slow but alive: last progress \(.progressAgeSeconds)s ago" elif (.meta | type) == "object" and .meta.runStartedAt then "  run started \(.meta.runStartedAt), not finished (running, or killed mid-run)" else "" end)"),
     "",
     "top loki error sources (1h):",
     (.loki_errors_1h[]? | "  \(.container): \(.errors_1h)"),
@@ -392,6 +404,9 @@ if (( PRETTY )); then
     (if (.glitchtip|type) != "object" then "glitchtip:   not probed"
      elif .glitchtip.ok != true then "⚠ GLITCHTIP PROBE FAILED: \(.glitchtip.error // "?")"
      else
+       (if ((.glitchtip.supercronic_regression // []) | length) > 0
+        then "⚠ SUPERCRONIC REPORTING AGAIN (no DSN since #198): \([.glitchtip.supercronic_regression[] | "[\(.short)] last \(.last)"] | join(", "))"
+        else empty end),
        "glitchtip:   \(.glitchtip.unresolved)\(if .glitchtip.capped then "+" else "" end) unresolved · active24h=\(.glitchtip.active_24h) new24h=\(.glitchtip.new_24h) new7d=\(.glitchtip.new_7d) · \(if .glitchtip.since_prev_s == null then "first probe, no rate yet" else "+\(.glitchtip.events_since_prev) events in \((.glitchtip.since_prev_s / 60) | floor)m" end)",
        (.glitchtip.active[]? |
          "  \(if .delta == null then "   ?" else "+\(.delta)" end)  n=\(.count)  [\(.short)] \(.title[0:70])  ← \(.source)"),
