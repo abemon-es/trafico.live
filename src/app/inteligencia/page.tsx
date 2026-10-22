@@ -60,23 +60,23 @@ const SUB_SECTIONS = [
     icon: CloudRain,
   },
   {
-    title: "Motociclistas",
+    title: "Motoristas fallecidos",
     description:
-      "Radiografía del riesgo para usuarios de moto: tramos con mayor siniestralidad, perfil del accidente grave y comparativa con el resto de vehículos.",
+      "Motoristas y ciclomotoristas fallecidos a 30 días: por año, provincia, hora, día de la semana y en vías urbanas e interurbanas. Datos DGT.",
     href: "/inteligencia/motociclistas",
     icon: TrendingUp,
   },
   {
-    title: "Camiones y transporte de mercancías",
+    title: "Ocupantes de camión fallecidos",
     description:
-      "Análisis de la incidencia del transporte pesado en la red viaria: corredores con más tráfico pesado, accidentalidad y restricciones de circulación.",
+      "Conductores y pasajeros de camiones fallecidos a 30 días: por año, provincia, hora, día de la semana y en vías urbanas e interurbanas. Datos DGT.",
     href: "/inteligencia/camiones",
     icon: Truck,
   },
   {
-    title: "Ciclistas y peatones",
+    title: "Peatones y ciclistas fallecidos",
     description:
-      "Los usuarios vulnerables de la vía: dónde y cuándo ocurren los atropellos y accidentes con ciclistas, y qué factores aumentan el riesgo.",
+      "Peatones y ciclistas fallecidos a 30 días: por año, provincia, hora, día de la semana y en vías urbanas e interurbanas. Datos DGT.",
     href: "/inteligencia/ciclistas-y-peatones",
     icon: Bike,
   },

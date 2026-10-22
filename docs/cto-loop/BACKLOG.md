@@ -90,6 +90,52 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (113) — D: the three vehicle pages count deaths at 30 days by user type
+
+**What changes (CMO rules; CMO approved the copy, 2026-10-22):**
+- /inteligencia/camiones, /motociclistas and /ciclistas-y-peatones are
+  rebuilt on the 12 `*Deaths30d` columns that C filled: people of each
+  user type killed in the accident or the 30 days after, never «accidentes
+  con camión» or «de moto» (the DGT doesn't publish the vehicles involved).
+  Series: trucks ≤ 3,500 kg / > 3,500 kg · motorcycle / moped ·
+  pedestrians / cyclists, each kept apart.
+- One shared page (`UserTypeDeathsPage`): an intro sentence from the data,
+  stat cards, deaths by year, hour and day of week, urban/interurban, the
+  top 10 provinces, a method note («Cuenta personas, no accidentes»), and a
+  Dataset schema whose years come from the data. The truck page says once
+  that it counts truck occupants, not every victim of a crash with a truck.
+- Metadata from the data; indexable and back in the sitemap in this deploy
+  (CMO), on condition of a live check within the hour.
+- Without data the pages show `UserTypeDeathsUnavailable`, noindex, with the
+  CMO's neutral line («Los datos de fallecidos no están disponibles en este
+  momento. Inténtalo de nuevo en unos minutos.»); the old «desglose por tipo
+  de vehículo» notice is gone.
+- Rendered per request (`force-dynamic`), with the figures an hour in Redis
+  (`getOrCompute`): no build copy, which would be the noindex fallback
+  served after every deploy (`src/lib/db.ts`). A failed read isn't cached.
+- /inteligencia hub cards and the /analisis/accidentes FAQ on the
+  microdata: new CMO copy («también por tipo de usuario…»; the dated note
+  stays at the end).
+- Gone: the old charts on the involves* flags (`moto-charts.tsx`),
+  `src/lib/accident-vehicles.ts` and `VehicleDataPending`.
+
+**Data, read-only render through the new lib (2019–2023):** truck occupants
+55 + 226 (2023: 11 + 42, 2.9 % of all deaths); motorcyclists 1943 and
+moped riders 185 (2023: 455 + 30, 26.9 %); pedestrians 1643 and cyclists
+385 (2023: 353 + 90, 24.5 %). 52 provinces, 24 hours, 7 days; the six
+queries take ~1 s for the three pages. pmvDeaths30d is NULL for 2019 only
+(no VMP column in that file); none of these pages uses it.
+
+Checks: `accident-microdata-claims` rewritten for the new pages, plus
+columns, year-claims and public-docs: 4 ok · web tsc 11 · lint 64.
+
+**Next:** CTO merge, then the live gate within the hour (CMO): the three
+pages 200 and indexable, figures equal to the province table, no
+«accidentes con…», Dataset only with data, in the sitemap. If any fails:
+noindex at once and tell the CMO.
+
+---
+
 ## Cycle 2026-10-22 (112) — C applied; the pages say the deaths are at 30 days, and since when
 
 **C (#193) applied**, after the CTO's backup of the 466,123 rows:
