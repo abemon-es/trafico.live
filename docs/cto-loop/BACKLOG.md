@@ -90,6 +90,44 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (109) — collector deploys wait for the runs in flight: `bin/deploy-collectors.sh`
+
+**#190 merged** (`cbf32677`). **#189 closed:** `migrate resolve --applied`
+at 07:14, and 0 migrations unfinished.
+
+**L0 (CTO):** this morning's two collector deploys were a bare `docker
+compose build && up -d`. They killed voyage-detector's 04:00Z run and
+gas-station's 06:00 Madrid run, whose prices stayed 17 h old until it was
+re-run by hand (05:13Z, ok). The guard of #108 was never a script.
+
+**This PR:**
+- **`bin/deploy-collectors.sh`:** builds, then handles each collector whose
+  image changed:
+  - it waits until nothing with a `TASK=` is running inside it. It reads
+    `/proc/*/cmdline`, since the image has no ps;
+  - tasks scheduled every minute in its own crontab don't count, otherwise
+    collector-realtime would never be idle;
+  - the wait is capped at 900 s; a service still busy is skipped (exit 1)
+    unless `FORCE=1`;
+  - collector-ais (always on) is recreated without waiting;
+  - it then recreates that one service (`up -d --no-deps`), and lists the
+    crontab entries due while it was down, so they can be re-run;
+  - `DRY_RUN=1` builds and says what it would do.
+- **`bin/cron-window.mjs`:** the window, run inside the container (node, the
+  crontab and its TZ). Live: collector-fuel at 04:00Z gives `06:00
+  TASK=gas-station`; collector-frequent gives `weather` and
+  `voyage-detector`.
+- **Test `deploy-collectors`** on the real crontabs: this morning's two
+  killed runs; steps, ranges and dom/dow; the script's /proc, --no-deps,
+  cap, skip, ais and every-minute rules.
+- Checks: `bash -n` ok; `running_tasks` live against the 6 containers
+  (read-only).
+
+**Next:** env-only defaults in bin/scripts/enricher plus the private IPs in
+CLAUDE.md/docs (CSO); then C.
+
+---
+
 ## Cycle 2026-10-22 (108) — the public docs no longer name the database host, the database or its roles
 
 **#189 merged** (`cd12a63e`). The CTO ran the SQL by hand before the merge:
