@@ -466,7 +466,7 @@ export default async function ProvinciaAccidentesPage({ params }: PageProps) {
                   <StatCard
                     title="Víctimas mortales"
                     value={formatNumber(data.totals.fatalities)}
-                    sub="Fallecidos en 30 días o en el acto"
+                    sub="Fallecidos a 30 días"
                     icon={Users}
                     accentColor="red"
                     trend={

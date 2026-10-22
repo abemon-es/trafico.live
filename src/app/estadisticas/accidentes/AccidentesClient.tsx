@@ -214,7 +214,7 @@ export function AccidentesClient({
           <StatCard
             title="Víctimas mortales"
             value={formatNumber(totals.fatalities)}
-            sub="Fallecidos en 30 días o en el acto"
+            sub="Fallecidos a 30 días"
             icon={Users}
           />
           <StatCard

@@ -20,7 +20,6 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-// @ts-expect-error plain .mjs, no types
 import { fieldValues, missedRuns, parseCrontab } from "../bin/cron-window.mjs";
 
 const HERE = typeof __dirname !== "undefined" ? __dirname : dirname(fileURLToPath(import.meta.url));
