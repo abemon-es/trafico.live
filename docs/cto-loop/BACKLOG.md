@@ -90,6 +90,79 @@ own text on hubs).
 
 ---
 
+## Cycles 2026-10-22 (95–96) — three kinds of row, one rule: reported incidents, vehicle stops, city sensors
+
+**Merged and gated:**
+- **#172 + #173** (`ef6974b5`, 23:30:14Z, CMO event #7): 285 internal
+  links 200; the 7 old URLs one 308 hop to a 200; the home with no «Próximo»,
+  no stale seasonal link and no «cada minuto»; the stamp in Madrid time
+  (01:30 at 01:37).
+- **#174** (`77817da7`; collectors with `src/lib/vehicle-stops.js`).
+- **#175** (`5c8dd5ef`, 23:44:42Z, event #8): both contact forms replaced
+  by a mailto until trafico.live has its own email sender. hola@ has its own
+  Cloudflare Email Routing rule to MJ's mailbox, destination verified (CTO).
+  API routes log identifiers, with a guard (`no-pii-in-api-logs`).
+
+**Daily report 22-10** (00:00:47Z, the first under #168/#171/#174):
+- **fuel:** «vs ayer» from the stored series (diesel 1.893, 0.0 %); no fuel
+  alert since the fix; «13 avisos en 1 provincia».
+- **The headline was still wrong:** «4.765 incidencias nuevas frente a 1.195
+  (+298,7 %)».
+  - 3,466 of them were city measurement points: Madrid informo sensors
+    (3,201 on 21-10, against 249 and 114 before) and Barcelona sections
+    (265).
+  - Each sensor's row restarts its `startedAt` on every congestion episode,
+    so the count is «sensors that congested at least once that day».
+
+**CMO decision (b), one rule for everything:**
+- the headline «incidencias» counts reported incidents only (DGT, SCT,
+  Euskadi, CyL…);
+- vehicle stops and «retenciones detectadas por sensores urbanos (Madrid,
+  Barcelona, Valencia)», counted by sensor, each get their own line;
+- the automatic «más intensa / tranquila» needs a clear move that isn't one
+  feed's artefact;
+- the history is corrected once, with the final rule.
+
+**This PR:**
+- **`src/lib/incident-classes.ts`** (it was vehicle-stops.ts): every row is
+  exactly one of reported, vehicleStop or citySensor, with one rule per
+  class and where-fragments safe for NULL `causeType` and NULL `source`.
+  - `trend()`: a move of a quarter or more that survives removing the
+    source that moved most. Otherwise «feed», and the report gives the
+    figures without a verdict.
+  - DGT is ~¾ of reported volume, so a «does one source make most of the
+    move» test would have called every real nationwide rise an artefact.
+- **Daily and weekly reports:** the headline over reported incidents only;
+  lines and table rows for vehicle stops and city sensors, so the three add
+  up to the total.
+- **Real day (21-10):** 7,967 = 1,281 reported + 3,227 vehicle stops + 3,459
+  city sensors; active 1,008 = 780 + 94 + 134. The headline: 1,281 vs 1,093
+  → «normal» (it said +298.7 %).
+
+**Found, next L2:** about a dozen pages claim accident data «2011-2024»,
+«desde 2011» or «desde 2015». HistoricalAccidents holds 2021–2023 (52
+provinces × 3, the DGT «en cifras» series as imported), and the microdata
+2019–2023. No data was lost; the text is wrong.
+
+**Open, in order:**
+1. **L1:** this PR → collector deploy (CTO) → the next daily report reads
+   reported incidents only.
+2. **L1:** home step 2: `/api/stats` gains `incidentsReported`,
+   `vehicleStops` and `citySensors` (additive, CTO); the counter, ticker and
+   «activas» read them.
+3. **L1:** correct the history of the daily and weekly reports' incident
+   figures, with the final rule and the CMO's dated note.
+4. **L2:** the accident year claims, from the DB or without a range.
+5. **L3 (CMO-approved):** 308 for the 7 short province aliases, plus «Todas
+   las provincias».
+6. **Ops (CTO):** archiving the untracked prod files; the 24 h no-PII log
+   count after 23:45Z on 22-10.
+7. **Daily (22-10):** GSC/GA4 + GlitchTip digest.
+8. **Waiting on MJ:** the AEMET key; the email sender (SES) for the forms;
+   SASEMAR; self-merge for low-risk PRs; a reply to the 18-10 contact.
+
+---
+
 ## Cycles 2026-10-22 (92–94) — reports on closed days, a home that claims only what's live, 10 dead footer links
 
 **#170 applied and verified.**

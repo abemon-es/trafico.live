@@ -29,8 +29,10 @@ import {
   nationalFuel,
   incidentCounts,
   countIncidents,
+  reportedBySource,
   num,
 } from "./shared";
+import { trend } from "../../../../../src/lib/incident-classes.js";
 
 export async function generateWeeklyReport(prisma: PrismaClient): Promise<number> {
   const now = new Date();
@@ -58,9 +60,9 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
     end.setUTCDate(end.getUTCDate() + 1);
     return { start, end };
   });
-  const [week, lastWeekTotal, thisWeekV16Total, perDay, fuel, provinceNameMap] = await Promise.all([
+  const [week, lastWeekBySource, thisWeekV16Total, perDay, fuel, provinceNameMap] = await Promise.all([
     incidentCounts(prisma, weekAgoUTC, todayUTC),
-    countIncidents(prisma, twoWeeksAgoUTC, weekAgoUTC),
+    reportedBySource(prisma, twoWeeksAgoUTC, weekAgoUTC),
     prisma.v16BeaconEvent.count({ where: { activatedAt: { gte: weekAgoUTC, lt: todayUTC } } }),
     Promise.all(days.map((d) => countIncidents(prisma, d.start, d.end))),
     nationalFuel(prisma, todayUTC),
@@ -70,6 +72,7 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
   if (week.total === 0) return 0;
 
   const thisWeekTotal = week.total;
+  const lastWeekTotal = Object.values(lastWeekBySource).reduce((s, n) => s + n, 0);
   const provinceAgg = week.byProvince;
   const typeAgg = week.byType;
   const peakHour = week.peakHour;
@@ -107,27 +110,22 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
   let trendWord: string;
   let leadSentence: string;
 
-  if (lastWeekTotal === 0) {
-    trendWord = "activo";
-    leadSentence = `Esta semana se han registrado **${fmtInt(thisWeekTotal)} incidencias** en las carreteras españolas.`;
+  // «Intensa» / «tranquila» only for a clear move that no single feed explains
+  // (src/lib/incident-classes.ts); otherwise the figures, without a verdict.
+  const weekTrend = trend(week.bySource, lastWeekBySource, 1);
+  const pct = lastWeekTotal > 0 ? fmtPct(((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100) : "";
+  if (weekTrend === "up") {
+    trendWord = "intensa";
+    leadSentence = `Semana **más intensa de lo habitual**: ${fmtInt(thisWeekTotal)} incidencias, un ${pct} más que la semana anterior (${fmtInt(lastWeekTotal)}).`;
+  } else if (weekTrend === "down") {
+    trendWord = "tranquila";
+    leadSentence = `Semana **más tranquila de lo normal**: ${fmtInt(thisWeekTotal)} incidencias, un ${pct} respecto a la semana anterior (${fmtInt(lastWeekTotal)}).`;
+  } else if (weekTrend === "normal") {
+    trendWord = "normal";
+    leadSentence = `Semana **dentro de lo habitual**: ${fmtInt(thisWeekTotal)} incidencias, frente a ${fmtInt(lastWeekTotal)} la semana anterior (${pct}).`;
   } else {
-    const ratio = thisWeekTotal / lastWeekTotal;
-    if (ratio >= 1.2) {
-      trendWord = "intensa";
-      leadSentence = `Semana **más intensa de lo habitual**: ${fmtInt(thisWeekTotal)} incidencias, un ${fmtPct(((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100)} más que la semana anterior (${fmtInt(lastWeekTotal)}).`;
-    } else if (ratio <= 0.8) {
-      trendWord = "tranquila";
-      leadSentence = `Semana **más tranquila de lo normal**: ${fmtInt(thisWeekTotal)} incidencias, un ${fmtPct(((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100)} respecto a la semana anterior (${fmtInt(lastWeekTotal)}).`;
-    } else if (ratio >= 1.05) {
-      trendWord = "algo movida";
-      leadSentence = `Semana **algo más movida**: ${fmtInt(thisWeekTotal)} incidencias frente a ${fmtInt(lastWeekTotal)} la semana pasada (${fmtPct(((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100)}).`;
-    } else if (ratio <= 0.95) {
-      trendWord = "ligeramente mejor";
-      leadSentence = `Semana **ligeramente mejor** que la anterior: ${fmtInt(thisWeekTotal)} incidencias frente a ${fmtInt(lastWeekTotal)} (${fmtPct(((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100)}).`;
-    } else {
-      trendWord = "normal";
-      leadSentence = `Semana **dentro de lo habitual**: ${fmtInt(thisWeekTotal)} incidencias, similar a las ${fmtInt(lastWeekTotal)} de la semana anterior.`;
-    }
+    trendWord = "activo";
+    leadSentence = `Esta semana se han registrado **${fmtInt(thisWeekTotal)} incidencias** en las carreteras españolas${lastWeekTotal > 0 ? `, frente a ${fmtInt(lastWeekTotal)} la semana anterior` : ""}.`;
   }
 
   // ── Top 10 provinces ─────────────────────────────────────────────────────
@@ -142,7 +140,7 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
 
   // ── Type breakdown ────────────────────────────────────────────────────────
   // Vehicle stops as their own row: incidents plus vehicle stops is the whole.
-  const typeEntries = [...Object.entries(typeAgg), ["VEHICLE_STOPS", week.vehicleStops] as [string, number]]
+  const typeEntries = [...Object.entries(typeAgg), ["VEHICLE_STOPS", week.vehicleStops] as [string, number], ["CITY_SENSORS", week.citySensors] as [string, number]]
     .sort((a, b) => b[1] - a[1])
     .filter(([, c]) => c > 0);
   const totalTyped = typeEntries.reduce((s, [, c]) => s + c, 0) || 1;
@@ -157,6 +155,7 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
     `**${fmtInt(thisWeekTotal)}** incidencias nuevas esta semana`,
     `**${fmtInt(lastWeekTotal)}** incidencias nuevas la semana anterior`,
     `**${fmtInt(week.vehicleStops)}** vehículos detenidos (balizas V16 y averías) esta semana`,
+    `**${fmtInt(week.citySensors)}** sensores urbanos con retención (Madrid, Barcelona, Valencia) esta semana`,
     `**${fmtInt(thisWeekV16Total)}** activaciones de balizas V16`,
   ];
   if (peakHour != null) {

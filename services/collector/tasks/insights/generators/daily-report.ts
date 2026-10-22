@@ -25,10 +25,11 @@ import {
   INCIDENT_TYPE_NAMES,
   nationalFuel,
   incidentCounts,
-  countIncidents,
+  reportedBySource,
   activeCounts,
   num,
 } from "./shared";
+import { trend } from "../../../../../src/lib/incident-classes.js";
 
 export async function generateDailyReport(prisma: PrismaClient): Promise<number> {
   const slug = `informe-diario-${todaySlug()}`;
@@ -64,7 +65,7 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
     }),
     nationalFuel(prisma, todayStart),
     // Same unit as `yesterday`: incidents started, over 7 closed days.
-    countIncidents(prisma, weekBeforeStart, yesterdayStart),
+    reportedBySource(prisma, weekBeforeStart, yesterdayStart),
     getProvinceNameMap(prisma),
   ]);
 
@@ -85,10 +86,14 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
       : null;
 
   // ── 7-day average ────────────────────────────────────────────────────────
-  // Incidents and vehicle stops apart (src/lib/vehicle-stops.ts), the same
+  // The three classes apart (src/lib/incident-classes.ts), the same
   // split on every figure: active, yesterday and the 7 days before.
   const yesterdayIncidents = yesterday.total;
-  const avg7d = weekBeforeCount > 0 ? weekBeforeCount / 7 : null;
+  const weekBeforeTotal = Object.values(weekBeforeCount).reduce((s, n) => s + n, 0);
+  const avg7d = weekBeforeTotal > 0 ? weekBeforeTotal / 7 : null;
+  // «Más intensa» / «tranquila» only for a clear move that no single feed
+  // explains (src/lib/incident-classes.ts): 21-10's «+298.7 %» was city sensors.
+  const dayTrend = trend(yesterday.bySource, weekBeforeCount, 7);
   const active = activeIncidents.incidents;
 
   // ── Yesterday's breakdowns, from the same rows ───────────────────────────
@@ -116,14 +121,13 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
   const timeStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
 
   let leadSentence: string;
-  if (avg7d == null) {
+  if (avg7d == null || dayTrend == null || dayTrend === "feed") {
     leadSentence = `Ayer se registraron **${fmtInt(yesterdayIncidents)} incidencias** nuevas en las carreteras españolas.`;
   } else {
-    const ratio = yesterdayIncidents / avg7d;
     const pct = fmtPct(((yesterdayIncidents - avg7d) / avg7d) * 100);
-    if (ratio >= 1.25) {
+    if (dayTrend === "up") {
       leadSentence = `Ayer fue una jornada **más intensa de lo habitual**: ${fmtInt(yesterdayIncidents)} incidencias nuevas frente a una media de ${fmtInt(avg7d)} en los 7 días anteriores (${pct}).`;
-    } else if (ratio <= 0.75) {
+    } else if (dayTrend === "down") {
       leadSentence = `Ayer fue una jornada **tranquila en carretera**: ${fmtInt(yesterdayIncidents)} incidencias nuevas, por debajo de la media de ${fmtInt(avg7d)} de los 7 días anteriores (${pct}).`;
     } else {
       leadSentence = `Ayer, tráfico **dentro de lo normal**: ${fmtInt(yesterdayIncidents)} incidencias nuevas, próximo a la media de ${fmtInt(avg7d)} de los 7 días anteriores.`;
@@ -137,8 +141,9 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
 
   // The type table adds the vehicle stops as their own row, so incidents plus
   // vehicle stops is the whole: nothing hidden.
-  const totalTyped = typeEntries.reduce((s, [, c]) => s + c, 0) + yesterday.vehicleStops || 1;
-  const typeTableRows = [...typeEntries, ["VEHICLE_STOPS", yesterday.vehicleStops] as [string, number]].filter(([, c]) => c > 0).map(([type, count]) => [
+  const extraRows: [string, number][] = [["VEHICLE_STOPS", yesterday.vehicleStops], ["CITY_SENSORS", yesterday.citySensors]];
+  const totalTyped = typeEntries.reduce((s, [, c]) => s + c, 0) + yesterday.vehicleStops + yesterday.citySensors || 1;
+  const typeTableRows = [...typeEntries, ...extraRows].filter(([, c]) => c > 0).map(([type, count]) => [
     INCIDENT_TYPE_NAMES[type] ?? type,
     String(count),
     fmtPct((count / totalTyped) * 100).replace("+", ""),
@@ -185,7 +190,8 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
 
 - **${fmtInt(active)}** incidencias activas en este momento
 - **${fmtInt(yesterdayIncidents)}** incidencias nuevas ayer${avg7d != null ? `\n- Media de los 7 días anteriores: **${fmtInt(avg7d)}** incidencias nuevas al día` : ""}
-- Vehículos detenidos (balizas V16 y averías): **${fmtInt(yesterday.vehicleStops)}** nuevos ayer, **${fmtInt(activeIncidents.vehicleStops)}** activos ahora`);
+- Vehículos detenidos (balizas V16 y averías): **${fmtInt(yesterday.vehicleStops)}** nuevos ayer, **${fmtInt(activeIncidents.vehicleStops)}** activos ahora
+- Retenciones detectadas por sensores urbanos (Madrid, Barcelona, Valencia): **${fmtInt(yesterday.citySensors)}** sensores con retención ayer, **${fmtInt(activeIncidents.citySensors)}** ahora`);
 
   // Type breakdown
   if (typeTableRows.length > 0) {
@@ -263,7 +269,7 @@ Sin alertas meteorológicas activas en este momento.`);
   const body = sections.join("\n\n");
 
   const title = `Informe de tráfico — ${dateStr}`;
-  const summary = `${fmtInt(active)} incidencias activas, ${fmtInt(yesterdayIncidents)} nuevas ayer${avg7d != null ? ` (media de los 7 días anteriores: ${fmtInt(avg7d)})` : ""}, y ${fmtInt(yesterday.vehicleStops)} vehículos detenidos. Diésel: ${fmtPrice(dieselNow)} €/L. Gasolina 95: ${fmtPrice(gas95Now)} €/L. ${activeAlerts.length} alertas meteorológicas.`;
+  const summary = `${fmtInt(active)} incidencias activas, ${fmtInt(yesterdayIncidents)} nuevas ayer${avg7d != null ? ` (media de los 7 días anteriores: ${fmtInt(avg7d)})` : ""}; aparte, ${fmtInt(yesterday.vehicleStops)} vehículos detenidos y ${fmtInt(yesterday.citySensors)} sensores urbanos con retención. Diésel: ${fmtPrice(dieselNow)} €/L. Gasolina 95: ${fmtPrice(gas95Now)} €/L. ${activeAlerts.length} alertas meteorológicas.`;
 
   const category: ArticleCategory = "DAILY_REPORT";
 

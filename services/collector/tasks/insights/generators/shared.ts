@@ -1,5 +1,5 @@
 import { PrismaClient, ArticleCategory, FuelPriceDailyStats } from "@prisma/client";
-import { NOT_VEHICLE_STOP_WHERE, VEHICLE_STOP_WHERE } from "../../../../../src/lib/vehicle-stops.js";
+import { CITY_SENSOR_WHERE, REPORTED_WHERE, VEHICLE_STOP_WHERE } from "../../../../../src/lib/incident-classes.js";
 
 const tagCache = new Map<string, string>();
 
@@ -90,38 +90,44 @@ export async function nationalFuel(prisma: PrismaClient, onOrBefore: Date): Prom
 }
 
 export interface IncidentCounts {
-  /** Incidents, vehicle stops left out (see src/lib/vehicle-stops.ts). */
+  /** Reported incidents only (src/lib/incident-classes.ts). */
   total: number;
-  /** Stopped or broken-down vehicles, counted on their own line. */
+  /** Stopped or broken-down vehicles, on their own line. */
   vehicleStops: number;
-  /** Incidents by type (vehicle stops not included). */
+  /** City measurement points that went congested or closed: one per sensor. */
+  citySensors: number;
+  /** Reported incidents by type. */
   byType: Record<string, number>;
-  /** Incidents by province code. */
+  /** Reported incidents by province code. */
   byProvince: Record<string, number>;
-  /** The Madrid hour (0-23) in which most incidents started, or null. */
+  /** Reported incidents by source, for the headline's single-feed check. */
+  bySource: Record<string, number>;
+  /** The Madrid hour (0-23) in which most reported incidents started, or null. */
   peakHour: number | null;
 }
 
 const madridHour = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", hourCycle: "h23", timeZone: "Europe/Madrid" });
 
 /**
- * Incidents that started in [from, to), one row per source situation: the unit
- * «incidencias» means. DailyStats sums hourly snapshots of the active set
- * (incident-hours), which read as «593.436 incidencias» in a week. Reports
- * count closed periods only, so like is compared with like, and vehicle stops
- * (88 % of what DGT opens) go on their own line, by the rule in
- * src/lib/vehicle-stops.ts. The peak hour is counted from the same rows, so
- * the rule is never written twice.
+ * Incidents that started in [from, to), one row per source situation, split by
+ * the three classes of src/lib/incident-classes.ts: reported incidents (the
+ * headline), vehicle stops and city sensors (each on its own line). A city
+ * sensor's row restarts on every congestion episode, so its count is the
+ * sensors that congested at least once in the window. DailyStats sums hourly
+ * snapshots (incident-hours) and is not used. The peak hour is counted from
+ * the same rows, so the rule is never written twice.
  */
 export async function incidentCounts(prisma: PrismaClient, from: Date, to: Date): Promise<IncidentCounts> {
   const window = { startedAt: { gte: from, lt: to } };
-  const incidents = { AND: [window, NOT_VEHICLE_STOP_WHERE] };
-  const [total, vehicleStops, byType, byProvince, starts] = await Promise.all([
-    prisma.trafficIncident.count({ where: incidents }),
+  const reported = { AND: [window, REPORTED_WHERE] };
+  const [total, vehicleStops, citySensors, byType, byProvince, bySource, starts] = await Promise.all([
+    prisma.trafficIncident.count({ where: reported }),
     prisma.trafficIncident.count({ where: { AND: [window, VEHICLE_STOP_WHERE] } }),
-    prisma.trafficIncident.groupBy({ by: ["type"], where: incidents, _count: { _all: true } }),
-    prisma.trafficIncident.groupBy({ by: ["province"], where: { AND: [incidents, { province: { not: null } }] }, _count: { _all: true } }),
-    prisma.trafficIncident.findMany({ where: incidents, select: { startedAt: true } }),
+    prisma.trafficIncident.count({ where: { AND: [window, CITY_SENSOR_WHERE] } }),
+    prisma.trafficIncident.groupBy({ by: ["type"], where: reported, _count: { _all: true } }),
+    prisma.trafficIncident.groupBy({ by: ["province"], where: { AND: [reported, { province: { not: null } }] }, _count: { _all: true } }),
+    prisma.trafficIncident.groupBy({ by: ["source"], where: reported, _count: { _all: true } }),
+    prisma.trafficIncident.findMany({ where: reported, select: { startedAt: true } }),
   ]);
   const hours = new Map<number, number>();
   for (const { startedAt } of starts) {
@@ -132,24 +138,38 @@ export async function incidentCounts(prisma: PrismaClient, from: Date, to: Date)
   return {
     total,
     vehicleStops,
+    citySensors,
     byType: Object.fromEntries(byType.map((r) => [r.type, r._count._all])),
     byProvince: Object.fromEntries(byProvince.map((r) => [r.province as string, r._count._all])),
+    bySource: Object.fromEntries(bySource.map((r) => [r.source ?? "—", r._count._all])),
     peakHour: peak ? peak[0] : null,
   };
 }
 
-/** Incidents started in [from, to), vehicle stops left out: a bare count. */
-export function countIncidents(prisma: PrismaClient, from: Date, to: Date): Promise<number> {
-  return prisma.trafficIncident.count({ where: { AND: [{ startedAt: { gte: from, lt: to } }, NOT_VEHICLE_STOP_WHERE] } });
+/** Reported incidents started in [from, to), by source: the headline's base. */
+export async function reportedBySource(prisma: PrismaClient, from: Date, to: Date): Promise<Record<string, number>> {
+  const rows = await prisma.trafficIncident.groupBy({
+    by: ["source"],
+    where: { AND: [{ startedAt: { gte: from, lt: to } }, REPORTED_WHERE] },
+    _count: { _all: true },
+  });
+  return Object.fromEntries(rows.map((r) => [r.source ?? "—", r._count._all]));
 }
 
-/** Active incidents and active vehicle stops, by the same rule. */
-export async function activeCounts(prisma: PrismaClient): Promise<{ incidents: number; vehicleStops: number }> {
-  const [incidents, vehicleStops] = await Promise.all([
-    prisma.trafficIncident.count({ where: { AND: [{ isActive: true }, NOT_VEHICLE_STOP_WHERE] } }),
-    prisma.trafficIncident.count({ where: { AND: [{ isActive: true }, VEHICLE_STOP_WHERE] } }),
+/** Reported incidents started in [from, to): a bare count. */
+export function countIncidents(prisma: PrismaClient, from: Date, to: Date): Promise<number> {
+  return prisma.trafficIncident.count({ where: { AND: [{ startedAt: { gte: from, lt: to } }, REPORTED_WHERE] } });
+}
+
+/** Active rows of each class, by the same rule. */
+export async function activeCounts(prisma: PrismaClient): Promise<{ incidents: number; vehicleStops: number; citySensors: number }> {
+  const active = { isActive: true };
+  const [incidents, vehicleStops, citySensors] = await Promise.all([
+    prisma.trafficIncident.count({ where: { AND: [active, REPORTED_WHERE] } }),
+    prisma.trafficIncident.count({ where: { AND: [active, VEHICLE_STOP_WHERE] } }),
+    prisma.trafficIncident.count({ where: { AND: [active, CITY_SENSOR_WHERE] } }),
   ]);
-  return { incidents, vehicleStops };
+  return { incidents, vehicleStops, citySensors };
 }
 
 /** A stored average as a number, or null. */
@@ -214,6 +234,8 @@ export const INCIDENT_TYPE_NAMES: Record<string, string> = {
   EVENT: "Evento",
   CLOSURE: "Corte",
   OTHER: "Otro",
-  // Not a TrafficIncident type: the reports' own row for src/lib/vehicle-stops.ts.
+  // Not a TrafficIncident type: the reports' own row for src/lib/incident-classes.ts.
   VEHICLE_STOPS: "Vehículos detenidos (balizas V16 y averías)",
+  // Not a TrafficIncident type: the reports' own row for city measurement points.
+  CITY_SENSORS: "Retenciones detectadas por sensores urbanos (Madrid, Barcelona, Valencia)",
 };
