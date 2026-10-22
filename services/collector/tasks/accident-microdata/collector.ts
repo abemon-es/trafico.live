@@ -20,6 +20,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { log, logError, inferRoadType } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
+import { resolveColumns, zoneIsUrban } from "./columns.js";
 
 const TASK = "accident-microdata";
 
@@ -28,7 +29,7 @@ const TASK = "accident-microdata";
 // 2019: different path (publicaciones/Ficheros_microdatos...)
 // 2020-2022: lowercase .xlsx extension
 // 2023: uppercase .XLSX
-const YEARS: Array<{ year: number; urls: string[] }> = [
+export const YEARS: Array<{ year: number; urls: string[] }> = [
   {
     year: 2019,
     urls: [
@@ -290,18 +291,8 @@ function parseDayOfWeek(raw: string | undefined): number | undefined {
   return MAP[s] ?? undefined;
 }
 
-// ── Column name finder — handles variations across DGT years ──────────────
-/**
- * Given a header row and a list of candidate column names (case-insensitive),
- * return the first matching column letter (Excel col index → 0-based).
- */
-function findColIndex(headers: (string | undefined)[], candidates: string[]): number {
-  const lc = candidates.map((c) => c.toLowerCase());
-  return headers.findIndex((h) => h && lc.includes(h.toLowerCase().trim()));
-}
-
 // ── Download XLSX as Buffer ───────────────────────────────────────────────
-async function downloadXlsx(url: string): Promise<Buffer | null> {
+export async function downloadXlsx(url: string): Promise<Buffer | null> {
   try {
     log(TASK, `Downloading ${url}`);
     const response = await fetch(url, {
@@ -427,37 +418,12 @@ async function importYear(
         // First row = headers
         if (!headerParsed) {
           headers = values.slice(1).map((v) => (v ? String(v).trim() : undefined));
-          COL = {
-            fecha:          findColIndex(headers, ["FECHA", "FECHA_ACCIDENTE", "FECHA ACCIDENTE"]),
-            anyo:           findColIndex(headers, ["ANYO", "AÑO", "ANNO"]),
-            mes:            findColIndex(headers, ["MES"]),
-            hora:           findColIndex(headers, ["HORA", "HORA_ACCIDENTE"]),
-            diaSemana:      findColIndex(headers, ["DIA_SEMANA", "DIA SEMANA", "DIASEMANA"]),
-            codProvincia:   findColIndex(headers, ["COD_PROVINCIA", "CPRO"]),
-            provincia:      findColIndex(headers, ["PROVINCIA"]),
-            codMunicipio:   findColIndex(headers, ["COD_MUNICIPIO", "CMUN"]),
-            municipio:      findColIndex(headers, ["MUNICIPIO"]),
-            carretera:      findColIndex(headers, ["CARRETERA", "VIA", "NOMBRE_VIA", "NOMBRE VIA"]),
-            km:             findColIndex(headers, ["KM", "P_KM", "PK"]),
-            tipoVia:        findColIndex(headers, ["TIPO_VIA", "TIPO VIA", "TIPOVIA", "SUBTIPO_VIA"]),
-            zona:           findColIndex(headers, ["ZONA", "ZONA_AGRUPADA", "ZONA AGRUPADA"]),
-            // DGT uses TOTAL_MU24H / TOTAL_MU30DF for fatalities
-            muertos:        findColIndex(headers, ["TOTAL_MU24H", "TOTAL_MU30DF", "TOTAL_MUERTOS", "MUERTOS", "FALLECIDOS", "NUM_MUERTOS"]),
-            gravesHosp:     findColIndex(headers, ["TOTAL_HG24H", "TOTAL_HG30DF", "TOTAL_HERIDOS_GRAVES", "HERIDOS_GRAVES", "NUM_HERIDOS_GRAVES"]),
-            leves:          findColIndex(headers, ["TOTAL_HL24H", "TOTAL_HL30DF", "TOTAL_HERIDOS_LEVES", "HERIDOS_LEVES", "NUM_HERIDOS_LEVES"]),
-            vehiculos:      findColIndex(headers, ["TOTAL_VEHICULOS", "NUM_VEHICULOS", "VEHICULOS_IMPLICADOS"]),
-            tipoAccidente:  findColIndex(headers, ["TIPO_ACCIDENTE", "TIPO ACCIDENTE", "TIPOACCIDENTE"]),
-            causas:         findColIndex(headers, ["CAUSA", "CAUSAS", "FACTORES_CONCURRENTES"]),
-            atmosfera:      findColIndex(headers, ["CONDICION_METEO", "FACTORES_ATMOSFERICOS", "FACTORES ATMOSFERICOS", "ATMOSFERA"]),
-            luminosidad:    findColIndex(headers, ["CONDICION_ILUMINACION", "LUMINOSIDAD", "ILUMINACION"]),
-            superficie:     findColIndex(headers, ["CONDICION_FIRME", "SUPERFICIE", "ESTADO_CALZADA", "ESTADO CALZADA"]),
-            turismo:        findColIndex(headers, ["TURISMO", "TURISMOS"]),
-            moto:           findColIndex(headers, ["MOTOCICLETA", "MOTOS", "MOTOCICLETAS"]),
-            camion:         findColIndex(headers, ["CAMION", "CAMIONES", "VEHICULO PESADO"]),
-            bus:            findColIndex(headers, ["AUTOBUS", "BUS", "AUTOBUSES"]),
-            bici:           findColIndex(headers, ["BICICLETA", "BICICLETAS", "CICLO"]),
-            peaton:         findColIndex(headers, ["PEATON", "PEATONES", "PEATÓN"]),
-          };
+          COL = resolveColumns(headers);
+          // Deaths and injuries at 30 days or not at all: never 24 h figures,
+          // and never a silent 0 for a missing column.
+          if (COL.muertos < 0 || COL.gravesHosp < 0 || COL.leves < 0) {
+            throw new Error(`Year ${year}: no 30-day casualty columns (TOTAL_MU30DF/HG30DF/HL30DF), not importing`);
+          }
           log(TASK, `Year ${year}: columns: ${headers.filter(Boolean).join(", ")}`);
           headerParsed = true;
           continue;
@@ -523,14 +489,7 @@ async function importYear(
         const rawKm = getNum(COL.km);
         if (rawKm !== undefined && rawKm >= 0 && rawKm < 100000) km = rawKm;
 
-        let isUrban: boolean | undefined;
-        const rawZona = getVal(COL.zona);
-        if (rawZona) {
-          const z = rawZona.toUpperCase().trim();
-          // DGT uses numeric codes: 1=interurbana, 2=urbana (or text labels)
-          if (z === "2" || z.includes("URBANA") && !z.includes("INTERURBANA")) isUrban = true;
-          if (z === "1" || z.includes("INTERURBANA") || z.includes("NO URBANA")) isUrban = false;
-        }
+        const isUrban = zoneIsUrban(getVal(COL.zonaAgrupada), getVal(COL.zona));
 
         const causeRaw = getVal(COL.causas) ?? getVal(COL.tipoAccidente);
 
