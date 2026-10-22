@@ -55,6 +55,10 @@ next item. Spinning on an unobtainable secret wastes the whole cycle.
 - Collector fix → re-run the task, then confirm the heartbeat actually advanced.
 - Web change → `npm run lint` + `npx tsc --noEmit` locally. Never a full
   production build on the Mac; the deploy gate builds every push.
+- Collector deploys **only** via `bin/deploy-collectors.sh` (`DRY_RUN=1` first):
+  it waits for the runs in flight and lists the ones due while a container was
+  down. Never a bare `docker compose -f docker-compose.collectors.yml up -d`: on
+  2026-10-22 that killed voyage-detector and the 06:00 gas-station run.
 - After any web deploy → `bin/smoke-test.sh`. On failure, roll back first and
   diagnose second.
 

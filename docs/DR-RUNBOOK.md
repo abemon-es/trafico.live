@@ -16,11 +16,11 @@
 
 | Component | Host | Address | Notes |
 |-----------|------|---------|-------|
-| Database (Postgres 16 + PostGIS) | primary | 10.100.0.3 | PgBouncer :6440 → Postgres :5432 |
+| Database (Postgres 16 + PostGIS) | primary | <db-host-private-ip> | PgBouncer :6440 → Postgres :5432 |
 | Web app | compute | 168.119.34.248 | Docker Compose, Traefik, `/opt/trafico` |
 | Collectors | compute | 168.119.34.248 | Separate Compose stack, `/opt/apps/trafico-live` |
-| Redis | primary | 10.100.0.3:6441 | ioredis, cache + rate-limiting |
-| Typesense | primary | 10.100.0.3:6442 | 26 collections |
+| Redis | primary | <db-host-private-ip>:6441 | ioredis, cache + rate-limiting |
+| Typesense | primary | <db-host-private-ip>:6442 | 26 collections |
 | Tile server | compute | tiles.trafico.live:8088 | nginx + Martin, static PMTiles |
 | WireGuard VPN | compute→primary | wg0 | compute has VPN to primary |
 
@@ -57,7 +57,7 @@
 ## 3. Backup Topology
 
 ```
-primary (10.100.0.3)
+primary (<db-host-private-ip>)
   └── pg_dump -Fc -Z6 -j4  [nightly 01:00 UTC]
         └── /var/backups/trafico/YYYYMMDDTHHMM.dump
               ├── Retention: 7 daily + 4 weekly (Sun) + 3 monthly (1st)
@@ -294,7 +294,7 @@ pg_restore \
 
 # 8. Verify from compute
 docker run --rm postgres:16-alpine \
-  psql "postgresql://<admin-role>:PASSWORD@10.100.0.3:6440/<db>" \
+  psql "postgresql://<admin-role>:PASSWORD@<db-host-private-ip>:6440/<db>" \
   -c "SELECT COUNT(*) FROM traffic_incidents;"
 
 # 9. Restart collectors + web

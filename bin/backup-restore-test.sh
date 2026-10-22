@@ -18,8 +18,10 @@ set -euo pipefail
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
 DB_USER="${DB_USER:-postgres}"          # superuser for CREATE/DROP DATABASE
-DB_RESTORE_USER="${DB_RESTORE_USER:-trafico_admin}"
-SCRATCH_DB="${SCRATCH_DB:-le_trafico_restoretest}"
+# No default for the role or the database: a script that fails is better than
+# one that guesses (CSO, 2026-10-22). The values are in the server docs.
+DB_RESTORE_USER="${DB_RESTORE_USER:?set DB_RESTORE_USER (the role that owns the restored database)}"
+SCRATCH_DB="${SCRATCH_DB:?set SCRATCH_DB (a scratch database name, dropped after the test)}"
 DOWNLOAD_DIR="${DOWNLOAD_DIR:-/tmp/trafico-restore-test}"
 R2_REMOTE="${R2_REMOTE:-r2}"
 R2_BUCKET="${R2_BUCKET:-trafico-backups}"

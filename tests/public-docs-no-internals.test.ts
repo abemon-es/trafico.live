@@ -6,8 +6,12 @@
  * live in the server repo's docs, which are private.
  *
  * Scans every Markdown file under docs/ and monitoring/, plus the root
- * README. Code and applied migrations are out of scope: their names are
- * functional, and editing an applied migration changes its checksum.
+ * README and CLAUDE.md, for those names and for private (RFC 1918)
+ * addresses. Also scans bin/, scripts/ and enricher/ for the names: their
+ * database settings come from the environment, with no default (CSO).
+ * Out of scope: applied migrations (editing them changes their checksum),
+ * monitoring configs (container names), compose and nginx files (working
+ * config with private addresses; moving it to env is another project).
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:public-docs
@@ -35,6 +39,8 @@ const FORBIDDEN = new Set([
   "cb16ca7e8eaecc1a69250e5a0c983d0bcf49de9043590013e4404d4393e7366e",
 ]);
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
+/** RFC 1918 addresses: 10/8, 172.16/12, 192.168/16. */
+const PRIVATE_IP = /\b(10\.\d{1,3}|172\.(1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}\b(?!\/\d)/; // a CIDR range is generic
 /** Whether a line has a forbidden name as a whole token. */
 const leaks = (line: string) => (line.match(/[A-Za-z0-9_-]+/g) ?? []).some((t) => FORBIDDEN.has(sha(t.toLowerCase())));
 
@@ -47,18 +53,31 @@ function* markdown(dir: string): Generator<string> {
   }
 }
 
-const files = [...markdown(join(ROOT, "docs")), ...markdown(join(ROOT, "monitoring")), join(ROOT, "README.md")].filter((p) => existsSync(p));
+function* code(dir: string, ext: RegExp): Generator<string> {
+  if (!existsSync(dir)) return;
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name);
+    if (statSync(p).isDirectory()) yield* code(p, ext);
+    else if (ext.test(name)) yield p;
+  }
+}
+
+const files = [...markdown(join(ROOT, "docs")), ...markdown(join(ROOT, "monitoring")), join(ROOT, "README.md"), join(ROOT, "CLAUDE.md")].filter((p) => existsSync(p));
+const scripts = [...code(join(ROOT, "bin"), /\.(sh|mjs|py)$/), ...code(join(ROOT, "scripts"), /\.(sh|py|mjs|ts)$/), ...code(join(ROOT, "enricher"), /\.py$/)];
 const offenders: string[] = [];
-for (const p of files) {
+for (const p of [...files, ...scripts]) {
+  const doc = p.endsWith(".md");
   readFileSync(p, "utf8")
     .split("\n")
     .forEach((line, i) => {
-      if (leaks(line)) offenders.push(`${relative(ROOT, p)}:${i + 1}: ${line.trim().slice(0, 120)}`);
+      if (leaks(line) || (doc && PRIVATE_IP.test(line))) offenders.push(`${relative(ROOT, p)}:${i + 1}: ${line.trim().slice(0, 120)}`);
     });
 }
 assert.deepEqual(offenders, [], `internal names in public docs:\n${offenders.join("\n")}`);
 // The check itself works: a placeholder passes, and so does an ordinary word.
 assert.equal(leaks("psql -U <admin-role> -d <db>"), false);
+assert.ok(PRIVATE_IP.test("upstream 192.168.1.20:80") && PRIVATE_IP.test("10.1.2.3") && !PRIVATE_IP.test("127.0.0.1"), "private ranges, not loopback");
+assert.ok(!PRIVATE_IP.test("allow 10.0.0.0/8;"), "a CIDR range names no host");
 assert.ok(readFileSync(join(ROOT, "docs/cto-loop/PLAYBOOK.md"), "utf8").includes("are in the server repo's docs"), "the PLAYBOOK says where the real values are");
 
-console.log(`public-docs: ok (${files.length} Markdown files, no database host, name or role)`);
+console.log(`public-docs: ok (${files.length} Markdown files without internal names or private addresses; ${scripts.length} scripts without database defaults)`);

@@ -25,7 +25,7 @@ Real-time Spanish multimodal transport intelligence platform. Aggregates data fr
 | Fonts | Exo 2 (headings), DM Sans (body), JetBrains Mono (stats) |
 | Icons | Lucide React exclusively |
 | Analytics | Google Analytics |
-| Logging | Loki (Docker log driver → `10.100.0.2:3100`) |
+| Logging | Loki (Docker log driver → `<compute-private-ip>:3100`) |
 | Error tracking | Sentry via GlitchTip (client+server+collector) |
 
 ## Quick Start
@@ -288,7 +288,7 @@ npm run db:seed      # Seed database
 | PostgreSQL + PostGIS | hetzner-dev via PgBouncer | Prisma 7, `@prisma/adapter-pg`, 25-conn pool |
 | Redis | :6441 (dedicated) | Cache + rate limiting, ioredis 5.9.2 |
 | Typesense | :6442 | 26 collections, daily sync, geo-search |
-| Loki | `10.100.0.2:3100` | Docker log driver, batch 400 |
+| Loki | `<compute-private-ip>:3100` | Docker log driver, batch 400 |
 | Sentry/GlitchTip | HTTPS tunnel `/monitoring` | Client 50% replays, server 25% traces, collector 10% |
 | Deploy | `compute` (hetzner-prod) | Plain Docker Compose + Traefik. Web auto-deploys via `deploy.abemon.es` webhook → `/opt/trafico`. Collectors at `/opt/apps/trafico-live` (manual deploy). |
 | Tile server | tiles.trafico.live:8088 | nginx + Martin, Traefik SSL, 18 PMTiles + 8 dynamic sources |

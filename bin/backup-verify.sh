@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # backup-verify.sh — Nightly Postgres backup + verification for trafico.live
-# Runs on: primary (10.100.0.3) as postgres user or root/admin
+# Runs on: the DB host, as postgres user or root/admin (server docs, private)
 # Cron:    0 1 * * * /opt/trafico/bin/backup-verify.sh >> /var/log/trafico-backup.log 2>&1
 #
 # Dependencies: pg_dump, pg_restore, rclone (optional), curl (optional)
@@ -17,10 +17,12 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 # Configuration — override via environment variables if needed
 # ---------------------------------------------------------------------------
-DB_NAME="${DB_NAME:-le_trafico}"
+# No default for the database or the role: a backup that fails loudly is
+# better than one that guesses (CSO, 2026-10-22). The cron line sets them.
+DB_NAME="${DB_NAME:?set DB_NAME (the database to back up)}"
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
-DB_USER="${DB_USER:-trafico_admin}"
+DB_USER="${DB_USER:?set DB_USER (the role pg_dump connects as)}"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/trafico}"
 PROM_FILE="${PROM_FILE:-/var/lib/node_exporter/textfile_collector/trafico_backup.prom}"
 # Remote upload target. BACKUP_* preferred; R2_* kept for backwards compat.

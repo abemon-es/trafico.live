@@ -25,10 +25,10 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 
 # --- DB: direct via WireGuard (no SSH tunnel needed) ---
-DB_HOST = "10.100.0.3"
-DB_PORT = 6440
-DB_NAME = "le_trafico"
-DB_USER = "trafico_app"
+DB_HOST = os.environ["TRAFICO_DB_HOST"]
+DB_PORT = int(os.environ["TRAFICO_DB_PORT"])
+DB_NAME = os.environ["TRAFICO_DB_NAME"]
+DB_USER = os.environ["TRAFICO_DB_APP_USER"]
 DB_PASS = os.environ["TRAFICO_APP_PASSWORD"]
 
 # --- Geonode proxy ---

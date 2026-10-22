@@ -113,10 +113,10 @@ To rotate the password: `ALTER ROLE <admin-role> PASSWORD '...'` in psql, then u
 
 ```bash
 # Via PgBouncer (standard)
-ssh compute "docker exec coolify-db psql -h 10.100.0.3 -p 6436 -U apps <db>"
+ssh compute "docker exec coolify-db psql -h <db-host-private-ip> -p 6436 -U apps <db>"
 
 # Direct PG (for migrations, schema changes)
-ssh compute "docker exec coolify-db psql -h 10.100.0.3 -p 5435 -U apps <db>"
+ssh compute "docker exec coolify-db psql -h <db-host-private-ip> -p 5435 -U apps <db>"
 ```
 
 ### Run Prisma Migrations
@@ -136,7 +136,7 @@ npm run db:studio
 ### Check Data Freshness
 
 ```bash
-ssh compute "docker exec coolify-db psql -h 10.100.0.3 -p 6436 -U apps <db> -c \"
+ssh compute "docker exec coolify-db psql -h <db-host-private-ip> -p 6436 -U apps <db> -c \"
   SELECT 'incidents' as table_name, COUNT(*) as total, MAX(\\\"startedAt\\\") as latest FROM \\\"TrafficIncident\\\" WHERE \\\"isActive\\\" = true
   UNION ALL
   SELECT 'v16', COUNT(*), MAX(\\\"activatedAt\\\") FROM \\\"V16BeaconEvent\\\" WHERE \\\"isActive\\\" = true
@@ -152,13 +152,13 @@ ssh compute "docker exec coolify-db psql -h 10.100.0.3 -p 6436 -U apps <db> -c \
 ### Flush a Cache Key
 
 ```bash
-ssh compute "docker exec coolify-redis redis-cli -h 10.100.0.3 -p 6385 -a PASSWORD DEL api:fuel-prices:today"
+ssh compute "docker exec coolify-redis redis-cli -h <db-host-private-ip> -p 6385 -a PASSWORD DEL api:fuel-prices:today"
 ```
 
 ### List Cache Keys
 
 ```bash
-ssh compute "docker exec coolify-redis redis-cli -h 10.100.0.3 -p 6385 -a PASSWORD KEYS 'api:*'"
+ssh compute "docker exec coolify-redis redis-cli -h <db-host-private-ip> -p 6385 -a PASSWORD KEYS 'api:*'"
 ```
 
 ## Monitoring
@@ -207,6 +207,6 @@ ssh compute "docker logs atgqhoy0dfhohmdheh2rd1r5-manual-1774956936 --tail 100"
 
 ### Database Unreachable
 
-1. Check WireGuard: `ssh compute "ping -c1 10.100.0.3"`
+1. Check WireGuard: `ssh compute "ping -c1 <db-host-private-ip>"`
 2. Check PgBouncer: `ssh <db-host> "docker ps | grep pgbouncer"`
 3. Check PostgreSQL: `ssh <db-host> "docker ps | grep postgres"`

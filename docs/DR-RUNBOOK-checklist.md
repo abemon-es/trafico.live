@@ -19,7 +19,7 @@
 
 ## DB Down / primary unreachable
 
-- [ ] SSH to `primary` (10.100.0.3) — needs operator credentials + WireGuard VPN
+- [ ] SSH to `primary` (<db-host-private-ip>) — needs operator credentials + WireGuard VPN
 - [ ] Check Postgres status: `ssh primary systemctl status postgresql`
 - [ ] If Postgres crashed: `ssh primary systemctl restart postgresql` — then verify
 - [ ] If disk full: `ssh primary df -h` — free space before restarting

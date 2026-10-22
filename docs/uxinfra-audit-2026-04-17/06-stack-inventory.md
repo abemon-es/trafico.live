@@ -18,11 +18,11 @@ _Audit date: 2026-04-17 | Server: hetzner-prod (168.119.34.248)_
 | Trafico app dir | `/opt/trafico/` → 174 GB total |
 | Public IP | 168.119.34.248 |
 | IPv6 | 2a01:4f8:242:2107::2 |
-| Internal network | 10.100.0.2 (Docker bridge host alias) |
+| Internal network | <compute-private-ip> (Docker bridge host alias) |
 | DNS / CDN | Cloudflare (DNS-only for `tiles.trafico.live`; proxied for `trafico.live`) |
 | Reverse proxy | Traefik (container `traefik`, ports 80/443/UDP 443) |
 | SSL | Traefik auto-ACME via Cloudflare |
-| Backup | No automated backup observed on hetzner-prod; DB is on separate hetzner-dev (`10.100.0.3`) |
+| Backup | No automated backup observed on hetzner-prod; DB is on separate hetzner-dev (`<db-host-private-ip>`) |
 | Orchestration | Coolify (manages Traefik, Compose apps, deploy webhooks) |
 
 ---
@@ -69,20 +69,20 @@ _Live state from `docker ps` on 2026-04-17._
 
 ### Next.js Web — `trafico-live`
 - Next.js 16.2.2, React 19.2.3, Node.js 24.15.0
-- Port 3000, routed via Traefik on `web` Docker network (IP: 10.0.3.38)
+- Port 3000, routed via Traefik on `web` Docker network (IP: <docker-network-ip>)
 - Health check: `GET /api/health` every 30s
-- Loki log driver → 10.100.0.2:3100
+- Loki log driver → <compute-private-ip>:3100
 
 ### PostgreSQL + PostGIS
-- **Location:** hetzner-dev (`10.100.0.3`) — separate server from hetzner-prod
-- Monitored by Prometheus postgres_exporter on `10.100.0.3:9189` (trafico DB)
+- **Location:** hetzner-dev (`<db-host-private-ip>`) — separate server from hetzner-prod
+- Monitored by Prometheus postgres_exporter on `<db-host-private-ip>:9189` (trafico DB)
 - Prisma 7.3.0 with `@prisma/adapter-pg`, 78 models
 
 ### PgBouncer
 - Container: `cifex-pgbouncer-local` (shared with cifex project, on cifex-compute network)
 - Image: `edoburu/pgbouncer:latest`
 - Config: `pool_mode=transaction`, `default_pool_size=20`, `max_client_conn=400`
-- Port: 5432 (internal to cifex-compute network, 10.0.4.112)
+- Port: 5432 (internal to cifex-compute network, <docker-network-ip>)
 
 ### Redis — dedicated instance `:6441`
 - Container: `glitchtip-redis` (shared with GlitchTip)
@@ -237,7 +237,7 @@ All built from `services/collector/Dockerfile.cron`, on `web` Docker network, lo
                           └────────────────────────┼────────────────────────────┘
                                                    │ TCP (PgBouncer)
                           ┌────────────────────────▼────────────────────────────┐
-                          │         HETZNER DEV  10.100.0.3 (separate server)  │
+                          │         HETZNER DEV  <db-host-private-ip> (separate server)  │
                           │                                                     │
                           │  PostgreSQL + PostGIS  (78 models, 2400-line schema)│
                           │  PgBouncer  (transaction mode, pool=20, max=400)    │

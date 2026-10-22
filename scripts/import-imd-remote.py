@@ -17,7 +17,7 @@ import urllib.request
 import urllib.parse
 import time
 
-DB_URL = os.environ.get("DATABASE_URL", "postgresql://apps@127.0.0.1:5435/le_trafico")
+DB_URL = os.environ.get("DATABASE_URL") or sys.exit("set DATABASE_URL (no default: the server docs have it)")
 BASE_URL = "https://mapas.fomento.gob.es/arcgis/rest/services/MapaTrafico"
 MAX_RECORDS = 1000
 YEARS = [2017, 2018, 2019]

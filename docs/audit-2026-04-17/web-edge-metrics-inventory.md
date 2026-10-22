@@ -104,7 +104,7 @@
 
 ## Key findings summary
 
-- **Traefik Prometheus metrics are the primary source** — already scraped at `10.100.0.2:8082`, label `exported_service="trafico-live-svc@file"`. Full histogram + counters available. No gaps here.
+- **Traefik Prometheus metrics are the primary source** — already scraped at `<compute-private-ip>:8082`, label `exported_service="trafico-live-svc@file"`. Full histogram + counters available. No gaps here.
 - **Loki has Traefik access logs** with full per-request detail (`RequestPath`, `Duration`, status codes) but requires double-JSON parse in LogQL (`|= "trafico.live" | json`-on-outer-wrap + secondary parse). Suitable for log panels, slow for high-cardinality metric queries.
 - **No Next.js application metrics** — the app has `@opentelemetry` installed but no metrics endpoint wired. This is the biggest gap for understanding per-route performance.
 - **Martin tile server `/metrics` is broken** (returns "does not exist") — a one-line config fix.
