@@ -48,7 +48,14 @@ async function main() {
     const active = new Set(
       (await pool.query<{ id: string }>(`SELECT id FROM "TrafficIncident" WHERE "isActive"`)).rows.map((r) => r.id)
     );
-    const exported = (await client.collections("incidents").documents().export({ include_fields: "id" })) as string;
+    // A plain fetch, not the client: the client's 10 s timeout cut the export
+    // once Typesense was busy compacting after the first 792,000 deletes.
+    const base = (process.env.TYPESENSE_URL ?? "").replace(/\/$/, "");
+    const res = await fetch(`${base}/collections/incidents/documents/export?include_fields=id`, {
+      headers: { "X-TYPESENSE-API-KEY": process.env.TYPESENSE_API_KEY ?? "" },
+    });
+    if (!res.ok) throw new Error(`export: HTTP ${res.status}`);
+    const exported = await res.text();
     const ids = exported
       .split("\n")
       .filter(Boolean)
