@@ -5,6 +5,7 @@
  * end in 2029 as active until 2029, and /api/historico/correlation assumed 1 h
  * whenever endedAt was NULL (2026-10-22).
  *   1. active → now; ended → when it was last seen, whatever it declared;
+ *      never seen → the declared end, but never later than now;
  *   2. the timeline and the correlation use it, and the 1 h default is gone.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
@@ -29,7 +30,9 @@ const declared2029 = new Date("2029-01-11T23:00:00Z");
 assert.equal(observedEnd({ isActive: true, lastSeenAt: seen, endedAt: declared2029 }, now), now, "active: now");
 assert.equal(observedEnd({ isActive: false, lastSeenAt: seen, endedAt: declared2029 }, now), seen, "ended early: last seen, not 2029");
 assert.equal(observedEnd({ isActive: false, lastSeenAt: seen, endedAt: null }, now), seen, "no declared end: last seen");
-assert.equal(observedEnd({ isActive: false, lastSeenAt: null, endedAt: declared2029 }, now), declared2029, "never seen: the declared end");
+assert.equal(observedEnd({ isActive: false, lastSeenAt: null, endedAt: declared2029 }, now), now, "never seen, declared 2029: clamped to now, never the future");
+const declaredPast = new Date("2026-10-21T08:00:00Z");
+assert.equal(observedEnd({ isActive: false, lastSeenAt: null, endedAt: declaredPast }, now), declaredPast, "never seen, declared in the past: the declared end");
 assert.equal(observedEnd({ isActive: false, lastSeenAt: null, endedAt: null }, now), now);
 
 // 2.

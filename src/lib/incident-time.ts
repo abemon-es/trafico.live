@@ -13,5 +13,9 @@ export function observedEnd(
   now: Date
 ): Date {
   if (inc.isActive) return now;
-  return inc.lastSeenAt ?? inc.endedAt ?? now;
+  if (inc.lastSeenAt) return inc.lastSeenAt;
+  // Never seen: the declared end, but never in the future (CTO): a declared end
+  // in 2029 must not draw an incident that has already ended into the future.
+  if (inc.endedAt) return inc.endedAt < now ? inc.endedAt : now;
+  return now;
 }
