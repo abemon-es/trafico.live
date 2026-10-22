@@ -90,6 +90,26 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (123) — incidents: the observed end, not the declared one
+
+**Found:** ended incidents have `endedAt` NULL almost always (DGT 4,034,834
+of 4,071,621; SCT, Madrid, Valencia, Barcelona, Navarra all of them).
+`endedAt` is the end the source *declared* (DATEX endTime), sometimes years
+ahead: the latest is in 2029, scheduled roadworks.
+- `/api/historico/correlation` assumed «start + 1 h» whenever it was NULL.
+- `/api/incidents/timeline` took a declared end ahead of the observed one,
+  so an incident that went away early drew as active until its declared end.
+
+**Fix (readers, no data rewrite):** `src/lib/incident-time.ts`
+`observedEnd()`: now if active, else `lastSeenAt` (the collector stops moving
+it on deactivation). The timeline and the correlation use it, and the 1 h
+default is gone. `endedAt` keeps its meaning, the declared end.
+
+Checks: incident-time (new), status-page and public-docs ok · web tsc 11 ·
+lint 64.
+
+---
+
 ## Cycle 2026-10-22 (122) — the public /status page said the platform was «down»
 
 **Found:** /api/status/collectors (behind /status, which is indexed) said
