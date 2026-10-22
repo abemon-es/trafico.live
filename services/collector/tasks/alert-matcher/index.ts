@@ -174,9 +174,13 @@ export async function run(prisma: PrismaClient): Promise<void> {
   let accumulated = 0;
   let errors = 0;
 
-  // Initialize Redis for accumulation (optional — graceful degradation)
+  // Initialize Redis for accumulation (optional — graceful degradation).
+  // Behind ALERT_MATCHER_REDIS_ACCUMULATE=1, off by default: ioredis was
+  // missing from the collector image until 2026-10-22, so DAILY/WEEKLY
+  // accumulation has never run in production. Turning it on gets its own gate
+  // (CTO).
   let redis: import("ioredis").default | null = null;
-  if (process.env.REDIS_URL) {
+  if (process.env.REDIS_URL && process.env.ALERT_MATCHER_REDIS_ACCUMULATE === "1") {
     try {
       const { default: Redis } = await import("ioredis");
       redis = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: 2 });

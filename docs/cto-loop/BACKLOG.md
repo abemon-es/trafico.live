@@ -90,6 +90,55 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (118) — one run per task across containers, and recovery that backs off
+
+**Why:** the off-schedule charger runs were health-check's inline
+auto-recovery, every 30 min while the table was past its SLA, without the
+dispatcher. The failure lost its cause, and nothing stopped a recovery from
+overlapping the task's own schedule in another container (CTO).
+
+**What changes (CTO-approved design):**
+- `shared/run-lock.ts`: Redis key `collector-run:<task>`.
+  - SET NX PX 180000 with a random token, renewed every 60 s.
+  - Release and renewal in Lua, compare-and-delete / compare-and-expire: a
+    run whose lock expired can't touch a later run's.
+  - Fail-open: if Redis doesn't answer, the run goes ahead without a lock.
+- The dispatcher takes it. While another run holds it, the run logs
+  «run in flight elsewhere (lock <token>, held N s)» and exits 0 with no
+  heartbeat. ais-stream, a long-lived process, takes none.
+- health-check recovery takes the same lock, and records a failure the way
+  the dispatcher does (message, cause, `recoveredBy`).
+  - Upstream failures back off: 60/120/240/240 min after 1/2/3/4+ in a row.
+  - The state lives in health-check's meta (`recoveryBackoff`) and clears on
+    a success or when the table is fresh again.
+- **ioredis wasn't in the collector image** (only in the root package.json).
+  A real-Redis probe showed the lock would always fail open.
+  - Added `ioredis ^5.9.2` (locked at 5.9.2, the root's version).
+  - npm audit: 39 before, 39 after (18 high, 0 critical), no new vulnerable
+    package. The 18 high are existing collector dependencies.
+- The same gap had kept two paths off in production since they were
+  written. They stay off behind flags, each to get its own gate:
+  - gas-station's payload dedup: `GAS_STATION_REDIS_DEDUP=1`;
+  - alert-matcher's DAILY/WEEKLY accumulation:
+    `ALERT_MATCHER_REDIS_ACCUMULATE=1`. UserAlert has 0 rows.
+
+**Checks:**
+- The collector image, built from the tracked copy on compute, resolves
+  ioredis.
+- Against a throwaway Redis: acquire, a second run refused with holder and
+  age, renewal, release, the process exits on its own.
+- With Redis down: fail-open in 65 ms, 0 lines on stderr (an `error`
+  listener; without it ioredis printed «Unhandled error event», which Loki
+  would count).
+- run-lock (new; includes a renewal that fails mid-run), collector-sentry,
+  heartbeat-success and public-docs ok · collector tsc 626 · web tsc 11 ·
+  lint 64.
+
+**For the CSO:** the 18 high-severity advisories in the collector's existing
+dependencies (ws, axios, typesense, protobufjs, prisma…), a separate item.
+
+---
+
 ## Cycle 2026-10-22 (117) — cto-signals: a task that fails and says so isn't «SILENT»
 
 - Since lastSuccessAt (#197), a task that fails every run is stale while

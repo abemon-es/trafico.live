@@ -156,12 +156,19 @@ export async function run(prisma: PrismaClient) {
   console.log(`[gas-station] Starting at ${now.toISOString()}`);
 
   // ── 0. Open Redis for dedup hash (best-effort, non-blocking) ──────────
+  // Behind GAS_STATION_REDIS_DEDUP=1, off by default: ioredis was missing
+  // from the collector image until 2026-10-22, so this dedup has never run in
+  // production, and skipping an unchanged payload may stop lastPriceUpdate
+  // from moving (health-check's GasStation SLA). Turning it on gets its own
+  // gate (CTO).
   let redis: import("ioredis").default | null = null;
-  try {
-    const { default: Redis } = await import("ioredis");
-    const url = process.env.REDIS_URL;
-    if (url) redis = new Redis(url);
-  } catch { /* Redis unavailable — skip dedup, proceed normally */ }
+  if (process.env.GAS_STATION_REDIS_DEDUP === "1") {
+    try {
+      const { default: Redis } = await import("ioredis");
+      const url = process.env.REDIS_URL;
+      if (url) redis = new Redis(url);
+    } catch { /* Redis unavailable — skip dedup, proceed normally */ }
+  }
 
   // ── 1. Fetch from MINETUR API ──────────────────────────────────────────
 
