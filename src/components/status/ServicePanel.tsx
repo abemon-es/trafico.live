@@ -29,7 +29,7 @@ export function ServicePanel({ collector }: { collector: CollectorHealth }) {
         <div>
           <dt className="text-tl-500 dark:text-tl-400">Edad</dt>
           <dd className="font-[family-name:var(--font-jetbrains-mono)] text-tl-800 dark:text-tl-100">
-            {collector.ageMinutes} min
+            {collector.ageMinutes < 0 ? "sin éxito registrado" : `${collector.ageMinutes} min`}
           </dd>
         </div>
       </dl>

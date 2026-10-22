@@ -24,7 +24,10 @@ export const metadata: Metadata = {
     url: `${BASE_URL}/status`,
     type: "website",
   },
-  robots: { index: true, follow: true },
+  // Useful to whoever visits it, but in search it only competes for «trafico.live
+  // caído», and a «down» snippet during a real outage is the last thing to show
+  // (CMO, 2026-10-22). Not in the sitemap either.
+  robots: { index: false, follow: true },
 };
 
 export default async function StatusPage() {

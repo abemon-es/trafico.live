@@ -90,6 +90,35 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (122) — the public /status page said the platform was «down»
+
+**Found:** /api/status/collectors (behind /status, which is indexed) said
+`overall: "down"`, with 37 of 59 collectors «down». It graded every task on
+a fixed 10/30 min from its last run, so every daily and weekly task was
+«down» most of the day.
+
+**What changes:**
+- `src/lib/collector-thresholds.ts`: the per-task thresholds and the hidden
+  tasks, moved out of /api/health so both read one copy.
+- /status grades each task as /api/health does:
+  - its own threshold, from its last successful run;
+  - a slow run that still reports progress is not «down»;
+  - the retired tasks are left out.
+  - The verdict: past the threshold → down; in time but its last run failed
+    or was partial → degraded; otherwise healthy.
+- The panel shows «sin éxito registrado» for a task with no success on
+  record (was «-1 min»).
+- The dead `classifyHeartbeat` (the 10/30 min rule) is removed.
+- /status is noindex (CMO): in search it only competes for «trafico.live
+  caído», and a «down» snippet during a real outage is the worst result. It
+  wasn't in the sitemap.
+- Today's fleet (4 stale of 54) reads «degraded» instead of «down».
+
+Checks: status-page (new), heartbeat-success and public-docs ok · web tsc
+11 · lint 64.
+
+---
+
 ## Cycle 2026-10-22 (120) — search showed ended incidents as current
 
 **Measured (CTO's order: impact on the user first):**
