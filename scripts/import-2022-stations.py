@@ -7,7 +7,7 @@ Run on hetzner-dev.
 """
 import json, os, sys, subprocess, unicodedata, urllib.request
 
-DB = os.environ.get("DATABASE_URL", "postgresql://apps@127.0.0.1:5435/le_trafico")
+DB = os.environ.get("DATABASE_URL") or sys.exit("set DATABASE_URL (no default: the server docs have it)")
 URL = "https://mapatrafico.transportes.gob.es/2022/Visor/datos/GIS/estaciones.js"
 YEAR = 2022
 

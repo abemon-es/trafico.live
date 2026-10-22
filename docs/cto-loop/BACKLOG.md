@@ -90,6 +90,45 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (110) — database settings only from the environment, and no private addresses in the public docs
+
+**#191 merged** (`01684e42`). The CTO checked it before the merge (names,
+image IDs, cron-window inside collector-daily over 24 h). Compute's
+checkout was already on main and clean. The next collector deploy (C's) goes
+through the script, `DRY_RUN=1` first.
+
+**This PR (CSO's decisions on what #190 left out):**
+- **No default database settings:**
+  - `bin/backup-verify.sh` and `bin/backup-restore-test.sh` require
+    `DB_NAME`/`DB_USER` and `DB_RESTORE_USER`/`SCRATCH_DB` (`${VAR:?}`);
+  - the 4 `scripts/import-*.py` require `DATABASE_URL`;
+  - `enricher/*.py` read host, port, database and user from `TRAFICO_DB_*`.
+  - A script that fails is better than one that guesses the database.
+  - **Before** the copy installed on the DB host is updated, its nightly
+    backup cron has to set `DB_NAME` and `DB_USER`, or the backup will fail
+    (CTO).
+- **Private addresses:** the two internal hosts become `<db-host-private-ip>`
+  and `<compute-private-ip>` (48 replacements in 12 files, CLAUDE.md
+  included), plus 3 Docker-network IPs. Compose and nginx files keep theirs
+  (working config; moving it to env is another project).
+- **PLAYBOOK:** collector deploys go **only** through `bin/deploy-collectors.sh`
+  (`DRY_RUN=1` first), never a bare `compose up -d`.
+- **Test `public-docs-no-internals` widened:**
+  - CLAUDE.md is scanned too, for private (RFC 1918) addresses; CIDR ranges
+    are let through;
+  - bin/, scripts/ and enricher/ must not name the database, host or roles;
+  - 128 Markdown files and 25 scripts, ok.
+
+**Found and remediated (CSO informed):** the trees I copied to compute for
+checks were full-directory tarballs, so they carried git-ignored files,
+among them a local `.env` with the credentials of an external SEO API (mode
+644) and two ignored scripts. They were in this loop's own scratch dirs on
+compute, never public. Deleted: 44 files, plus 3,277 ignored paths. From now
+on the copies are built from `git ls-files` only. Whether to rotate is the
+CSO's call.
+
+---
+
 ## Cycle 2026-10-22 (109) — collector deploys wait for the runs in flight: `bin/deploy-collectors.sh`
 
 **#190 merged** (`cbf32677`). **#189 closed:** `migrate resolve --applied`
@@ -7056,7 +7095,7 @@ best (CMO: provincias 51 % of impressions at position 6.0).
 
   Trigger: a scanner's POST / → 500 (React2Shell-style Server Action probes,
   05:50Z). Verified 06:20Z: POST / 405 · GET / 200 · `/api/auth/session` 200
-  `null` · POST /monitoring not 405. The 05:54Z session 500 from 10.0.22.1
+  `null` · POST /monitoring not 405. The 05:54Z session 500 from <docker-network-ip>
   was our own probe (compute loopback enters through Traefik).
 - **#92 `db9e4e8b`**: the bot-visit secret only from `BOT_VISIT_SECRET`
   (the CTO put it in the env); missing → 503, wrong → 403, compared with

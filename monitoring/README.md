@@ -120,7 +120,7 @@ Panel 5 (API P95 Latency) uses `http_server_request_duration_seconds_bucket{job=
 Beyla is already running (`obs-beyla`, Up 7d, scraping at :9400). Verify the histogram metric name:
 
 ```bash
-curl -s http://10.100.0.2:9400/metrics | grep http_server_request_duration
+curl -s http://<compute-private-ip>:9400/metrics | grep http_server_request_duration
 ```
 
 If the metric name differs (e.g. `http.server.request.duration`), update the panel query accordingly.

@@ -6,7 +6,7 @@ Uses plain HTTP requests (no browser needed).
 Connects to DB via SSH tunnel.
 
 Setup:
-  ssh -N -L 15432:localhost:5440 database-primary
+  ssh -N -L 15432:localhost:<pgbouncer-port> <db-host>   (values: server docs, private)
 
 Usage:
   python3 enrich-fast.py                    # all pending
@@ -35,8 +35,8 @@ from psycopg2.extras import RealDictCursor
 # --- Config ---
 DB_HOST = "127.0.0.1"
 DB_PORT = 15432
-DB_NAME = "le_trafico"
-DB_USER = "trafico_admin"
+DB_NAME = os.environ["TRAFICO_DB_NAME"]
+DB_USER = os.environ["TRAFICO_DB_ADMIN_USER"]
 DB_PASS = os.environ["TRAFICO_ADMIN_PASSWORD"]
 
 BASE_URL = "https://www.marinetraffic.org/ship-owner-manager-ism-data"

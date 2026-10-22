@@ -31,8 +31,8 @@ All Prometheus targets are `up=1` as of audit time. `trafico.live` probe: `probe
 
 | Stack | Log Driver | Retention |
 |-------|-----------|-----------|
-| `docker-compose.web.yml` (production) | `loki` driver → `10.100.0.2:3100` | Local fallback: 50m/5 files |
-| `docker-compose.collectors.yml` (production) | `loki` driver → `10.100.0.2:3100` | Local fallback: 10m/3 files |
+| `docker-compose.web.yml` (production) | `loki` driver → `<compute-private-ip>:3100` | Local fallback: 50m/5 files |
+| `docker-compose.collectors.yml` (production) | `loki` driver → `<compute-private-ip>:3100` | Local fallback: 10m/3 files |
 | `docker-compose.coolify.yml` (legacy/dev) | `json-file` | 10m/3 files — **no Loki** |
 | `services/tiles/docker-compose.yml` | Default (Docker `local`) | 10m/3 files |
 | Observability stack containers | `local` driver | 10m/3 files |
@@ -78,18 +78,18 @@ Loki is fully queryable from Grafana Explore. Labels: `server`, `source`, `servi
 
 | Job | Target | Interval |
 |-----|--------|----------|
-| `prometheus` | `10.100.0.2:9090` | 15s |
-| `node-compute` | `10.100.0.2:9100` | 15s |
-| `cadvisor-compute` | `10.100.0.2:9101` | 30s |
-| `traefik` | `10.100.0.2:8082` | 15s |
-| `node-primary` | `10.100.0.3:9100` | 15s |
-| `cadvisor-primary` | `10.100.0.3:9101` | 30s |
-| `postgres-trafico` | `10.100.0.3:9189` | 30s |
-| `redis-trafico` | `10.100.0.3:9125` | 30s |
-| `pgbouncer-trafico` | `10.100.0.3:9130` | 30s |
+| `prometheus` | `<compute-private-ip>:9090` | 15s |
+| `node-compute` | `<compute-private-ip>:9100` | 15s |
+| `cadvisor-compute` | `<compute-private-ip>:9101` | 30s |
+| `traefik` | `<compute-private-ip>:8082` | 15s |
+| `node-primary` | `<db-host-private-ip>:9100` | 15s |
+| `cadvisor-primary` | `<db-host-private-ip>:9101` | 30s |
+| `postgres-trafico` | `<db-host-private-ip>:9189` | 30s |
+| `redis-trafico` | `<db-host-private-ip>:9125` | 30s |
+| `pgbouncer-trafico` | `<db-host-private-ip>:9130` | 30s |
 | `blackbox-http` | `https://trafico.live` (+ 14 others) | 60s |
 | `blackbox-ssl` | `https://trafico.live` (+ 4 others) | 3600s |
-| `beyla` | `10.100.0.2:9400` | 15s |
+| `beyla` | `<compute-private-ip>:9400` | 15s |
 | `tempo` | `127.0.0.1:3200` | 30s |
 
 ### Custom Metrics

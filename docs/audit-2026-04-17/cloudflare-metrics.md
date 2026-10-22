@@ -3,7 +3,7 @@
 **Date:** 2026-04-17
 **Exporter:** [lablabs/cloudflare-exporter](https://github.com/lablabs/cloudflare-exporter) (Go, maintained)
 **Zone:** `trafico.live` (`1cc6b3e049d3b906c7e8d8929c8358ac`)
-**Scrape target:** `10.100.0.2:9199` (prometheus job: `cloudflare`)
+**Scrape target:** `<compute-private-ip>:9199` (prometheus job: `cloudflare`)
 **Mode:** `FREE_TIER=true` — uses `httpRequests1hGroups` dataset (available on free plans, 1-hour granularity)
 
 ---

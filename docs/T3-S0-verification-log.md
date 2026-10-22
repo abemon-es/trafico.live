@@ -8,7 +8,7 @@
 
 ## 3.1c — CollectorHeartbeat migration ✅ PASS
 
-Migration `20260417170000_add_collector_heartbeats` applied in prod. Verified from compute via `psql` run through `postgres:16-alpine` Docker against DATABASE_URL (PgBouncer at `10.100.0.3:6440/<db>`).
+Migration `20260417170000_add_collector_heartbeats` applied in prod. Verified from compute via `psql` run through `postgres:16-alpine` Docker against DATABASE_URL (PgBouncer at `<db-host-private-ip>:6440/<db>`).
 
 ### Schema confirmed
 
@@ -90,7 +90,7 @@ These are **Coolify-era migration backups** (pre-current stack, dumped ~12 days 
 ### What's missing
 
 - **No active nightly backup job** on compute (`crontab -l` shows no pg_dump/backup entries for trafico).
-- **Could not verify `primary` (10.100.0.3)** — SSH from local times out (VPN-only or different port), and SSH from compute rejects publickey (no keys present on compute for primary).
+- **Could not verify `primary` (<db-host-private-ip>)** — SSH from local times out (VPN-only or different port), and SSH from compute rejects publickey (no keys present on compute for primary).
 - **No systemd timers** related to postgres/backup on compute.
 
 ### Risk

@@ -10,7 +10,7 @@ changes and port mapping are in place; only the Dockerfile base image upgrade is
 
 ## nginx Metrics (`job_name: nginx-tile`) — LIVE
 
-**Endpoint:** `http://10.100.0.2:9113/metrics`
+**Endpoint:** `http://<compute-private-ip>:9113/metrics`
 **Config change:** `services/tiles/nginx.conf` — added `/nginx_status` location
 **Compose change:** `services/tiles/docker-compose.yml` — added `nginx-exporter` service
 
@@ -31,7 +31,7 @@ nginx-exporter:
   container_name: tiles-nginx-exporter
   command: ["--nginx.scrape-uri=http://tiles/nginx_status"]
   ports:
-    - "10.100.0.2:9113:9113"
+    - "<compute-private-ip>:9113:9113"
 ```
 
 Metrics now available:
@@ -45,7 +45,7 @@ Metrics now available:
 
 ## Martin Metrics (`job_name: martin-tile`) — BLOCKED
 
-**Endpoint when unblocked:** `http://10.100.0.2:3089/_/metrics`
+**Endpoint when unblocked:** `http://<compute-private-ip>:3089/_/metrics`
 **Config change:** `services/martin/config.yaml` — added `observability.metrics` block
 
 ```yaml
@@ -59,7 +59,7 @@ observability:
 Port mapping added to compose:
 ```yaml
 ports:
-  - "10.100.0.2:3089:3000"
+  - "<compute-private-ip>:3089:3000"
 ```
 
 **Blocker:** Martin v0.15.0 silently ignores the `observability` config key and returns
@@ -128,7 +128,7 @@ up{job=~"martin-tile|nginx-tile"}
   scrape_timeout: 10s
   metrics_path: /_/metrics
   static_configs:
-    - targets: ["10.100.0.2:3089"]
+    - targets: ["<compute-private-ip>:3089"]
       labels:
         server: compute
         service: martin-tile
@@ -137,7 +137,7 @@ up{job=~"martin-tile|nginx-tile"}
   scrape_interval: 30s
   scrape_timeout: 10s
   static_configs:
-    - targets: ["10.100.0.2:9113"]
+    - targets: ["<compute-private-ip>:9113"]
       labels:
         server: compute
         service: nginx-tile
@@ -157,9 +157,9 @@ up{job=~"martin-tile|nginx-tile"}
 ## Verification (2026-04-17)
 
 ```
-up{job="nginx-tile",instance="10.100.0.2:9113"} = 1   ← PASSING
-up{job="martin-tile",instance="10.100.0.2:3089"} = 0   ← BLOCKED (v0.15.0)
+up{job="nginx-tile",instance="<compute-private-ip>:9113"} = 1   ← PASSING
+up{job="martin-tile",instance="<compute-private-ip>:3089"} = 0   ← BLOCKED (v0.15.0)
 ```
 
-Note: Ports bound to `10.100.0.2` (WireGuard VPN interface) so Prometheus
+Note: Ports bound to `<compute-private-ip>` (WireGuard VPN interface) so Prometheus
 (host networking) can reach them. `127.0.0.1` binding would be unreachable.
