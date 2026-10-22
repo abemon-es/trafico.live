@@ -13,7 +13,11 @@
  *   2. none offers the triangle as the alternative;
  *   3. no fine figure next to V-16 text, until one comes with its precept
  *      and BOE id (the CMO checks each against the BOE);
- *   4. the BOE link is RD 159/2021's id.
+ *   4. the BOE link is RD 159/2021's id;
+ *   5. what the DGT and RD 159/2021 say, checked by the CMO on 2026-10-22: no
+ *      registration («Tampoco hay que registrar la baliza»), a position every
+ *      100 seconds (it said 10-30), no «UNE 135400», and no «top 5» with
+ *      placeholder Amazon links or models that aren't type-approved.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:v16-dates
@@ -66,5 +70,16 @@ assert.ok(!/BOE-A-2021-3668/.test(info));
 const page = readFileSync(join(ROOT, "src/app/baliza-v-16/page.tsx"), "utf8");
 assert.ok(!/daysLeft|deadline/.test(page), "no countdown to a deadline");
 assert.ok(page.includes("disposición transitoria primera del Real Decreto 159/2021"), "the page cites the provision");
+
+// 5. The page's other claims.
+assert.ok(!/registrarla|Registro Obligatorio|Registrar dispositivo|HowTo|HOWTO_STEPS/.test(page), "no V-16 registration: the DGT says there is none");
+assert.ok(!/registr/i.test(page.replace("no hay que registrar la baliza", "")), "only the DGT's «no hay que registrar»");
+assert.ok(/cada 100 segundos \(Real Decreto 159\/2021\)/.test(page) && !/10-30 segundos/.test(page), "position every 100 seconds");
+assert.ok(!/UNE 135400/.test(page + info), "no unsourced standard");
+assert.ok(!/PLACEHOLDER_ASIN|AFFILIATE_TODO|TOP_BEACONS|top 5/i.test(page), "no top 5 with placeholder links");
+assert.ok(/1 kil[oó]metro de distancia en condiciones favorables/.test(page + info), "«1 km» as the DGT says it");
+for (const p of files(join(ROOT, "src"))) {
+  assert.ok(!/PLACEHOLDER_ASIN|AFFILIATE_TODO/.test(readFileSync(p, "utf8")), `${relative(ROOT, p)}: a placeholder affiliate link`);
+}
 
 console.log(`v16-dates: ok (${scanned} files: the 1-01-2026 rule, no July 2026, no triangle, no unsourced fine)`);

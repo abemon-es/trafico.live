@@ -34,7 +34,7 @@ const faqs: FAQItem[] = [
   {
     question: "¿Cómo funciona la baliza V16?",
     answer:
-      "La baliza emite una luz amarilla intermitente visible a 1 km de distancia. Además, las balizas conectadas (V16 con GPS) transmiten automáticamente la posición del vehículo a la plataforma NAP de la DGT, que difunde la alerta a otros conductores.",
+      "La baliza emite una luz amarilla intermitente visible a 1 kilómetro de distancia en condiciones favorables. Además, las balizas conectadas (V16 con GPS) transmiten automáticamente la posición del vehículo a la plataforma NAP de la DGT, que difunde la alerta a otros conductores.",
   },
   {
     question: "¿Dónde puedo comprar una baliza V16 homologada?",
@@ -96,8 +96,8 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
               La <strong>baliza V16</strong> es un dispositivo luminoso de preseñalización de
               peligro que se utiliza para alertar a otros conductores cuando un vehículo queda
-              inmovilizado en la vía. Emite una luz amarilla intermitente visible a más de 1
-              kilómetro de distancia, aumentando significativamente la seguridad del conductor y
+              inmovilizado en la vía. Emite una luz amarilla intermitente visible a 1 kilómetro
+              de distancia en condiciones favorables, aumentando significativamente la seguridad del conductor y
               ocupantes.
             </p>
           </div>
@@ -108,7 +108,7 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
               <Radio className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Luz visible</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">A más de 1 km de distancia</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">A 1 km en condiciones favorables</p>
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 bg-tl-50 dark:bg-tl-900/20 rounded-lg">
