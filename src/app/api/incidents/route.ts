@@ -4,6 +4,13 @@ import { prisma } from "@/lib/db";
 import { IncidentType, TrafficIncident } from "@prisma/client";
 import { applyRateLimit, addSecurityHeaders } from "@/lib/api-utils";
 import { getFromCache, setInCache } from "@/lib/redis";
+import { CITY_SENSOR_WHERE, REPORTED_WHERE, VEHICLE_STOP_WHERE } from "@/lib/incident-classes";
+
+const CLASS_WHERE: Record<string, object> = {
+  reported: REPORTED_WHERE,
+  vehicleStop: VEHICLE_STOP_WHERE,
+  citySensor: CITY_SENSOR_WHERE,
+};
 import { parseBbox } from "@/lib/bbox";
 
 const CACHE_KEY_PREFIX = "api:incidents";
@@ -118,6 +125,11 @@ export async function GET(request: NextRequest) {
     // Bbox filter (optional, for route-overlay corridor scoping)
     const bbox = parseBbox(searchParams.get("bbox"));
 
+    // Class (optional, added 2026-10-22): reported | vehicleStop | citySensor,
+    // by src/lib/incident-classes.ts. Without it, every active row, as before.
+    const classParam = searchParams.get("class");
+    const classFilter = classParam && Object.hasOwn(CLASS_WHERE, classParam) ? CLASS_WHERE[classParam] : null;
+
     // One incident (an alert's link opens /incidencias?id=<situationId>)
     const idFilter = searchParams.get("id")?.trim().slice(0, 128) || null;
 
@@ -131,6 +143,10 @@ export async function GET(request: NextRequest) {
 
     if (idFilter) {
       whereClause.situationId = idFilter;
+    }
+
+    if (classFilter) {
+      whereClause.AND = [classFilter];
     }
 
     if (bbox) {
