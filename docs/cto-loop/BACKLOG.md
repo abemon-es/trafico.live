@@ -90,6 +90,53 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (98) — the 233 published reports: incident figures rebuilt, and the days without data say so
+
+**#177 gated** (`a8f52f16`, deployed 00:48:31Z): /api/stats 969 = 780
+reported + 68 vehicle stops + 121 city sensors; `class=reported` 200 rows,
+none a stop or a sensor; `class=constructor` gets the default rows; both new
+home tiles render.
+
+**This PR (L1, plan approved by CMO and CTO):**
+- **`generators/incident-text.ts`**: the incident part of the daily and
+  weekly reports, pure. The generators and the correction write the same text.
+- **Collector outages.** DGT first-sees a new situation every hour (one lone
+  empty hour from April to October), so 2+ empty hours in a row is the
+  collector. Seven runs: up to 2-04 01:00 (before the first report), 4-04
+  18:00 +31 h, 7-04 19:00 +17 h, 30-04 01:00 +55 h, 2-05 11:00 +127 h, 8-05
+  21:00 +4 h, 24-05 12:00 +9 h. A window with an outage reads «al menos», with
+  no comparison and no verdict; past half the window, no figures. The live
+  generators do the same from now on (5-05 would have read «tranquila»).
+- **Provinces**: 12 provinces came out as two rows (a code from one feed, a
+  name from another; «Madrid» twice on 22-10). Merged with
+  `shared/provinces` normalizeProvince, and the table says how many incidents
+  carry a province (SCT none, about half of DGT).
+- **Weekly title**: no «semana activo». No verdict, no suffix.
+- **`scripts/correct-incident-reports.ts`**, dry run (read-only): **233 = 204
+  daily + 29 weekly, 0 refused**. Daily: 7 with an outage, 11 without
+  figures, 22 without comparison. Weekly: 2 / 3 / 3. Past reports carry no
+  active counts, no city sensors and no V16-activations line.
+- **Test** `incident-reports-history`: outages, both texts, provinces, the
+  rewrite of the stored shapes; 6 of 6 mutations caught.
+- **Checks on compute:** 5 tests ok, collector tsc 626 (baseline), web tsc 11,
+  lint 64, check-src-lib ok.
+
+**Apply, after the merge and the collector deploy:** the CTO takes the backup
+with the PR's WHERE, then `--apply --expect 233`. Counts and timestamp go to
+the CMO (event #10).
+
+**Found on the way (queued):**
+- **L2** V16BeaconEvent counts under 1 % of DGT's vehicle-stop situations
+  (605 against 81,416 in one week). The live weekly shows both: which one is
+  right?
+- **L2** About half of DGT's incidents and all of SCT's have no province, so
+  the province tables leave Catalonia out. Resolve from coordinates?
+- **L2** The weekly report goes out on Monday 00:00 Madrid (Sunday 22:00Z)
+  with the new ISO week's label, and covers the UTC days Sunday→Saturday
+  before it.
+
+---
+
 ## Cycle 2026-10-22 (97) — the home counts reported incidents only
 
 **#176 merged** (`84107572`, collectors rebuilt with `incident-classes.js`).
