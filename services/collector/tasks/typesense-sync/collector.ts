@@ -18,6 +18,7 @@ import Typesense from "typesense";
 import type { CollectionCreateSchema } from "typesense/lib/Typesense/Collections";
 import type { CollectionFieldSchema } from "typesense/lib/Typesense/Collection";
 import { getTypesenseClient } from "../../shared/typesense.js";
+import { ensureIsActiveField, pruneRecentlyEnded } from "./prune-incidents.js";
 import { heartbeat } from "../../shared/heartbeat.js";
 
 const TASK = "typesense-sync";
@@ -55,6 +56,9 @@ const COLLECTIONS: Record<string, CollectionCreateSchema> = {
       { name: "source", type: "string", optional: true, facet: true },
       { name: "causeType", type: "string", optional: true, facet: true },
       { name: "startedAt", type: "int64", sort: true },
+      // /api/search filters isActive:true; a document without it (ended
+      // before 2026-10-22) never shows (./prune-incidents.ts).
+      { name: "isActive", type: "bool", optional: true },
       { name: "embedding", type: "float[]", embed: { from: ["description", "type", "roadNumber", "provinceName"], model_config: { model_name: "ts/multilingual-e5-small" } } } as CollectionFieldSchema,
     ] as CollectionFieldSchema[],
     default_sorting_field: "startedAt",
@@ -937,6 +941,7 @@ async function loadIncidents(prisma: PrismaClient) {
     location: [Number(r.latitude), Number(r.longitude)],
     source: r.source || "", causeType: r.causeType || "",
     startedAt: Math.floor(r.startedAt.getTime() / 1000),
+    isActive: true,
   }));
 }
 
@@ -1130,6 +1135,7 @@ const DELTA_LOADERS: Partial<Record<string, DeltaLoader>> = {
       location: r.latitude && r.longitude ? [Number(r.latitude), Number(r.longitude)] : undefined,
       source: r.source || "", causeType: r.causeType || "",
       startedAt: Math.floor(r.startedAt.getTime() / 1000),
+      isActive: true,
     }));
   },
   cameras: async (prisma, since) => {
@@ -1411,6 +1417,24 @@ export async function run(prisma: PrismaClient): Promise<void> {
     }
   }
 
+  // Ended incidents out of search (./prune-incidents.ts): those that ended in
+  // the last 2 h after every post-ingestion sync, 48 h on the daily run.
+  let incidentsPruned: { ended: number; deleted: number; isActiveField: string } | null = null;
+  if (totals.incidents !== undefined) {
+    const windowHours = target ? 2 : 48;
+    try {
+      const isActiveField = await ensureIsActiveField(client);
+      if (isActiveField === "deferred") {
+        console.warn("[typesense-sync] incidents: isActive field deferred, the history is still in the collection (scripts/prune-incidents-typesense.ts)");
+      }
+      const r = await pruneRecentlyEnded(prisma, client, windowHours);
+      incidentsPruned = { ...r, isActiveField };
+      if (r.deleted > 0) console.log(`[typesense-sync] incidents: deleted ${r.deleted} ended (${r.ended} ended in the last ${windowHours} h)`);
+    } catch (err) {
+      console.error("[typesense-sync] incidents prune failed:", err instanceof Error ? err.message : err);
+    }
+  }
+
   const elapsedSecs = ((Date.now() - start) / 1000).toFixed(1);
   const totalDocs = Object.values(totals).reduce((s, v) => s + v, 0);
   const failedLoads = loaded.filter((r) => r.status === "rejected").length;
@@ -1439,6 +1463,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     failedLoads,
     emptyCollections,
     ...(importFailures.size > 0 && { rejected }),
+    ...(incidentsPruned && { incidentsPruned }),
     elapsedSecs: parseFloat(elapsedSecs),
   });
 }

@@ -91,6 +91,7 @@ export const COLLECTIONS: Record<string, CollectionCreateSchema> = {
       { name: "source", type: "string", optional: true, facet: true },
       { name: "causeType", type: "string", optional: true, facet: true },
       { name: "startedAt", type: "int64", sort: true },
+      { name: "isActive", type: "bool", optional: true },
       { name: "embedding", type: "float[]", embed: { from: ["description", "type", "roadNumber", "provinceName"], model_config: { model_name: "ts/multilingual-e5-small" } } } as CollectionFieldSchema,
     ] as CollectionFieldSchema[],
     default_sorting_field: "startedAt",

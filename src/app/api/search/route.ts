@@ -76,6 +76,8 @@ interface CollectionSearchConfig {
   collection: string;
   queryBy: string;
   queryByWeights?: string;
+  /** Always applied; the request's own filters are added with &&. */
+  filterBy?: string;
   category: string;
   icon: string;
   mapHit: (doc: Record<string, unknown>, fuelType?: string) => SearchResult;
@@ -115,6 +117,11 @@ const SEARCH_CONFIGS: CollectionSearchConfig[] = [
     collection: "incidents",
     queryBy: "description,roadNumber,provinceName,municipality,type,causeType",
     queryByWeights: "2,3,1,1,1,1",
+    // Only current incidents. Ended ones were half or more of the top hits on
+    // 2026-10-22, shown as current; a document without the field (ended
+    // before then) never matches (services/collector/tasks/typesense-sync/
+    // prune-incidents.ts).
+    filterBy: "isActive:true",
     category: "Incidencias",
     icon: "AlertTriangle",
     mapHit: (doc) => ({
@@ -693,6 +700,7 @@ async function performSearch(
           q: query || "*",
           query_by: config.queryBy,
           ...(config.queryByWeights && { query_by_weights: config.queryByWeights }),
+          ...(config.filterBy && { filter_by: config.filterBy }),
           per_page: basePerPage,
           highlight_full_fields: config.queryBy,
           num_typos: 2,
@@ -715,7 +723,8 @@ async function performSearch(
 
         // Geo proximity — applies to geopoint-aware collections (overrides geo-bias sort)
         if (hasProximity && geo) {
-          req.filter_by = `location:(${geo.lat}, ${geo.lng}, ${radius} km)`;
+          const geoClause = `location:(${geo.lat}, ${geo.lng}, ${radius} km)`;
+          req.filter_by = config.filterBy ? `${config.filterBy} && ${geoClause}` : geoClause;
           req.sort_by = `location(${geo.lat}, ${geo.lng}):asc`;
         }
 
@@ -834,6 +843,8 @@ async function performSearch(
             q: query || "*",
             query_by: config.queryBy,
             ...(config.queryByWeights && { query_by_weights: config.queryByWeights }),
+            // The request's filters go; the collection's own (incidents: only current) stays.
+            ...(config.filterBy && { filter_by: config.filterBy }),
             per_page: 3,
             num_typos: 2,
             prefix: true,

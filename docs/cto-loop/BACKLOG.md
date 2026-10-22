@@ -90,6 +90,73 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (120) — search showed ended incidents as current
+
+**Measured (CTO's order: impact on the user first):**
+- For six common queries, I took the top 8 incident hits the public search
+  would show and checked each against the database:
+  - ended per query: A-7 4 · AP-7 4 · A-2 7 · M-30 4 · N-340 6 ·
+    «accidente Madrid» 8.
+  - The schema had no field to filter on. A hit reads «TYPE — road» under
+    «Incidencias», with nothing to mark it ended.
+- Every sync only upserted; the 05:00 daily is incremental, so it never
+  replaced. The collection held 1,198,270 documents against 4,109 active (the
+  database holds 4.1 M ended incidents).
+- Only /api/search reads it. Typesense resident 4.96 GiB; p95 A-7 121 ms,
+  AP-7 72, A-2 89, M-30 37, N-340 46, «accidente Madrid» 15.
+
+**What changes (CTO-approved):**
+- After each incidents sync, the incidents that ended in the last 2 h are
+  deleted from Typesense by id (48 h on the daily run). Chunks of 120:
+  Typesense 27 caps a query string at 4,000 characters, and 200 ids came to
+  5.7 KB.
+- Documents carry `isActive: true`, and /api/search filters `isActive:true`
+  for incidents, also in proximity mode and in the sparse-result fallback.
+- The field is added to the live collection only once the history is gone:
+  an alter re-indexes every document.
+- One-off `scripts/prune-incidents-typesense.ts`:
+  - exports the ids in Typesense and deletes those not active in the DB, 120
+    per request with a pause (dry run unless `--apply`; idempotent,
+    resumable);
+  - never empties or re-creates the collection;
+  - then adds `isActive` and marks the active documents.
+  - Dry run: 1,194,161 to delete in 9,952 requests; all 4,109 active present.
+
+**Order:**
+1. The cleanup with `--apply`.
+2. Then the merge: the search filter needs the field to exist.
+
+**Cleanup applied (CTO's go):**
+- First pass (12:22Z): 6,600 of 9,954 requests, 792,000 deleted, the guard
+  at 4,130/4,130 at every check. Then the container-guardian restarted the
+  one-off container: the image's HEALTHCHECK made it «unhealthy» after 13
+  min, and the restart re-ran `--apply` for 51 s, harmlessly. The CTO's
+  server#653 makes the guardian leave `--rm` and compose-run containers
+  alone; one-offs also take `--no-healthcheck`.
+- The export then hit the client's 10 s timeout while Typesense compacted:
+  it is a plain fetch now.
+- Second pass: 402,802 deleted, guard 4,325/4,325 at all 34 checks.
+- Third pass: 199 more deleted; the isActive field added; 4,309 of 4,309
+  active documents marked.
+- **After:** 4,309 documents = 4,309 active, all present; filter
+  isActive:true finds 4,309.
+
+**Before → after:**
+- Ended incidents in the top 8: A-7 4→0 · AP-7 4→0 · A-2 7→0 · M-30 4→0 ·
+  N-340 6→0 · «accidente Madrid» 8→0.
+- p95 in ms: A-7 121→55 · AP-7 72→17 · A-2 89→17 · M-30 37→37 ·
+  N-340 46→31 · «accidente Madrid» 15→29. p50 now 8–10 ms everywhere.
+- Typesense resident memory: 4.96 → 4.95 GiB, so no drop yet: the
+  allocator keeps what was freed until a compaction or a restart (CTO's
+  call).
+
+Checks: typesense-incidents (new), run-lock, heartbeat-success and
+public-docs ok · collector tsc 626 · web tsc 11 · lint 64.
+
+**Later:** ended incidents have `endedAt` NULL in the database.
+
+---
+
 ## Cycle 2026-10-22 (119) — #200 woke up typesense-sync's deltas: incidents stopped syncing; back to full loads
 
 **Found by SENSE:** collector-realtime's error lines climbed 116 → 154 →
