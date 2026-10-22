@@ -78,6 +78,8 @@ assert.ok(/cada 100 segundos \(Real Decreto 159\/2021\)/.test(page) && !/10-30 s
 assert.ok(!/UNE 135400|E1 o similar/.test(page + info), "no unsourced standard or approval format");
 assert.ok(!/40 y 90|40[–-]90|45-60 euros/.test(page), "no unsourced price range; the sourced fact is 12 years of connectivity");
 assert.ok(page.includes("conectividad durante al menos 12 años (Real Decreto 159/2021)"), "the price fact with its source");
+assert.ok(page.includes('title: "Baliza V-16 conectada DGT 2026: homologadas y normativa"'), "no «Precio» in the title: the page has no price");
+assert.ok(!/16 y 48 horas|Repsol Waylet/.test(page), "no unsourced battery range; a shop, not an app");
 assert.ok(!/PLACEHOLDER_ASIN|AFFILIATE_TODO|TOP_BEACONS|top 5/i.test(page), "no top 5 with placeholder links");
 assert.ok(/1 kil[oó]metro de distancia en condiciones favorables/.test(page + info), "«1 km» as the DGT says it");
 for (const p of files(join(ROOT, "src"))) {

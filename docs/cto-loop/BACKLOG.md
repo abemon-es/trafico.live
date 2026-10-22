@@ -90,6 +90,45 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (102) — without vehicle types the vehicle pages show no charts, only the notice and the general analyses
+
+**#182 gated** (`67ac7eec`, deployed 03:25:21Z):
+- /baliza-v-16 has «1 de enero de 2026» and «cada 100 segundos», with no
+  July, «Registro Obligatorio», ASIN, «200 euros» or UNE;
+- /semana-santa-2026 has «baliza V-16 conectada»;
+- V16InfoSection renders on the client, so I checked it in the `.next`
+  bundle: the new header and FAQ are there, and neither the old BOE id nor
+  80-200 € is.
+
+**#183 merged** (`1e6c1c0e`). Its gate runs on compute.
+
+**This PR (CMO's four items):**
+- **The three vehicle pages:** while `hasVehicleFlag()` is false
+  (`src/lib/accident-vehicles.ts`), they return `VehicleDataPending`: the
+  title, the notice, and «Mientras tanto, estos análisis usan todos los
+  accidentes con víctimas:» with hora punta, lluvia and /analisis/accidentes.
+  The check comes before any data query, so there are no charts and no
+  computed sentences (they were all-accident figures under truck, motorcycle
+  or cyclist titles). The full pages come back by themselves once the flags
+  hold; they stay noindex until then.
+  - The check is a `findFirst` that does a parallel seq scan of the 466k
+    rows when nothing matches: 50 ms, the same as the old count, with
+    revalidate 86400.
+- **/baliza-v-16:**
+  - title «Baliza V-16 conectada DGT 2026: homologadas y normativa» (the page
+    no longer has a price);
+  - the battery FAQ without «16 y 48 horas» (no source); the 30 minutes stay;
+  - «estaciones de servicio» without «Repsol Waylet» (an app).
+- **Tests:**
+  - `accident-microdata-claims` also fails if a vehicle page queries or
+    renders before the check, or if the pending view has a chart, a figure
+    or vehicle prose;
+  - `v16-dates` covers the title, 16-48 h and Waylet;
+  - both fail on main's files.
+- **Checks on compute:** 4 tests ok, web tsc 11, lint 64.
+
+---
+
 ## Cycle 2026-10-22 (101) — the vehicle pages are noindex until the microdata hold vehicle types; /analisis and V-16 claim only what has a source
 
 **#181 gated** (`591dfeb4`, deployed 03:10:39Z):
