@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { redis } from "@/lib/redis";
 import { publicMeta } from "@/lib/health-meta";
-import { isStale, runState } from "@/lib/heartbeat-state";
+import { isStale, lastSuccess, runState } from "@/lib/heartbeat-state";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -125,7 +125,11 @@ const HIDDEN_TASKS: Record<string, string> = {
 interface CollectorEntry {
   task: string;
   status: string;
+  /** The last run, whatever its status: proves the schedule fires. */
   lastRunAt: string | null;
+  /** The last run that wrote its data (ok or partial). ageSeconds and stale
+   *  are measured from it: a run that fails still leaves the data old. */
+  lastSuccessAt: string | null;
   ageSeconds: number | null;
   threshold: number;
   thresholdUndeclared?: boolean;
@@ -135,6 +139,9 @@ interface CollectorEntry {
   running?: boolean;
   progressAgeSeconds?: number;
   errorMessage?: string | null;
+  /** "upstream" when the last run failed on a third-party host (5xx,
+   *  timeout, connection): a known outage, not a fault of ours. */
+  cause?: string;
   /** Structured reason the collector recorded (stored counts, failed sections,
    *  skipped sources...). Without this a `partial` carries no information and
    *  triage means SSHing to the host to grep container logs. */
@@ -175,6 +182,7 @@ async function checkHeartbeats(): Promise<{
       select: {
         task: true,
         lastRunAt: true,
+        lastSuccessAt: true,
         status: true,
         errorMessage: true,
         meta: true,
@@ -192,9 +200,12 @@ async function checkHeartbeats(): Promise<{
       // up as a config gap rather than as a data problem.
       const declared = STALE_THRESHOLDS[row.task];
       const threshold = declared ?? STALE_THRESHOLDS["_default"];
-      const ageSeconds = row.lastRunAt
-        ? Math.floor((now - row.lastRunAt.getTime()) / 1000)
-        : null;
+      // Since the last success, not the last run: on 2026-10-22 detector had
+      // failed every run for 16 h while a fresh lastRunAt kept it "not stale"
+      // and the overall status "healthy". No success on record = stale.
+      const success = lastSuccess(row.status, row.lastRunAt, row.lastSuccessAt);
+      const ageSeconds = success ? Math.floor((now - success.getTime()) / 1000) : null;
+      const cause = (row.meta as { cause?: unknown } | null)?.cause;
       // Overdue but still reporting progress is a slow run, not a dead one.
       const run = runState(row.meta, row.lastRunAt, now);
       const stale = isStale(ageSeconds, threshold, run);
@@ -203,6 +214,7 @@ async function checkHeartbeats(): Promise<{
         task: row.task,
         status: row.status,
         lastRunAt: row.lastRunAt?.toISOString() ?? null,
+        lastSuccessAt: success?.toISOString() ?? null,
         ageSeconds,
         threshold,
         ...(declared === undefined ? { thresholdUndeclared: true } : {}),
@@ -211,6 +223,7 @@ async function checkHeartbeats(): Promise<{
           ? { running: run.running, progressAgeSeconds: run.progressAgeSeconds }
           : {}),
         ...(row.errorMessage ? { errorMessage: row.errorMessage } : {}),
+        ...(row.status === "error" && typeof cause === "string" ? { cause } : {}),
         // Collectors have always written this; the response dropped it, so
         // every degraded status arrived unexplained (2026-08-24). Private keys
         // (why a credential fails) stay in the table: see health-meta.ts.

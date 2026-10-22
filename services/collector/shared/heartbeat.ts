@@ -9,6 +9,30 @@ import { PrismaClient, Prisma } from "@prisma/client";
 
 export type HeartbeatStatus = "ok" | "error" | "partial";
 
+/**
+ * A run that wrote its data: ok, or partial (some sources failed, the rest
+ * landed; incident is partial whenever SCT or DT-GV is down). Stale means «not
+ * serving fresh data», and a partial run serves fresh data, so it counts
+ * (CTO, 2026-10-22). Only these move lastSuccessAt, which /api/health reads
+ * for age and stale.
+ */
+export const isSuccess = (status: HeartbeatStatus): boolean => status !== "error";
+
+/** URLs keep scheme, host and path: a query string can carry a key. */
+export const redactUrls = (s: string): string => s.replace(/(https?:\/\/[^\s?#"'<>]+)[?#][^\s"'<>]*/g, "$1?…");
+
+/**
+ * errorMessage of an error heartbeat: meta.error, or the crash message the
+ * dispatcher records (until 2026-10-22 only meta.error was read, so every
+ * crash had an empty errorMessage). URL queries redacted, 300 chars at most.
+ */
+export function errorMessageOf(status: HeartbeatStatus, meta?: Record<string, unknown>): string | null {
+  if (status !== "error") return null;
+  const raw = meta?.error ?? meta?.message;
+  if (raw === undefined || raw === null || raw === "") return null;
+  return redactUrls(String(raw)).slice(0, 300);
+}
+
 export async function heartbeat(
   prisma: PrismaClient,
   task: string,
@@ -16,21 +40,17 @@ export async function heartbeat(
   meta?: Record<string, unknown>
 ): Promise<void> {
   try {
+    const now = new Date();
+    const fields = {
+      lastRunAt: now,
+      status,
+      meta: meta !== undefined ? (meta as Prisma.InputJsonValue) : Prisma.DbNull,
+      errorMessage: errorMessageOf(status, meta),
+    };
     await prisma.collectorHeartbeat.upsert({
       where: { task },
-      create: {
-        task,
-        lastRunAt: new Date(),
-        status,
-        meta: meta !== undefined ? (meta as Prisma.InputJsonValue) : Prisma.DbNull,
-        errorMessage: status === "error" && meta?.error ? String(meta.error) : null,
-      },
-      update: {
-        lastRunAt: new Date(),
-        status,
-        meta: meta !== undefined ? (meta as Prisma.InputJsonValue) : Prisma.DbNull,
-        errorMessage: status === "error" && meta?.error ? String(meta.error) : null,
-      },
+      create: { task, ...fields, lastSuccessAt: isSuccess(status) ? now : null },
+      update: { ...fields, ...(isSuccess(status) ? { lastSuccessAt: now } : {}) },
     });
   } catch (err) {
     // Heartbeat failures are non-fatal — log and swallow
@@ -44,7 +64,7 @@ export async function heartbeat(
  * The next heartbeat() replaces meta, so `meta.runStartedAt` only survives while
  * a run is in flight or after it died without finishing (OOM, or a collectors
  * deploy recreating the container: aemet-forecast was cut 9 min into its run on
- * 2026-10-19 13:09Z). Staleness still comes from lastRunAt, so a killed run
+ * 2026-10-19 13:09Z). Staleness comes from lastSuccessAt, so a killed run
  * goes stale as it should. The marker says why: "started at X, never finished".
  * Never throws.
  */
