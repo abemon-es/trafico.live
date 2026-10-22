@@ -110,7 +110,7 @@ const names = new Map([["24", "León"], ["01", "Álava"], ["28", "Madrid"], ["07
   assert.equal((table.match(/León/g) ?? []).length, 1, "one row per province");
   assert.match(table, /La tabla solo cuenta las 17 incidencias \(de 20\) que indican provincia/);
   const big = dailyIncidentText({ yesterday: counts({ total: 1080, byProvince: { "28": 558 }, bySource: { DGT: 1080 } }), weekBefore: {}, missing: { day: 0, weekBefore: 0 }, provinceNames: names, active: null, withCitySensors: false });
-  assert.match(big.sections.join("\n"), /solo cuenta las 558 incidencias \(de 1\.080\)/, "thousands grouped");
+  assert.match(big.sections.join("\n"), /solo cuenta las 558 incidencias \(de 1080\)/, "four digits bare, as everywhere else in the report");
 }
 
 // 4. Weekly.

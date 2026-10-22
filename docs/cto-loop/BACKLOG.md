@@ -129,8 +129,10 @@ the CMO (event #10).
 copy edits came after the head the CTO reviewed, so they ship in a follow-up
 PR, and the apply waits for it: «interrumpida todo el día / toda la semana»
 («durante 13 de las 24 horas» otherwise), and «La tabla solo cuenta las 558
-incidencias (de 1.080) que indican provincia». Of the 29 weekly titles, 9
-lose the verdict, 9 become «semana normal» and 11 stay as they are.
+incidencias (de 1080) que indican provincia» (four digits bare, the site's
+rule). Of the 29 weekly titles, 9 lose the verdict, 9 become «semana normal»
+and 11 stay as they are. **L2 (CMO):** every week from S25 on is «normal», so
+check the trend threshold against the real spread of weekly counts.
 
 **Found on the way (queued):**
 - **L2** V16BeaconEvent counts under 1 % of DGT's vehicle-stop situations
