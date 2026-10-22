@@ -40,6 +40,7 @@
     "test:insights-fuel": "tsx tests/insights-fuel-same-average.test.ts",
     "test:incident-reports": "tsx tests/incident-reports-history.test.ts",
     "test:accident-years": "tsx tests/accident-year-claims.test.ts",
+    "test:v16-dates": "tsx tests/v16-dates.test.ts",
     "test:final-urls": "tsx tests/internal-links-final-urls.test.ts",
     "test:fuel-cleanup": "tsx tests/fuel-articles-cleanup.test.ts",
     "test:reports": "tsx tests/reports-closed-days.test.ts",

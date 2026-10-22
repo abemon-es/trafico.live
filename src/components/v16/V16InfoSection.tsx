@@ -13,7 +13,6 @@ import {
   Clock,
   MapPin,
   ShieldCheck,
-  Banknote,
 } from "lucide-react";
 
 interface FAQItem {
@@ -25,22 +24,17 @@ const faqs: FAQItem[] = [
   {
     question: "¿Es obligatoria la baliza V16?",
     answer:
-      "Sí, desde el 1 de julio de 2021 es obligatorio llevar una baliza V16 homologada en todos los vehículos. Sustituye la obligación de colocar los triángulos de emergencia cuando el vehículo queda detenido en la calzada.",
+      "Sí. Desde el 1 de julio de 2021 era opcional, como alternativa a los triángulos; desde el 1 de enero de 2026 solo es válida la V-16 conectada (disposición transitoria primera del Real Decreto 159/2021).",
   },
   {
     question: "¿La baliza V16 sustituye a los triángulos de emergencia?",
     answer:
-      "Solo en la calzada. Si el vehículo queda detenido en el arcén, sigue siendo obligatorio usar los triángulos de emergencia. La baliza V16 está pensada para situaciones donde salir del vehículo supone un riesgo.",
+      "Sí. Desde el 1 de enero de 2026 los triángulos y las V-16 sin conexión ya no sirven, salvo vehículos con matrícula de otro país en circulación internacional.",
   },
   {
     question: "¿Cómo funciona la baliza V16?",
     answer:
       "La baliza emite una luz amarilla intermitente visible a 1 km de distancia. Además, las balizas conectadas (V16 con GPS) transmiten automáticamente la posición del vehículo a la plataforma NAP de la DGT, que difunde la alerta a otros conductores.",
-  },
-  {
-    question: "¿Qué multa hay por no llevar baliza V16?",
-    answer:
-      "No llevar la baliza V16 o no utilizarla correctamente puede acarrear una multa de entre 80€ y 200€, según la gravedad de la infracción.",
   },
   {
     question: "¿Dónde puedo comprar una baliza V16 homologada?",
@@ -50,7 +44,7 @@ const faqs: FAQItem[] = [
   {
     question: "¿Qué diferencia hay entre baliza V16 y baliza V16 conectada?",
     answer:
-      "La baliza V16 básica solo emite luz. La baliza V16 conectada (la que mostramos en este dashboard) además incorpora GPS y conectividad para enviar la posición a la DGT automáticamente, mejorando la seguridad vial.",
+      "La baliza V16 básica solo emite luz. La baliza V16 conectada (la que mostramos en este dashboard) además incorpora GPS y conectividad para enviar la posición a la DGT automáticamente, mejorando la seguridad vial. Desde el 1 de enero de 2026 solo es válida la conectada.",
   },
 ];
 
@@ -146,19 +140,13 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
               <Scale className="w-6 h-6 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
               <div>
                 <h3 className="font-bold text-red-800 dark:text-red-200 mb-1">
-                  OBLIGATORIA DESDE EL 1 DE JULIO DE 2021
+                  SOLO VÁLIDA LA V-16 CONECTADA DESDE EL 1 DE ENERO DE 2026
                 </h3>
                 <p className="text-sm text-red-700 dark:text-red-400 mb-2">
-                  Según el <strong>Real Decreto 159/2021</strong>, todos los vehículos deben llevar
-                  una baliza V16 homologada. Su uso es obligatorio cuando el vehículo queda detenido
-                  en la calzada (no en el arcén).
+                  Según la disposición transitoria primera del <strong>Real Decreto 159/2021</strong>,
+                  desde el 1 de enero de 2026 los triángulos y las V-16 sin conexión ya no sirven,
+                  salvo vehículos con matrícula de otro país en circulación internacional.
                 </p>
-                <div className="flex items-center gap-2 text-sm">
-                  <Banknote className="w-4 h-4 text-red-600 dark:text-red-400" />
-                  <span className="text-red-700 dark:text-red-400">
-                    <strong>Multa por incumplimiento:</strong> 80€ - 200€
-                  </span>
-                </div>
               </div>
             </div>
           </div>
@@ -239,7 +227,7 @@ export function V16InfoSection({ dataStartDate }: V16InfoSectionProps) {
                 <ExternalLink className="w-4 h-4" />
               </a>
               <a
-                href="https://www.boe.es/buscar/act.php?id=BOE-A-2021-3668"
+                href="https://www.boe.es/buscar/act.php?id=BOE-A-2021-4194"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"

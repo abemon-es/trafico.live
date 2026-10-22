@@ -248,7 +248,7 @@ const FAQ_ITEMS = [
   {
     question: "¿Qué hacer en caso de retención en una carretera?",
     answer:
-      "Si te ves atrapado en una retención: mantén el motor al ralentí o apágalo si la parada supera 5 minutos (ahorro de combustible y emisiones). Escucha la radio de tráfico (SER, COPE, Onda Cero emiten información cada hora). En caso de retención por accidente, enciende los intermitentes y prepara el triángulo o la baliza V16 si tuvieras que salir del vehículo. No uses el arcén salvo autorización expresa de la DGT.",
+      "Si te ves atrapado en una retención: mantén el motor al ralentí o apágalo si la parada supera 5 minutos (ahorro de combustible y emisiones). Escucha la radio de tráfico (SER, COPE, Onda Cero emiten información cada hora). En caso de retención por accidente, enciende los intermitentes y prepara la baliza V-16 conectada si tuvieras que salir del vehículo. No uses el arcén salvo autorización expresa de la DGT.",
   },
   {
     question:

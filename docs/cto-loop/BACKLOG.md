@@ -90,6 +90,49 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (100) — V-16: the connected beacon has been the only valid one since 1-01-2026, not 1-07-2026
+
+**#181 merged** (`591dfeb4`, CMO OK at `488054e9`). The deploy gate runs on
+compute.
+
+**The rule (CMO, from the BOE):** RD 159/2021 (BOE-A-2021-4194), first
+transitional provision: only the connected V-16 has been valid since
+**1-01-2026**. Triangles and unconnected V-16s no longer count, except for
+vehicles registered abroad in international traffic.
+
+**This PR (L2, the CMO asked for it first):**
+- **/baliza-v-16**:
+  - metadata, the hero and the «Desde» card give 1-01-2026;
+  - 5 FAQ answers rewritten with the CMO's sentence;
+  - the countdown to 2026-07-01 is gone;
+  - the fines answer has no amount: the old «hasta 200 euros según el
+    artículo 76» had no source.
+- **`V16InfoSection`** (shown on /historico and /estadisticas):
+  - «desde el 1 de julio de 2021 es obligatorio» → optional then, the only
+    valid one since 2026;
+  - «sigue siendo obligatorio usar los triángulos» in the arcén → no longer;
+  - the «80€ - 200€» fine line and its FAQ are removed (no source);
+  - the BOE link was another act (BOE-A-2021-3668), now RD 159/2021.
+- **/semana-santa-2026**: «prepara el triángulo o la baliza V16» → «la
+  baliza V-16 conectada».
+- **Test `v16-dates`**: no V-16 text with July 2026, «obligatorio» since
+  2021, the triangle as the alternative, or a fine without its source. The
+  BOE id is right, and there's no countdown. It fails on main's files.
+- **Checks on compute:** 3 tests ok, web tsc 11, lint 64.
+
+**Needs:** CMO OK on every changed answer (full text sent), then CTO merge.
+
+**For the CMO to check, not changed here** (the page asserts them with no
+source):
+- registration: «Registro Obligatorio» in the title, an FAQ, a 5-step HowTo
+  in sede.dgt.gob.es, and the «Registro: Gratuito DGT» card;
+- «norma UNE 135400», «visible a 1 km», «mínimo de 30 minutos», «cada 10-30
+  segundos»;
+- a «top 5» with placeholder ASINs and two models marked `homologated:
+  false`.
+
+---
+
 ## Cycle 2026-10-22 (99) — accident pages claim only the years the database holds
 
 **Signal:** 6/53 degraded, all known.

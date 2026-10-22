@@ -26,7 +26,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 export const metadata: Metadata = buildPageMetadata({
   title: "Baliza V-16 DGT 2026 | Homologadas, Precio y Registro Obligatorio",
   description:
-    "Todo sobre la baliza V-16 obligatoria desde julio 2026 (DGT 3.0): modelos homologados, cómo registrarla, precio y comparativa top 5. ¿La tuya está homologada?",
+    "Todo sobre la baliza V-16 conectada, la única válida desde el 1 de enero de 2026 (DGT 3.0): modelos homologados, cómo registrarla, precio y comparativa top 5. ¿La tuya está homologada?",
   path: "/baliza-v-16",
   keywords: [
     "baliza v16",
@@ -117,7 +117,7 @@ const TOP_BEACONS: BeaconModel[] = [
 const FAQ_ITEMS = [
   {
     q: "¿Es obligatoria la baliza V-16 en 2026?",
-    a: "Sí. El Real Decreto 159/2021 establece que la baliza de señalización V-16 conectada (con transmisión de posición GPS en tiempo real) será obligatoria a partir del 1 de julio de 2026 en sustitución de los triángulos de emergencia. A partir de esa fecha, los triángulos dejarán de ser obligatorios.",
+    a: "Sí. Desde el 1 de enero de 2026 solo es válida la V-16 conectada (disposición transitoria primera del Real Decreto 159/2021); los triángulos y las V-16 sin conexión ya no sirven, salvo vehículos con matrícula de otro país en circulación internacional.",
   },
   {
     q: "¿Cuánto cuesta una baliza V-16 homologada?",
@@ -129,11 +129,11 @@ const FAQ_ITEMS = [
   },
   {
     q: "¿Qué diferencia hay entre una baliza V-16 conectada y no conectada?",
-    a: "La baliza V-16 conectada (DGT 3.0) transmite en tiempo real las coordenadas GPS al Centro de Gestión del Tráfico de la DGT, lo que permite alertar a otros conductores a través de la plataforma DGT 3.0. La no conectada solo emite luz LED visible, sin transmisión. La ley exige el modelo conectado desde julio de 2026.",
+    a: "La baliza V-16 conectada (DGT 3.0) transmite en tiempo real las coordenadas GPS al Centro de Gestión del Tráfico de la DGT, lo que permite alertar a otros conductores a través de la plataforma DGT 3.0. La no conectada solo emite luz LED visible, sin transmisión. Desde el 1 de enero de 2026 solo es válido el modelo conectado.",
   },
   {
-    q: "¿Qué pasa si no llevo baliza V-16 a partir de julio de 2026?",
-    a: "No llevar la baliza V-16 a partir del 1 de julio de 2026 constituye una infracción leve sancionable con multa de hasta 200 euros según el artículo 76 de la Ley de Tráfico. Además, en caso de accidente o avería, expones a otros conductores a un mayor riesgo sin la señalización obligatoria.",
+    q: "¿Qué pasa si no llevo la baliza V-16 conectada?",
+    a: "Desde el 1 de enero de 2026 solo es válida la V-16 conectada (disposición transitoria primera del Real Decreto 159/2021); los triángulos y las V-16 sin conexión ya no sirven, salvo vehículos con matrícula de otro país en circulación internacional. Sin ella, en caso de accidente o avería expones a otros conductores a un mayor riesgo.",
   },
   {
     q: "¿Cómo saber si mi baliza V-16 está homologada por la DGT?",
@@ -141,7 +141,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "¿Puede la baliza V-16 reemplazar a los triángulos de emergencia?",
-    a: "Sí, pero solo a partir del 1 de julio de 2026 y solo si el modelo está homologado como baliza V-16 conectada según la norma UNE 135400. Hasta esa fecha, los triángulos de emergencia siguen siendo obligatorios. Se recomienda llevar ambos durante el período de transición.",
+    a: "Sí: los ha sustituido. Desde el 1 de enero de 2026 solo es válida la V-16 conectada (disposición transitoria primera del Real Decreto 159/2021); los triángulos y las V-16 sin conexión ya no sirven, salvo vehículos con matrícula de otro país en circulación internacional.",
   },
   {
     q: "¿Con qué frecuencia envía la posición GPS la baliza V-16?",
@@ -149,7 +149,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "¿Sirve la baliza V-16 si no tengo cobertura móvil?",
-    a: "La transmisión de posición GPS requiere cobertura 4G o 3G. En zonas sin cobertura, la baliza seguirá emitiendo luz LED visible para los conductores que se aproximen, pero no transmitirá datos al sistema DGT 3.0. Por este motivo se recomienda mantener los triángulos como respaldo hasta julio de 2026.",
+    a: "La transmisión de posición GPS requiere cobertura 4G o 3G. En zonas sin cobertura, la baliza seguirá emitiendo luz LED visible para los conductores que se aproximen, pero no transmitirá datos al sistema DGT 3.0.",
   },
   {
     q: "¿La baliza V-16 tiene que ir colocada en el techo?",
@@ -288,9 +288,6 @@ function AffiliateCTA({ asin, modelName }: { asin: string; modelName: string }) 
 // ─────────────────────────────────────────────────────────────────────────────
 export default function BalizaV16Page() {
   const schemas = buildSchemas();
-  const now = new Date();
-  const deadline = new Date("2026-07-01");
-  const daysLeft = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -326,25 +323,6 @@ export default function BalizaV16Page() {
             </div>
           </div>
 
-          {/* Deadline countdown */}
-          {daysLeft > 0 && (
-            <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-              <Clock className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0" />
-              <div>
-                <p className="font-semibold text-tl-amber-800 dark:text-tl-amber-300 text-sm">
-                  Obligatoria en{" "}
-                  <span className="font-bold text-tl-amber-700 dark:text-tl-amber-400 font-data">
-                    {daysLeft}
-                  </span>{" "}
-                  días — 1 julio 2026
-                </p>
-                <p className="text-xs text-tl-amber-700 dark:text-tl-amber-500 mt-0.5">
-                  La baliza V-16 conectada sustituye a los triángulos de emergencia desde esa fecha.
-                  Los triángulos dejan de ser obligatorios.
-                </p>
-              </div>
-            </div>
-          )}
         </header>
 
         {/* ── Summary box — AI Overview friendly ── */}
@@ -360,13 +338,15 @@ export default function BalizaV16Page() {
             La <strong>baliza de señalización V-16</strong> es un dispositivo luminoso homologado que
             se coloca en el techo del vehículo en caso de avería o accidente. A diferencia de los
             triángulos, transmite la posición GPS en tiempo real al Centro de Gestión del Tráfico de
-            la DGT (plataforma DGT 3.0), alertando a otros conductores. Es{" "}
-            <strong>obligatoria desde el 1 de julio de 2026</strong> según el Real Decreto 159/2021.
+            la DGT (plataforma DGT 3.0), alertando a otros conductores. Desde el{" "}
+            <strong>1 de enero de 2026</strong> es la única válida (disposición transitoria primera
+            del Real Decreto 159/2021): los triángulos y las V-16 sin conexión ya no sirven, salvo
+            vehículos con matrícula de otro país en circulación internacional.
             El precio oscila entre <strong>40 y 90 €</strong> según el modelo.
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
             {[
-              { label: "Desde", value: "1 jul 2026", icon: Clock },
+              { label: "Única válida desde", value: "1 ene 2026", icon: Clock },
               { label: "Precio aprox.", value: "40–90 €", icon: Euro },
               { label: "Colocación", value: "En el techo", icon: ShieldCheck },
               { label: "Registro", value: "Gratuito DGT", icon: FileCheck },
