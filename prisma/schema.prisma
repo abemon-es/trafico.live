@@ -1910,6 +1910,23 @@ model AccidentMicrodata {
   involvesBicycle    Boolean @default(false)
   involvesPedestrian Boolean @default(false)
 
+  // Deaths at 30 days by user type, from the DGT table's TOT_*_MU30DF
+  // columns: people of that type killed in the accident (not the vehicles
+  // involved, which the DGT doesn't publish). NULL until backfilled, or when
+  // the year's file has no such column.
+  pedestrianDeaths30d   Int? // TOT_PEAT_MU30DF
+  cyclistDeaths30d      Int? // TOT_BICI_MU30DF
+  mopedDeaths30d        Int? // TOT_CICLO_MU30DF (ciclomotor)
+  motorcycleDeaths30d   Int? // TOT_MOTO_MU30DF
+  carDeaths30d          Int? // TOT_TUR_MU30DF (turismo)
+  vanDeaths30d          Int? // TOT_FURG_MU30DF (furgoneta)
+  lightTruckDeaths30d   Int? // TOT_CAM_MENOS3500_MU30DF (camión ≤ 3.500 kg)
+  heavyTruckDeaths30d   Int? // TOT_CAM_MAS3500_MU30DF (camión > 3.500 kg)
+  busDeaths30d          Int? // TOT_BUS_MU30DF
+  pmvDeaths30d          Int? // TOT_VMP_MU30DF (vehículo de movilidad personal)
+  otherVehicleDeaths30d Int? // TOT_OTRO_MU30DF
+  unspecifiedDeaths30d  Int? // TOT_SINESPECIF_MU30DF
+
   importedAt DateTime @default(now()) @db.Timestamptz
 
   @@unique([sourceId, year])
