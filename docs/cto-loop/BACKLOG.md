@@ -90,6 +90,19 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (117) — cto-signals: a task that fails and says so isn't «SILENT»
+
+- Since lastSuccessAt (#197), a task that fails every run is stale while
+  it keeps running and recording its error: it fails loudly. The probe
+  marked the four known ones (detector, charger, aemet-historical,
+  aemet-forecast) «[SILENT] … age=nulls».
+- «SILENT» is now kept for what it was written for: stale with no error
+  recorded and no sick container (the AIS blackout signature).
+- The line reads «no success on record (ran Ns ago)» instead of
+  «age=nulls», and shows the cause (`cause=upstream`) when there is one.
+
+---
+
 ## Cycle 2026-10-22 (116) — collector errors reach GlitchTip once, from the dispatcher
 
 **Why:** supercronic read SENTRY_DSN and reported every job that exited
@@ -116,6 +129,18 @@ public-docs ok · collector tsc 626 · web tsc 11 · lint 64.
 
 **After the deploy:** GlitchTip issue 8 is resolved. If it comes back,
 something reached supercronic without going through the dispatcher.
+
+**Shipped:** #198, merged as 90effde1. Collectors deployed 09:27Z, web
+09:33Z.
+
+**Live gate (green):**
+- In all 5 cron collectors, supercronic has no SENTRY_DSN and does have
+  COLLECTOR_SENTRY_DSN. PID 1 is docker-init (`init: true`), not
+  supercronic.
+- Every task process sampled in collector-realtime (14/14, 6/6) has
+  COLLECTOR_SENTRY_DSN and none has SENTRY_DSN.
+- Issue 8 was last seen at 09:25:25Z, before the recreate; a failed
+  detector job since then sent nothing.
 
 **Daily — traffic (SeoSnapshot 2026-10-22 04:00Z) + GlitchTip (project 9):**
 - **GSC 30 d:** 11 clicks · 1,265 impressions · position 46.6. Yesterday
