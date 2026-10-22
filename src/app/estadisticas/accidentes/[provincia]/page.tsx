@@ -8,6 +8,7 @@ import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug } from "@/lib/geo/slugify";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { provinceAccidentYears, spanText } from "@/lib/accident-years";
 import { AccidentChart } from "./AccidentChart";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
@@ -54,19 +55,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const displayName = getDisplayName(province.name);
+  // The province's own years in the database (src/lib/accident-years.ts): the
+  // title said «2011-2024» while every province held 2021–2023.
+  const years = spanText(await provinceAccidentYears(province.code));
 
   return {
-    title: `Accidentes de Tráfico en ${displayName} — Estadísticas 2011-2024`,
+    title: `Accidentes de Tráfico en ${displayName} — Estadísticas${years ? ` ${years}` : ""}`,
     description:
       `Estadísticas históricas de accidentes de tráfico en ${displayName} por año. ` +
-      `Víctimas mortales, heridos hospitalizados y evolución de la siniestralidad vial desde 2011. ` +
+      `Víctimas mortales, heridos hospitalizados y evolución de la siniestralidad vial${years ? ` (${years})` : ""}. ` +
       `Datos oficiales de la DGT.`,
     alternates: {
       canonical: `${BASE_URL}/estadisticas/accidentes/${provincia}`,
     },
     openGraph: {
       title: `Accidentes en ${displayName} — Estadísticas Históricas`,
-      description: `Evolución de la siniestralidad vial en ${displayName} con datos oficiales de la DGT (2011-2024).`,
+      description: `Evolución de la siniestralidad vial en ${displayName} con datos oficiales de la DGT${years ? ` (${years})` : ""}.`,
       url: `${BASE_URL}/estadisticas/accidentes/${provincia}`,
       type: "website",
     },
@@ -343,7 +347,7 @@ export default async function ProvinciaAccidentesPage({ params }: PageProps) {
           "@type": "Answer",
           text: data
             ? `La serie histórica de ${displayName} abarca desde ${data.earliestYear} hasta ${data.latestYear}. La tasa de mortalidad en ${data.latestYear} fue del ${data.fatalityRate}% (fallecidos por cada 100 accidentes con víctimas). Fuente: DGT en Cifras.`
-            : `La DGT publica estadísticas anuales de siniestralidad vial por provincia desde 2011. Consulta este portal para ver la evolución histórica de ${displayName}.`,
+            : `Aún no hay datos de siniestralidad de ${displayName} cargados en trafico.live.`,
         },
       },
     ],

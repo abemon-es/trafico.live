@@ -93,7 +93,7 @@ const FAQ_ITEMS = [
   {
     question: "¿Qué fuentes se usan en los análisis de inteligencia?",
     answer:
-      "Los análisis combinan microdatos de la DGT (accidentes 2011-2024), datos AEMET de precipitación y temperatura, la IMD del Ministerio de Transportes, registros de sensores de intensidad del tráfico de Madrid y otras ciudades, y precios de combustible del Ministerio de Industria. Todas las fuentes son públicas y con licencia abierta.",
+      "Los análisis combinan microdatos de accidentes de la DGT, datos AEMET de precipitación y temperatura, la IMD del Ministerio de Transportes, registros de sensores de intensidad del tráfico de Madrid y otras ciudades, y precios de combustible del Ministerio de Industria. Todas las fuentes son públicas y con licencia abierta.",
   },
   {
     question: "¿Con qué frecuencia se actualizan los análisis?",
@@ -183,7 +183,7 @@ export default function InteligenciaHubPage() {
           items={[
             {
               title: "Análisis de accidentes",
-              description: "Siniestralidad por provincia con serie histórica 2011-2024.",
+              description: "Siniestralidad por provincia con su serie histórica.",
               href: "/analisis/accidentes",
               icon: AlertTriangle,
             },

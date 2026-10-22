@@ -5,6 +5,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { AccidentesClient } from "./AccidentesClient";
 import { PROVINCES, PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { provinceSlug } from "@/lib/geo/slugify";
+import { accidentYears, spanText } from "@/lib/accident-years";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -15,22 +16,27 @@ export const revalidate = 300;
 
 // ─── Metadata ──────────────────────────────────────────────────────────────────
 
-export const metadata: Metadata = {
-  title: "Accidentes de Tráfico en España — Estadísticas Históricas | DGT",
-  description:
-    "Estadísticas históricas de accidentes de tráfico en España por provincia y año. " +
-    "Datos oficiales de la DGT: víctimas mortales, heridos hospitalizados y tasa de mortalidad desde 2011.",
-  alternates: {
-    canonical: `${BASE_URL}/estadisticas/accidentes`,
-  },
-  openGraph: {
-    title: "Accidentes de Tráfico en España — Estadísticas Históricas",
+// The years come from the database (src/lib/accident-years.ts): the
+// description said «desde 2011» while the table held 2021–2023.
+export async function generateMetadata(): Promise<Metadata> {
+  const years = spanText((await accidentYears()).provincial);
+  return {
+    title: "Accidentes de Tráfico en España — Estadísticas Históricas | DGT",
     description:
-      "Análisis por provincia y año de la siniestralidad vial española con datos oficiales de la DGT.",
-    url: `${BASE_URL}/estadisticas/accidentes`,
-    type: "website",
-  },
-};
+      "Estadísticas históricas de accidentes de tráfico en España por provincia y año. " +
+      `Datos oficiales de la DGT: víctimas mortales, heridos hospitalizados y tasa de mortalidad${years ? ` (${years})` : ""}.`,
+    alternates: {
+      canonical: `${BASE_URL}/estadisticas/accidentes`,
+    },
+    openGraph: {
+      title: "Accidentes de Tráfico en España — Estadísticas Históricas",
+      description:
+        "Análisis por provincia y año de la siniestralidad vial española con datos oficiales de la DGT.",
+      url: `${BASE_URL}/estadisticas/accidentes`,
+      type: "website",
+    },
+  };
+}
 
 // ─── Data fetching (server side) ──────────────────────────────────────────────
 
@@ -165,10 +171,8 @@ export default async function AccidentesPage() {
       name: "trafico.live",
       url: BASE_URL,
     },
-    temporalCoverage:
-      stats.availableYears.length > 0
-        ? `${stats.availableYears[0]}/${stats.latestYear}`
-        : String(stats.latestYear),
+    // No coverage claimed for a prerender without data.
+    ...(stats.availableYears.length > 0 ? { temporalCoverage: `${stats.availableYears[0]}/${stats.latestYear}` } : {}),
     spatialCoverage: {
       "@type": "Place",
       name: "España",
@@ -232,9 +236,14 @@ export default async function AccidentesPage() {
 
           {/* ── SSR summary (crawlable) ────────────────────────────────────── */}
           <div className="mb-8 p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+            {stats.availableYears.length === 0 ? (
+              <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+                Aún no hay datos de siniestralidad cargados.
+              </p>
+            ) : (
             <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed">
               Datos de accidentes de tráfico en España desde{" "}
-              <strong>{stats.availableYears[0] ?? 2011}</strong> hasta{" "}
+              <strong>{stats.availableYears[0]}</strong> hasta{" "}
               <strong>{stats.latestYear}</strong>. La base de datos incluye{" "}
               <strong>
                 {stats.totals.accidents.toLocaleString("es-ES")} accidentes con
@@ -249,6 +258,7 @@ export default async function AccidentesPage() {
               <strong>{stats.fatalityRate}%</strong>. Consulta el desglose por
               provincia seleccionando una de las 52 provincias españolas.
             </p>
+            )}
             <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
               Fuente: DGT en Cifras · Datos oficiales actualizados anualmente
             </p>

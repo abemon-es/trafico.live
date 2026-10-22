@@ -38,7 +38,7 @@ const FAQ_ITEMS = [
   {
     question: "¿Qué fuentes de datos se utilizan en los análisis?",
     answer:
-      "Los análisis de accidentes se basan en los microdatos de accidentalidad de la DGT (2011-2024), que incluyen cada siniestro con geolocalización, circunstancias y perfil de los implicados. Los datos de intensidad de tráfico provienen del visor del Ministerio de Transportes (IMD anual por tramo), que publica datos desde 2017.",
+      "Los análisis de accidentes se basan en los microdatos de accidentalidad de la DGT, que incluyen cada siniestro con geolocalización, circunstancias y perfil de los implicados. Los datos de intensidad de tráfico provienen del visor del Ministerio de Transportes (IMD anual por tramo), que publica datos desde 2017.",
   },
   {
     question: "¿Con qué frecuencia se actualizan los datos?",
@@ -128,7 +128,7 @@ export default function AnalisisHubPage() {
             {
               title: "Análisis de accidentes por provincia",
               description:
-                "Evolución histórica de accidentes, fallecidos y heridos en las 52 provincias. Datos DGT 2011-2024.",
+                "Evolución histórica de accidentes, fallecidos y heridos en las 52 provincias. Datos DGT por año.",
               href: "/analisis/accidentes",
               icon: AlertTriangle,
             },

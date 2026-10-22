@@ -12,7 +12,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 export const metadata: Metadata = {
   title: "Estadísticas de Tráfico en España | Tráfico España",
   description:
-    "Estadísticas históricas de siniestralidad vial en España. Datos de accidentes, víctimas y tendencias desde 2015 hasta la actualidad. Fuente: DGT en Cifras.",
+    "Estadísticas históricas de siniestralidad vial en España: accidentes, víctimas y tendencias por provincia y año. Fuente: DGT en Cifras.",
   alternates: {
     canonical: `${BASE_URL}/estadisticas`,
   },
@@ -48,7 +48,7 @@ export default function EstadisticasPage({
     <>
       <StructuredData data={generateDatasetSchema({
         name: "Estadísticas de tráfico en España",
-        description: "Estadísticas históricas de siniestralidad vial en España. Datos de accidentes, víctimas y tendencias desde 2015 hasta la actualidad. Fuente: DGT en Cifras.",
+        description: "Estadísticas históricas de siniestralidad vial en España: accidentes, víctimas y tendencias por provincia y año. Fuente: DGT en Cifras.",
         url: `${BASE_URL}/estadisticas`,
         keywords: ["estadísticas", "accidentes", "siniestralidad", "V16"],
         spatialCoverage: "España",

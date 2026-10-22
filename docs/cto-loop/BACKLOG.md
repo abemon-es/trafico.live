@@ -90,6 +90,57 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (99) — accident pages claim only the years the database holds
+
+**Signal:** 6/53 degraded, all known.
+- detector, SCT and DT-GV: infocar.dgt.es answers 502 from DGT's own CDN
+  (external, monitor only; it's also every GlitchTip event of the hour).
+- AEMET: the key (MJ).
+- transit-gtfs: recheck on 25-10.
+- voyage-detector: stale after the CTO's restarts; I recheck it after its
+  03:xx run.
+
+**Measured (read-only):** HistoricalAccidents holds **2021–2023** (52
+provinces × 3, all roadType NULL); AccidentMicrodata holds **2019–2023**. The
+pages said «2011-2024», «desde 2011», «desde 2015». The claim came from
+`data/historical-accidents.json`: 2011–2024, which matches the microdata
+exactly for 2019–2023, but was never loaded beyond 2021–2023.
+
+**This PR (L2):**
+- **`src/lib/accident-years.ts`**: `accidentYears()`, `provinceAccidentYears()`
+  and `nationalFatalities()` read from the database (React `cache`; empty on a
+  build without a DB).
+- **The three pages fed by HistoricalAccidents** (the /analisis/accidentes
+  hub, /estadisticas/accidentes and its 52 provinces) get their title,
+  description, FAQ and hero years from there. The hub goes to revalidate 300
+  (build-blank policy), and a prerender without data claims no range.
+- **Hub FAQ:** «menos de 1.500 [fallecidos] en 2023» → the figures in the
+  database (1806 in 2023, against 1533 in 2021).
+- **Static texts without a range:** /inteligencia, /prediccion, /analisis,
+  /analisis/carreteras, /estadisticas, /sobre, /api-docs.
+- **Removed `/analisis/accidentes/[provincia]`:** next.config 308s it to
+  /estadisticas, so it was dead code, with the same false title.
+- **Test `accident-year-claims`:** the three pages read their years through
+  the helper and write no year literal, and no accident text in src/ brings
+  back the false forms. It fails on main's files.
+- **Checks on compute:** 4 tests ok, web tsc 11, lint 64.
+
+**Needs:** CMO OK on the copy before the merge (54 titles change).
+
+**Queued:**
+- **L1 (CTO, prod write):** the 2014–2020 and 2024 years of
+  `data/historical-accidents.json` were never loaded. 2011–2013 count deaths
+  at 24 h with no hospital split, so a load keeps the series homogeneous
+  (2014+). The `historical-accidents` task has no schedule and looks for
+  `data/` outside the image.
+- **Content (CMO):**
+  - the hub FAQ says the DGT data cover interurban roads only, but the
+    totals (101,306 accidents with victims in 2023) are all roads;
+  - /baliza-v-16 says «a partir del 1 de julio de 2026»: check it against the
+    rule in force.
+
+---
+
 ## Cycle 2026-10-22 (98) — the 233 published reports: incident figures rebuilt, and the days without data say so
 
 **#177 gated** (`a8f52f16`, deployed 00:48:31Z): /api/stats 969 = 780
@@ -133,6 +184,23 @@ incidencias (de 1080) que indican provincia» (four digits bare, the site's
 rule). Of the 29 weekly titles, 9 lose the verdict, 9 become «semana normal»
 and 11 stay as they are. **L2 (CMO):** every week from S25 on is «normal», so
 check the trend threshold against the real spread of weekly counts.
+
+**Applied, 2026-10-22T02:10:26.162Z** (#179 `d3a0e9f` and #180 `05c72e2` carry
+the copy; the copy is now frozen, and any later edit gets its own PR and pass):
+- The dry run on the deployed collector gave 233 / 0 refused; `--apply
+  --expect 233` reported «corrected 233».
+- Afterwards, read-only: 233 with the note, none with it twice, no old text,
+  updatedAt untouched. A second dry run finds 0 to correct.
+- Three public URLs (two daily, one weekly) gave 200 on two requests each,
+  with the note and without the old figures. No cache purge needed. CMO
+  event #10 sent.
+- Lesson: three PRs for one apply, because copy edits kept arriving while the
+  CTO merged. Next time, get the copy signed off on the dry-run samples
+  before the first merge, then freeze it.
+- The CTO verified too (change-log server#635, with backup and rollback).
+  opensky went stale because the three collector restarts cut off a run; the
+  next run finished at 02:13:33Z, and health was healthy with 0 stale at
+  02:14:01Z.
 
 **Found on the way (queued):**
 - **L2** V16BeaconEvent counts under 1 % of DGT's vehicle-stop situations

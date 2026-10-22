@@ -14,26 +14,44 @@ import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { RelatedLinks } from "@/components/ui/RelatedLinks";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { accidentYears, nationalFatalities, spanText, type YearSpan } from "@/lib/accident-years";
 
-export const revalidate = 86400;
+// 300: build-blank policy (2026-08-17). The years come from the database, and
+// the Docker build has none, so the prerender says no range until it refreshes.
+export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-export const metadata: Metadata = {
-  title: "Análisis de accidentes de tráfico por provincia — DGT 2011-2024",
-  description:
-    "Evolución histórica de accidentes, fallecidos y heridos en las 52 provincias españolas. Datos oficiales de la DGT con microdatos por año, tipo de vía y condiciones meteorológicas.",
-  alternates: { canonical: `${BASE_URL}/analisis/accidentes` },
-  openGraph: {
-    title: "Análisis de accidentes por provincia — trafico.live",
-    description:
-      "Siniestralidad vial histórica en las 52 provincias. Datos DGT 2011-2024 con tendencias, fallecidos y análisis por tipo de vía.",
-    url: `${BASE_URL}/analisis/accidentes`,
-    siteName: "trafico.live",
-    locale: "es_ES",
-    type: "website",
-  },
-};
+// The years come from the database (src/lib/accident-years.ts): this page said
+// «2011-2024» while the provinces held 2021–2023.
+export async function generateMetadata(): Promise<Metadata> {
+  const years = spanText((await accidentYears()).provincial);
+  return {
+    title: `Análisis de accidentes de tráfico por provincia — DGT${years ? ` ${years}` : ""}`,
+    description: `Accidentes con víctimas, fallecidos y heridos por año en las 52 provincias españolas${years ? ` (${years})` : ""}. Datos oficiales de la DGT.`,
+    alternates: { canonical: `${BASE_URL}/analisis/accidentes` },
+    openGraph: {
+      title: "Análisis de accidentes por provincia — trafico.live",
+      description: `Siniestralidad vial en las 52 provincias: accidentes, fallecidos y heridos por año.${years ? ` Datos DGT ${years}.` : " Datos DGT."}`,
+      url: `${BASE_URL}/analisis/accidentes`,
+      siteName: "trafico.live",
+      locale: "es_ES",
+      type: "website",
+    },
+  };
+}
+
+const fromTo = (s: YearSpan) => (s.from === s.to ? `de ${s.from}` : `de ${s.from} a ${s.to}`);
+
+/** «¿Desde cuándo hay datos?», answered with the years in the database. */
+function yearsAnswer({ provincial, microdata }: { provincial: YearSpan | null; microdata: YearSpan | null }): string {
+  const parts = [
+    provincial ? `los datos anuales por provincia ${fromTo(provincial)}` : null,
+    microdata ? `los microdatos de la DGT (un registro por accidente con víctimas) ${fromTo(microdata)}` : null,
+  ].filter(Boolean);
+  if (parts.length === 0) return "Los años disponibles se indican en la página de cada provincia.";
+  return `trafico.live integra ${parts.join(" y ")}. Cada año nuevo se incorpora cuando la DGT publica su conjunto de datos oficial.`;
+}
 
 // The 52 provinces, linked straight to /estadisticas/accidentes/<slug> with
 // the slug that route resolves (provinceSlug of the official name). This list
@@ -44,7 +62,21 @@ const PROVINCES = INE_PROVINCES.map((p) => ({
   slug: provinceSlug(p.name),
 })).sort((a, b) => a.name.localeCompare(b.name, "es"));
 
-const FAQ_ITEMS = [
+/**
+ * The fatalities trend from the database. It said «menos de 1.500 en 2023»;
+ * the provinces add up to 1806 that year.
+ */
+function trendAnswer(rows: { year: number; fatalities: number }[]): string {
+  const fmt = (n: number) => n.toLocaleString("es-ES");
+  const first = rows[0];
+  const last = rows[rows.length - 1];
+  const tail = "El análisis provincial permite identificar las provincias donde la siniestralidad baja o donde se ha estancado.";
+  if (!last) return tail;
+  const since = first.year !== last.year ? `, frente a ${fmt(first.fatalities)} en ${first.year}` : "";
+  return `En ${last.year} la DGT registró ${fmt(last.fatalities)} fallecidos en accidentes con víctimas en España${since}. ${tail}`;
+}
+
+const faqItems = (years: { provincial: YearSpan | null; microdata: YearSpan | null }, fatalities: { year: number; fatalities: number }[]) => [
   {
     question: "¿Qué información contienen los microdatos de la DGT?",
     answer:
@@ -52,8 +84,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "¿Desde cuándo hay datos disponibles?",
-    answer:
-      "La serie temporal homogénea comienza en 2011 tras la implantación del actual modelo de recogida de datos. Los microdatos hasta 2023 están integrados en la plataforma; el ejercicio 2024 se incorporará cuando la DGT publique el conjunto de datos oficial.",
+    answer: yearsAnswer(years),
   },
   {
     question: "¿Por qué algunas provincias muestran más accidentes?",
@@ -67,8 +98,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "¿Cómo interpretar la tendencia de fallecidos?",
-    answer:
-      "España ha reducido el número de fallecidos en carretera un 70% desde el año 2000, pasando de más de 5.000 muertos anuales a menos de 1.500 en 2023. El análisis provincial permite identificar las provincias donde la reducción ha sido mayor o donde la tendencia se ha estancado en los últimos años.",
+    answer: trendAnswer(fatalities),
   },
 ];
 
@@ -89,7 +119,8 @@ const collectionSchema = {
   })),
 };
 
-export default function AnalisisAccidentesHubPage() {
+export default async function AnalisisAccidentesHubPage() {
+  const [years, fatalities] = await Promise.all([accidentYears(), nationalFatalities()]);
   const breadcrumbs = [
     { name: "Análisis", href: "/analisis" },
     { name: "Accidentes por provincia", href: "/analisis/accidentes" },
@@ -106,9 +137,9 @@ export default function AnalisisAccidentesHubPage() {
           Análisis de accidentes por provincia
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-          Evolución histórica de la siniestralidad vial en las 52 provincias españolas. Consulta
-          el número de accidentes, fallecidos y heridos desde 2011 hasta 2024, con desglose por
-          tipo de vía, condiciones meteorológicas y perfil del conductor. Datos oficiales de la
+          Evolución de la siniestralidad vial en las 52 provincias españolas. Consulta el número
+          de accidentes con víctimas, fallecidos y heridos hospitalizados
+          {years.provincial ? ` ${fromTo(years.provincial)}` : " por año"}. Datos oficiales de la
           Dirección General de Tráfico (DGT).
         </p>
       </div>
@@ -171,7 +202,7 @@ export default function AnalisisAccidentesHubPage() {
   ];
 
   const faq = (
-    <FAQAccordion items={FAQ_ITEMS} title="Preguntas frecuentes — accidentes de tráfico" />
+    <FAQAccordion items={faqItems(years, fatalities)} title="Preguntas frecuentes — accidentes de tráfico" />
   );
 
   return (
