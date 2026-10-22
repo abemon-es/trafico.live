@@ -90,6 +90,34 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (114) — collectors: the webhook deploys them; `bin/deploy-collectors.sh` retired
+
+- The server's webhook already deploys the collectors on every merge to
+  main, with a guard: it recreates a container only when no task is in
+  flight, and in a safe minute. The manual script ran a second deploy on
+  top of it.
+- Removed: `bin/deploy-collectors.sh`, `bin/cron-window.mjs` (only the
+  script used it) and their test. The PLAYBOOK says: collectors through the
+  webhook, never by hand; to see what a deploy would cut, the deployer's
+  `--guard-check` (CTO).
+- The repo CLAUDE.md still says «manual deploy» for collectors. Its
+  correction waits for MJ's OK.
+- Docs tidying: the server's public IP → `<compute-public-ip>` in 5 files.
+  It isn't a secret (every site resolves to it directly), so no test
+  guards it (CTO).
+
+**Next (CTO's order):**
+1. `lastSuccessAt` on every heartbeat: stale and the age are computed on
+   it; the overall status goes degraded when any task's last success is
+   past its threshold; `cause: "upstream"` for third-party 5xx/timeouts;
+   detector reports to GlitchTip once per outage. Before the merge, the
+   list of tasks that will show as stale goes to the CTO.
+2. supercronic without a Sentry DSN; Sentry initialised at the
+   dispatcher's entry, before the task import. Then GlitchTip issue 8
+   resolved.
+
+---
+
 ## Cycle 2026-10-22 (113) — D: the three vehicle pages count deaths at 30 days by user type
 
 **What changes (CMO rules; CMO approved the copy, 2026-10-22):**
@@ -129,10 +157,16 @@ queries take ~1 s for the three pages. pmvDeaths30d is NULL for 2019 only
 Checks: `accident-microdata-claims` rewritten for the new pages, plus
 columns, year-claims and public-docs: 4 ok · web tsc 11 · lint 64.
 
-**Next:** CTO merge, then the live gate within the hour (CMO): the three
-pages 200 and indexable, figures equal to the province table, no
-«accidentes con…», Dataset only with data, in the sitemap. If any fails:
-noindex at once and tell the CMO.
+**Shipped:** #195, merged as 7ba5150b; deployed 2026-10-22 09:10 CEST.
+**Live gate, within the hour (CMO): green.**
+- The three pages: 200, indexable, no fallback.
+- Intros and top-3 province rows equal the DB.
+- 0 «accidentes con…»; one Dataset each; the three URLs in sitemap/0.xml;
+  hub cards and FAQ live.
+- First request 0.30–0.34 s, cached 0.09–0.11 s.
+- CMO confirmed 4/4. Logged as SEO event #11; impressions and indexing of
+  the 3 URLs are read on 05-11 (+14 days) and 19-11 (+28 days).
+
 
 ---
 

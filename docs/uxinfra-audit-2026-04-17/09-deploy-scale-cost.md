@@ -1,6 +1,6 @@
 # 09 — Deploy, Scale, Cost & Disaster Recovery Audit
 
-_Audited: 2026-04-17 | Live server state confirmed via SSH to `compute` (168.119.34.248)_
+_Audited: 2026-04-17 | Live server state confirmed via SSH to `compute` (<compute-public-ip>)_
 
 ---
 

@@ -1,5 +1,5 @@
 # Stack Inventory — trafico.live
-_Audit date: 2026-04-17 | Server: hetzner-prod (168.119.34.248)_
+_Audit date: 2026-04-17 | Server: hetzner-prod (<compute-public-ip>)_
 
 ---
 
@@ -7,7 +7,7 @@ _Audit date: 2026-04-17 | Server: hetzner-prod (168.119.34.248)_
 
 | Property | Value |
 |----------|-------|
-| Server | Hetzner (168.119.34.248) |
+| Server | Hetzner (<compute-public-ip>) |
 | CPU | AMD EPYC 7502P 32-Core / 64 vCPUs |
 | RAM | 256 GB total · 81 GB used · 169 GB available |
 | Swap | 15 GB (2.7 GB used) |
@@ -16,7 +16,7 @@ _Audit date: 2026-04-17 | Server: hetzner-prod (168.119.34.248)_
 | Tile data | `/opt/trafico/tiles/tiles/` → 79 GB (includes 75 GB planet PMTiles) |
 | OSRM data | `/opt/trafico/tiles/build/` → 94 GB (iberia.osm.pbf + OSRM graph) |
 | Trafico app dir | `/opt/trafico/` → 174 GB total |
-| Public IP | 168.119.34.248 |
+| Public IP | <compute-public-ip> |
 | IPv6 | 2a01:4f8:242:2107::2 |
 | Internal network | <compute-private-ip> (Docker bridge host alias) |
 | DNS / CDN | Cloudflare (DNS-only for `tiles.trafico.live`; proxied for `trafico.live`) |
@@ -116,7 +116,7 @@ _Live state from `docker ps` on 2026-04-17._
 
 ### Cloudflare
 - DNS + CDN proxy for `trafico.live` (HTTP/2, WAF, DDoS)
-- DNS-only (orange-cloud off) for `tiles.trafico.live` (direct to 168.119.34.248)
+- DNS-only (orange-cloud off) for `tiles.trafico.live` (direct to <compute-public-ip>)
 - Cloudflare Email Routing: catch-all → operator
 
 ### Collectors (7 Docker containers)
@@ -192,7 +192,7 @@ All built from `services/collector/Dockerfile.cron`, on `web` Docker network, lo
                           └──────────────────────┬──────────────────────────────┘
                                                  │ HTTPS
                           ┌──────────────────────▼──────────────────────────────┐
-                          │         HETZNER PROD  168.119.34.248               │
+                          │         HETZNER PROD  <compute-public-ip>          │
                           │                                                     │
                           │  ┌─────────────────────────────────────────────┐   │
                           │  │   TRAEFIK  (:80/:443)                       │   │

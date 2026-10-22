@@ -17,8 +17,8 @@
 | Component | Host | Address | Notes |
 |-----------|------|---------|-------|
 | Database (Postgres 16 + PostGIS) | primary | <db-host-private-ip> | PgBouncer :6440 → Postgres :5432 |
-| Web app | compute | 168.119.34.248 | Docker Compose, Traefik, `/opt/trafico` |
-| Collectors | compute | 168.119.34.248 | Separate Compose stack, `/opt/apps/trafico-live` |
+| Web app | compute | <compute-public-ip> | Docker Compose, Traefik, `/opt/trafico` |
+| Collectors | compute | <compute-public-ip> | Separate Compose stack, `/opt/apps/trafico-live` |
 | Redis | primary | <db-host-private-ip>:6441 | ioredis, cache + rate-limiting |
 | Typesense | primary | <db-host-private-ip>:6442 | 26 collections |
 | Tile server | compute | tiles.trafico.live:8088 | nginx + Martin, static PMTiles |
