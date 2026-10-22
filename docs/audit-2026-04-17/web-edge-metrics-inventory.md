@@ -110,4 +110,4 @@
 - **Martin tile server `/metrics` is broken** (returns "does not exist") — a one-line config fix.
 - **nginx tile server has no stub_status** — needs a location block addition.
 - **Cloudflare has zero observability integration** — all edge/CDN metrics (cache ratio, threat protection, geographic distribution) are invisible from the current stack.
-- **cAdvisor already scrapes all trafico containers** — memory, CPU, network for `trafico-live`, `trafico-postgres`, `trafico-typesense`, etc. are all queryable today.
+- **cAdvisor already scrapes all trafico containers** — memory, CPU, network for `trafico-live`, `<db-container>`, `trafico-typesense`, etc. are all queryable today.

@@ -211,15 +211,19 @@ build defect wearing an L3 costume — fix the layer where the cause lives.
 ## Known infrastructure facts
 
 ### Migrations do NOT auto-apply (as of 2026-08-18)
-`MIGRATE_DATABASE_URL` points at `trafico_app`, which has no DDL rights, so
+> The real host, database and role names (`<db-host>`, `<db-container>`, `<db>`,
+> `<admin-role>`, `<app-role>`, `<ro-role>`) are in the server repo's docs
+> (private). This repo is public (CSO, 2026-10-22).
+
+`MIGRATE_DATABASE_URL` points at `<app-role>`, which has no DDL rights, so
 `prisma migrate deploy` fails with 42501 at every container start and logs
 `[migrate] Skipped` — the app then serves against a schema that does not match
 the code, and the failed row **blocks every later migration**. Until MJ
 provisions a DDL role (BACKLOG ESCALATIONS #00), a new migration needs:
 
-1. `scp` the SQL to `database-primary`, `docker cp` into `trafico-postgres`,
-   apply with `psql -U trafico_admin -d le_trafico -f ...`
-2. `GRANT SELECT, INSERT, UPDATE, DELETE ON "<Table>" TO trafico_app;`
+1. `scp` the SQL to `<db-host>`, `docker cp` into `<db-container>`,
+   apply with `psql -U <admin-role> -d <db> -f ...`
+2. `GRANT SELECT, INSERT, UPDATE, DELETE ON "<Table>" TO <app-role>;`
 3. `docker exec trafico-live sh -c 'DATABASE_URL=$MIGRATE_DATABASE_URL npx prisma migrate resolve --applied <migration_name>'`
 4. **Verify** — `select migration_name from _prisma_migrations where finished_at is null and rolled_back_at is null;` must come back empty.
 

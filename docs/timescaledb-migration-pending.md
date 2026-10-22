@@ -6,7 +6,7 @@
 
 ## Why
 
-trafico-postgres on database-primary uses the `postgis/postgis:16-3.5` image,
+<db-container> on <db-host> uses the `postgis/postgis:16-3.5` image,
 which does not bundle TimescaleDB. The migration assumed Timescale was
 already installed (per stale notes) — it was not. Attempting the migration
 would fail at the `CREATE EXTENSION timescaledb` step.
@@ -29,7 +29,7 @@ pages, which can only show 7-30 days of detail.
 
 ## To enable hypertables (future work)
 
-1. Switch the trafico-postgres Docker image to one that bundles both
+1. Switch the <db-container> Docker image to one that bundles both
    PostGIS and TimescaleDB. Options:
    - `timescale/timescaledb-ha:pg16-all` (recommended; PostGIS included)
    - Build a custom image: `FROM postgis/postgis:16-3.5` + install
@@ -37,7 +37,7 @@ pages, which can only show 7-30 days of detail.
 2. Restart the container (downtime: ~30s on a planned window)
 3. Re-create migration `20260xxxxxxxxx_timescaledb_hypertables`
    (re-derivable from this branch's git history — see deleted file)
-4. Apply migration as `trafico_admin` (composite PK changes +
+4. Apply migration as `<admin-role>` (composite PK changes +
    create_hypertable + add_compression_policy + add_retention_policy)
 5. Remove the 4 stopgap entries from cleanup-realtime/collector.ts
 6. Revert schema.prisma PKs to `@@id([id, createdAt])` (and

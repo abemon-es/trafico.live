@@ -90,6 +90,41 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (108) — the public docs no longer name the database host, the database or its roles
+
+**#189 merged** (`cd12a63e`). The CTO ran the SQL by hand before the merge:
+the 12 `*Deaths30d` columns exist, and the app role can update them through
+its table-level grant. Their waiter runs `migrate resolve --applied` as soon
+as trafico-live has the folder, then checks that no migration is left
+unfinished.
+
+**CSO (2026-10-22):** the DB host, DB name and roles in a public repo are a
+map for an attacker. They aren't credentials, so nothing to rotate, but
+they come out. No force push; the history stays.
+
+**This PR (docs only):**
+- **84 replacements in 11 Markdown files** (docs/**, monitoring/README.md):
+  `<db-host>`, `<db-container>`, `<db>`, `<admin-role>`, `<app-role>`,
+  `<ro-role>`.
+- The PLAYBOOK and the DR runbook say the real values are in the server
+  repo's docs (private); the CTO moves them there.
+- **Test `public-docs-no-internals`:** no Markdown under docs/ or monitoring/,
+  nor the README, names them (127 files).
+
+**Not in this PR, for the CSO to decide** (functional, or an applied
+migration):
+- role/DB defaults in `bin/backup-*.sh`, `scripts/import-*.py` and
+  `enricher/*.py`;
+- container names in `monitoring/alert-rules` and the grafana dashboard;
+- **comments in 10 applied migrations**: editing them changes the checksum
+  that `prisma migrate dev` compares;
+- **IPs**: private 10.100.x and the public one, in CLAUDE.md, docs and
+  several compose/nginx files.
+
+**Then C:** the backfill of the 12 columns.
+
+---
+
 ## Cycle 2026-10-22 (107) — AccidentMicrodata gets 12 columns for deaths at 30 days by user type
 
 **#188 applied** (CTO, after a backup of the 294,596 rows):
@@ -4006,7 +4041,7 @@ the API returns it with `?id=`, from compute.
 
 ## Cycle 2026-10-20 (50) — 14 San Sebastián incidents failed to store on every run, with the heartbeat at ok
 
-**Signal (SENSE 21:17Z):** Loki errors in the last hour: `trafico-postgres`
+**Signal (SENSE 21:17Z):** Loki errors in the last hour: `<db-container>`
 437, `collector-realtime` 840. Grouped by message:
 - **420 × `numeric field overflow`** (Postgres), the same 420 as
   `[collector] Error processing incident EUSKADI-…` in the incident task: 14
@@ -7047,7 +7082,7 @@ nothing failing there.
   by a first draft), backoff/retry notices, and Next's "Read more:" links.
 - It is written without backslashes because it crosses bash → ssh → LogQL.
 - Live result: collector-realtime **76 → 15/h**. The 15 are real: Barcelona
-  sections 12, Renfe `fetch failed`. Also the trafico-postgres
+  sections 12, Renfe `fetch failed`. Also the <db-container>
   `relation "BotVisit" does not exist` from our own probe.
 - The second Loki-ish probe (`docker logs | grep error|failed…`, context
   lines) is unchanged on purpose: it shows lines, it doesn't count them.
@@ -8446,11 +8481,11 @@ Family: same green-but-broken class as the AIS healthcheck — a detector nobody
 ever saw pass its happy path.
 
 ### L0.8 `bin/backup-verify.sh` is unwired — and has an uncommitted MinIO edit
-Evidence (2026-08-19): no cron on `compute` or `database-primary` invokes it,
+Evidence (2026-08-19): no cron on `compute` or `<db-host>` invokes it,
 `/var/log/trafico-backup.log` exists on neither host, and neither host has the
 `r2` rclone remote it defaults to (compute: `cifex-r2`, `gdrive`; db-primary:
 `cifex-r2`). Real DB backups run from `/opt/scripts/backup-trafico-6h.sh`
-(3×/day) + `/opt/scripts/verify-morning-backup.sh` on database-primary. A prior
+(3×/day) + `/opt/scripts/verify-morning-backup.sh` on <db-host>. A prior
 session left an uncommitted working-tree edit retargeting the script R2→MinIO
 (`s3.abemon.es`, remote `minio` — also unconfigured); it was never committed,
 deployed, or scheduled. **Left uncommitted deliberately** — shipping it changes
@@ -8914,7 +8949,7 @@ event tracking is actually configured, since conversion measurement depends on i
 ## Cross-team: traffic-turbo freshness exporter (closed with CTO, 2026-08-16)
 
 Diagnosed jointly with the infra session. The `traffic_freshness.prom` exporter
-on database-primary froze on ~12 July because the monitoring PG password was
+on <db-host> froze on ~12 July because the monitoring PG password was
 rotated while the script carried it hardcoded. CTO staged a fixed script
 (`traffic_freshness.sh.staged-20260816`, inert; reads the password from a
 secrets file, `PGPASSWORD` via env so it stops leaking into `ps`).
@@ -8989,8 +9024,8 @@ accumulates; raw stays 7-day windowed.
 
 ⚠️ **Found en route: the web container's migration pipeline is BROKEN** —
 `prisma migrate deploy` fails with 42501 (MIGRATE_DATABASE_URL uses
-`trafico_app`, which has no DDL; tables belong to `trafico_admin`). Applied
-manually as trafico_admin on trafico-postgres + `migrate resolve`. **Every
+`<app-role>`, which has no DDL; tables belong to `<admin-role>`). Applied
+manually as <admin-role> on <db-container> + `migrate resolve`. **Every
 future migration will fail the same way until MIGRATE_DATABASE_URL gets a DDL
 role → ESCALATIONS.**
 
@@ -9219,7 +9254,7 @@ Verdict: 49/53 ingesting, ~90% of sources reach a user page. New items:
 
 00. **MIGRATE_DATABASE_URL has no DDL rights** — migrations silently fail at
    every deploy (42501) and the container logs "[migrate] Skipped". Point it at
-   a `trafico_admin` credential (direct :5440, not PgBouncer) in
+   a `<admin-role>` credential (direct :5440, not PgBouncer) in
    `/opt/apps/trafico-live/.env`, or provision a dedicated migrator role.
 
 0. ~~**TELEGRAM_CHANNEL / TELEGRAM_BOT_TOKEN never provisioned**~~ — ✅ CLOSED

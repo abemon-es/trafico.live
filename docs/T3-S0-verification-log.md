@@ -8,7 +8,7 @@
 
 ## 3.1c — CollectorHeartbeat migration ✅ PASS
 
-Migration `20260417170000_add_collector_heartbeats` applied in prod. Verified from compute via `psql` run through `postgres:16-alpine` Docker against DATABASE_URL (PgBouncer at `10.100.0.3:6440/le_trafico`).
+Migration `20260417170000_add_collector_heartbeats` applied in prod. Verified from compute via `psql` run through `postgres:16-alpine` Docker against DATABASE_URL (PgBouncer at `10.100.0.3:6440/<db>`).
 
 ### Schema confirmed
 

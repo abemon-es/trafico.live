@@ -60,7 +60,7 @@ Rules are placed in the folder `trafico.live` (auto-created by provisioning). Al
 | 3 | AIS Throughput | Time series | Loki | Parses "stored N positions" from collector-ais logs |
 | 4 | API 5xx Error Rate | Time series | Prometheus | `traefik_service_requests_total{code=~"5.."}` |
 | 5 | API P95 Latency | Time series | Prometheus | Beyla `http_server_request_duration_seconds` + Traefik fallback |
-| 6 | PgBouncer Active Conns | Stat | Prometheus | `pgbouncer_pools_server_active_connections{database="le_trafico"}` |
+| 6 | PgBouncer Active Conns | Stat | Prometheus | `pgbouncer_pools_server_active_connections{database="<db>"}` |
 | 7 | PgBouncer Waiting Clients | Stat | Prometheus | `pgbouncer_pools_client_waiting_connections` |
 | 8 | DB Connection Pool (trend) | Time series | Prometheus | active + waiting over time |
 | 9 | Redis Ops/sec | Stat | Prometheus | `rate(redis_commands_processed_total[1m])` |

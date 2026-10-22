@@ -6,6 +6,10 @@
 **Owner:** Certus SPV SLU / Abemon  
 **Changelog:** See [bottom of this document](#changelog)
 
+> The real host, database and role names (`<db-host>`, `<db-container>`, `<db>`,
+> `<admin-role>`, `<app-role>`, `<ro-role>`) are in the server repo's docs
+> (private). This repo is public (CSO, 2026-10-22).
+
 ---
 
 ## 1. Infrastructure Inventory
@@ -20,11 +24,11 @@
 | Tile server | compute | tiles.trafico.live:8088 | nginx + Martin, static PMTiles |
 | WireGuard VPN | compute→primary | wg0 | compute has VPN to primary |
 
-### Database: `le_trafico`
+### Database: `<db>`
 
 | Schema | Roles |
 |--------|-------|
-| `le_trafico` | `trafico_admin` (DDL), `trafico_app` (DML) |
+| `<db>` | `<admin-role>` (DDL), `<app-role>` (DML) |
 
 ### Critical Data Assets (approximate size at 2026-04-18)
 
@@ -100,7 +104,7 @@ ssh primary crontab -l | grep backup-verify
 [OPERATOR] Test a manual run before trusting the cron:
 
 ```bash
-ssh primary DB_NAME=le_trafico DB_USER=trafico_admin /opt/trafico/bin/backup-verify.sh
+ssh primary DB_NAME=<db> DB_USER=<admin-role> /opt/trafico/bin/backup-verify.sh
 ```
 
 ---
@@ -117,8 +121,8 @@ ssh primary DB_NAME=le_trafico DB_USER=trafico_admin /opt/trafico/bin/backup-ver
 
 ```bash
 scp bin/backup-restore-test.sh hetzner-dev:/opt/trafico/bin/backup-restore-test.sh
-ssh database-primary chmod +x /opt/trafico/bin/backup-restore-test.sh
-ssh database-primary 'crontab -l 2>/dev/null; echo "0 3 * * 1 /opt/trafico/bin/backup-restore-test.sh >> /var/log/trafico-restore-test.log 2>&1"' | ssh database-primary crontab -
+ssh <db-host> chmod +x /opt/trafico/bin/backup-restore-test.sh
+ssh <db-host> 'crontab -l 2>/dev/null; echo "0 3 * * 1 /opt/trafico/bin/backup-restore-test.sh >> /var/log/trafico-restore-test.log 2>&1"' | ssh <db-host> crontab -
 ```
 
 ---
@@ -168,7 +172,7 @@ DUMP=/var/backups/trafico/YYYYMMDDTHHMM.dump
 TABLE=traffic_incidents   # example
 
 pg_restore \
-  -h localhost -U trafico_admin \
+  -h localhost -U <admin-role> \
   -t "$TABLE" \
   --data-only \
   -f /tmp/${TABLE}_restore.sql \
@@ -178,7 +182,7 @@ pg_restore \
 head -50 /tmp/${TABLE}_restore.sql
 
 # 4. Apply (within a transaction for safety)
-psql -h localhost -U trafico_admin le_trafico <<SQL
+psql -h localhost -U <admin-role> <db> <<SQL
 BEGIN;
 TRUNCATE TABLE "${TABLE}";
 \i /tmp/${TABLE}_restore.sql
@@ -211,23 +215,23 @@ DUMP=$(ls -1t /var/backups/trafico/*.dump | head -1)
 echo "Restoring from: $DUMP"
 
 # 4. Drop and recreate database
-psql -h localhost -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='le_trafico';"
-psql -h localhost -U postgres -c "DROP DATABASE le_trafico;"
-psql -h localhost -U postgres -c "CREATE DATABASE le_trafico OWNER trafico_admin;"
-psql -h localhost -U postgres le_trafico -c "CREATE EXTENSION IF NOT EXISTS postgis;"
-psql -h localhost -U postgres le_trafico -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;"
+psql -h localhost -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='<db>';"
+psql -h localhost -U postgres -c "DROP DATABASE <db>;"
+psql -h localhost -U postgres -c "CREATE DATABASE <db> OWNER <admin-role>;"
+psql -h localhost -U postgres <db> -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+psql -h localhost -U postgres <db> -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;"
 
 # 5. Restore
 pg_restore \
   -h localhost \
-  -U trafico_admin \
-  -d le_trafico \
+  -U <admin-role> \
+  -d <db> \
   --no-owner \
   --exit-on-error \
   "$DUMP"
 
 # 6. Quick sanity check
-psql -h localhost -U trafico_admin le_trafico \
+psql -h localhost -U <admin-role> <db> \
   -c "SELECT COUNT(*) FROM traffic_incidents; SELECT COUNT(*) FROM vessel_positions;"
 
 # 7. Restart services
@@ -268,17 +272,17 @@ rclone copy "r2:trafico-backups/daily/${LATEST}" /var/backups/trafico/
 
 # 5. Create database + restore (same as Scenario B steps 4-6)
 systemctl start postgresql
-sudo -u postgres psql -c "CREATE ROLE trafico_admin LOGIN SUPERUSER PASSWORD 'REDACTED';"
-sudo -u postgres psql -c "CREATE ROLE trafico_app LOGIN PASSWORD 'REDACTED';"
+sudo -u postgres psql -c "CREATE ROLE <admin-role> LOGIN SUPERUSER PASSWORD 'REDACTED';"
+sudo -u postgres psql -c "CREATE ROLE <app-role> LOGIN PASSWORD 'REDACTED';"
 # [OPERATOR] Set actual passwords from secrets manager
 
-sudo -u postgres createdb -O trafico_admin le_trafico
-sudo -u postgres psql le_trafico -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+sudo -u postgres createdb -O <admin-role> <db>
+sudo -u postgres psql <db> -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 
 pg_restore \
   -h localhost \
-  -U trafico_admin \
-  -d le_trafico \
+  -U <admin-role> \
+  -d <db> \
   --no-owner \
   /var/backups/trafico/${LATEST}
 
@@ -290,7 +294,7 @@ pg_restore \
 
 # 8. Verify from compute
 docker run --rm postgres:16-alpine \
-  psql "postgresql://trafico_admin:PASSWORD@10.100.0.3:6440/le_trafico" \
+  psql "postgresql://<admin-role>:PASSWORD@10.100.0.3:6440/<db>" \
   -c "SELECT COUNT(*) FROM traffic_incidents;"
 
 # 9. Restart collectors + web
@@ -318,12 +322,12 @@ Use when: primary went offline, a temporary failover was applied (e.g., writes d
 #    - Check application logs on compute for first DB error timestamp
 
 # 2. Dump the current state of primary (may be behind)
-pg_dump -h primary_old -U trafico_admin -Fc -Z6 \
-  -f /tmp/primary_stale_$(date +%Y%m%d).dump le_trafico
+pg_dump -h primary_old -U <admin-role> -Fc -Z6 \
+  -f /tmp/primary_stale_$(date +%Y%m%d).dump <db>
 
 # 3. Dump the failover target (has newer data)
-pg_dump -h failover_target -U trafico_admin -Fc -Z6 \
-  -f /tmp/failover_$(date +%Y%m%d).dump le_trafico
+pg_dump -h failover_target -U <admin-role> -Fc -Z6 \
+  -f /tmp/failover_$(date +%Y%m%d).dump <db>
 
 # 4. For tables with time-based primary keys (vessel_positions, traffic_incidents):
 #    Extract rows written AFTER the outage start from the failover target,
@@ -331,9 +335,9 @@ pg_dump -h failover_target -U trafico_admin -Fc -Z6 \
 
 OUTAGE_START="2026-04-XX HH:MM:00+00"  # [OPERATOR] fill in actual time
 
-psql -h failover_target -U trafico_admin le_trafico \
+psql -h failover_target -U <admin-role> <db> \
   -c "COPY (SELECT * FROM vessel_positions WHERE timestamp > '${OUTAGE_START}') TO STDOUT" \
-  | psql -h primary -U trafico_admin le_trafico \
+  | psql -h primary -U <admin-role> <db> \
   -c "COPY vessel_positions FROM STDIN"
 
 # Repeat for other time-series tables as appropriate.
@@ -372,7 +376,7 @@ Before the backup system is live, [OPERATOR] must complete:
 
 | Secret | Location |
 |--------|----------|
-| Postgres passwords (`trafico_admin`, `trafico_app`) | 1Password / ops vault → "trafico.live DB credentials" |
+| Postgres passwords (`<admin-role>`, `<app-role>`) | 1Password / ops vault → "trafico.live DB credentials" |
 | R2 Access Key + Secret | 1Password → "Cloudflare R2 trafico-backups" |
 | WireGuard `wg0.conf` for primary | 1Password → "primary WireGuard config" |
 | PgBouncer config | `/opt/trafico/.env.bak-*` on compute OR 1Password |
