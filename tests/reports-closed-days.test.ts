@@ -9,7 +9,7 @@
  *
  *   1. incidentCounts(): count, by type, by province and peak hour, all over
  *      [from, to) on TrafficIncident.startedAt, with vehicle stops counted
- *      apart by the rule in src/lib/vehicle-stops.ts;
+ *      and city sensors apart by the rules in src/lib/incident-classes.ts;
  *   2. neither report reads DailyStats, and the daily one never counts an
  *      open-ended «since today».
  *
@@ -23,7 +23,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { PrismaClient } from "@prisma/client";
 import { incidentCounts } from "../services/collector/tasks/insights/generators/shared";
-import { NOT_VEHICLE_STOP_WHERE, VEHICLE_STOP_WHERE } from "../src/lib/vehicle-stops";
+import { CITY_SENSOR_WHERE, REPORTED_WHERE, VEHICLE_STOP_WHERE } from "../src/lib/incident-classes";
 
 // Works whether tsx runs this file as CommonJS (root package) or as ESM.
 const HERE = typeof __dirname !== "undefined" ? __dirname : dirname(fileURLToPath(import.meta.url));
@@ -40,13 +40,14 @@ async function main() {
       trafficIncident: {
         count: async (a: { where: { AND: unknown[] } }) => {
           seen.push(a.where);
-          return a.where.AND[1] === VEHICLE_STOP_WHERE ? 17741 : 2443;
+          const cls = a.where.AND[1];
+          return cls === VEHICLE_STOP_WHERE ? 17741 : cls === CITY_SENSOR_WHERE ? 3466 : 2443;
         },
         groupBy: async (a: { by: string[]; where: unknown }) => {
           seen.push(a.where);
-          return a.by[0] === "type"
-            ? [{ type: "ROADWORK", _count: { _all: 717 } }, { type: "ACCIDENT", _count: { _all: 323 } }]
-            : [{ province: "28", _count: { _all: 250 } }];
+          if (a.by[0] === "type") return [{ type: "ROADWORK", _count: { _all: 717 } }, { type: "ACCIDENT", _count: { _all: 323 } }];
+          if (a.by[0] === "source") return [{ source: "DGT", _count: { _all: 2000 } }, { source: null, _count: { _all: 443 } }];
+          return [{ province: "28", _count: { _all: 250 } }];
         },
         findMany: async (a: { where: unknown }) => {
           seen.push(a.where);
@@ -59,13 +60,16 @@ async function main() {
     assert.deepEqual(c, {
       total: 2443,
       vehicleStops: 17741,
+      citySensors: 3466,
       byType: { ROADWORK: 717, ACCIDENT: 323 },
       byProvince: { "28": 250 },
+      bySource: { DGT: 2000, "—": 443 },
       peakHour: 12,
     });
-    assert.deepEqual(seen[0], { AND: [window, NOT_VEHICLE_STOP_WHERE] }, "incidents: the window, stops left out");
-    assert.deepEqual(seen[1], { AND: [window, VEHICLE_STOP_WHERE] }, "stops: the same window");
-    for (const w of seen.slice(2)) assert.ok(JSON.stringify(w).includes(JSON.stringify(NOT_VEHICLE_STOP_WHERE)), "every breakdown leaves the stops out");
+    assert.deepEqual(seen[0], { AND: [window, REPORTED_WHERE] }, "incidents: reported only, over the window");
+    assert.deepEqual(seen[1], { AND: [window, VEHICLE_STOP_WHERE] }, "vehicle stops: the same window");
+    assert.deepEqual(seen[2], { AND: [window, CITY_SENSOR_WHERE] }, "city sensors: the same window");
+    for (const w of seen.slice(3)) assert.ok(JSON.stringify(w).includes(JSON.stringify(REPORTED_WHERE)), "every breakdown is over reported incidents only");
   }
 
   // 2. In the source.
