@@ -167,6 +167,16 @@ own text on hubs).
 a 30 min timeout. Resident memory and the six queries' p95 before and after;
 a restart only if it frees nothing.
 
+**E-mail addresses in the public repo (Legal, via the CTO):** a counts-only
+scan found 7 at HEAD. Classified without printing any:
+- one is the `git@` user of an SSH clone URL;
+- five are company role mailboxes (partner, affiliate, customer care);
+- one is a city council department mailbox used as sample data.
+- The two DNI-like matches were a commit SHA and UUIDs in an open-data URL.
+- Legal closed it as not personal data: the repo stays public, no history
+  rewrite. The sample address in `docs/AYUNTAMIENTO-BRANDING.md` moves to
+  example.org.
+
 Checks: typesense-incidents (new), run-lock, heartbeat-success and
 public-docs ok · collector tsc 626 · web tsc 11 · lint 64.
 
