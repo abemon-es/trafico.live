@@ -136,6 +136,22 @@ overlapping the task's own schedule in another container (CTO).
 
 **For the CSO:** the 18 high-severity advisories in the collector's existing
 dependencies (ws, axios, typesense, protobufjs, prisma…), a separate item.
+The CTO wants one line per package saying whether it processes external
+input in the collector, to prioritise; not today.
+
+**Shipped:** #200, merged as 97a9140. Collectors deployed 10:47Z.
+
+**Live gate (green):**
+- ioredis resolves in all 6 collector images.
+- 12 `collector-run:*` keys at 10:50Z, all of every-minute tasks in flight,
+  TTL 168–170 s. Loki since the deploy: 0 «run lock unavailable», 0
+  in-flight skips, 0 locks lost.
+- The 11:00Z health-check recovered detector and charger.
+  - Both failed upstream; their rows carry `cause: upstream` and charger's
+    `recoveredBy: health-check` and its clean message.
+  - The backoff recorded failures: 1 for each.
+- At 11:30Z both were skipped («upstream failing (1 in a row, next try 60 min
+  after …)»), with no request to DGT.
 
 ---
 
