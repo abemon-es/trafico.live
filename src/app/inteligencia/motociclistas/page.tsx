@@ -50,6 +50,10 @@ export const metadata: Metadata = {
     "Seguridad vial para motociclistas — Accidentes de moto en Espana",
   description:
     "Analisis de accidentes de motocicleta en Espana: tendencia anual, horas punta, provincias mas peligrosas, efecto lluvia y fin de semana. Datos DGT 2019-2023.",
+  // noindex until the import fills the vehicle flags (CMO, 2026-10-22): the six
+  // involves* columns are false in all 466,123 rows, so this page shows every
+  // accident. It goes back to the index, with titles from the data, once they hold.
+  robots: { index: false, follow: true },
   alternates: { canonical: `${BASE_URL}/inteligencia/motociclistas` },
   openGraph: {
     title: "Seguridad vial para motociclistas en Espana",
@@ -311,20 +315,6 @@ export default async function MotociclistasPage() {
     },
   };
 
-  const datasetSchema = {
-    "@context": "https://schema.org" as const,
-    "@type": "Dataset" as const,
-    name: "Accidentes de motocicleta en Espana 2019-2023",
-    description:
-      "Microdatos de accidentes con implicacion de motocicletas. Fuente: DGT.",
-    url: `${BASE_URL}/inteligencia/motociclistas`,
-    license: "https://creativecommons.org/licenses/by/4.0/",
-    creator: { "@type": "Organization", name: "trafico.live" },
-    isBasedOn: ["https://www.dgt.es"],
-    temporalCoverage: "2019/2023",
-    spatialCoverage: { "@type": "Place", name: "Espana" },
-  };
-
   const stripStats = [
     {
       icon: BarChart3,
@@ -358,7 +348,6 @@ export default async function MotociclistasPage() {
   return (
     <main className="max-w-7xl mx-auto px-4 py-6 space-y-8">
       <StructuredData data={webPageSchema} />
-      <StructuredData data={datasetSchema} />
       <Breadcrumbs
         items={[
           { name: "Inicio", href: "/" },
@@ -405,12 +394,7 @@ export default async function MotociclistasPage() {
             <Info className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
             <div>
               <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                Datos de tipo de vehiculo en procesamiento
-              </p>
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                La clasificacion por tipo de vehiculo esta siendo actualizada. Las estadisticas
-                generales de accidentes (tendencia anual, distribucion horaria, condiciones
-                meteorologicas y provincias) se muestran con todos los accidentes registrados.
+                Todavía no tenemos el desglose por tipo de vehículo: la tabla muestra todos los accidentes con víctimas.
               </p>
             </div>
           </div>
