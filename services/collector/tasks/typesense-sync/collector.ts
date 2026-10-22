@@ -1293,7 +1293,18 @@ async function loadAircraft(prisma: PrismaClient) {
   }));
 }
 
+/**
+ * Incremental (delta) sync keeps its last-sync time in Redis. ioredis was
+ * missing from the collector image until #200 (2026-10-22), so every sync was
+ * a full load; when it arrived, the deltas switched on and the incidents one
+ * failed on every run (it filters TrafficIncident on an `updatedAt` it doesn't
+ * have). Behind TYPESENSE_SYNC_REDIS_DELTA=1, off by default: full loads, as
+ * before, until each delta loader has its own gate.
+ */
+const REDIS_DELTA = process.env.TYPESENSE_SYNC_REDIS_DELTA === "1";
+
 async function getLastSyncTime(collectionName: string): Promise<Date | null> {
+  if (!REDIS_DELTA) return null;
   try {
     const redis = await import("ioredis").then((m) => {
       const url = process.env.REDIS_URL;
@@ -1307,6 +1318,7 @@ async function getLastSyncTime(collectionName: string): Promise<Date | null> {
 }
 
 async function setLastSyncTime(collectionName: string, time: Date): Promise<void> {
+  if (!REDIS_DELTA) return;
   try {
     const redis = await import("ioredis").then((m) => {
       const url = process.env.REDIS_URL;

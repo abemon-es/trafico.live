@@ -14,15 +14,16 @@
  *      the same lock and records cause and recoveredBy;
  *   7. the collector image installs ioredis (services/collector/package.json):
  *      without it the lock always fails open. Until 2026-10-22 it didn't,
- *      so gas-station's dedup and alert-matcher's accumulation never ran in
- *      production; they stay behind flags, off, until each has its own gate.
+ *      so gas-station's dedup, alert-matcher's accumulation and typesense-
+ *      sync's deltas never ran in production; they stay behind flags, off,
+ *      until each has its own gate. A new ioredis user fails this test.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:run-lock
  */
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -166,6 +167,26 @@ async function main() {
   assert.equal(lockPkg.packages["node_modules/ioredis"]?.version, "5.9.2", "locked at the root's version");
   assert.ok(read("services/collector/tasks/gas-station/collector.ts").includes('if (process.env.GAS_STATION_REDIS_DEDUP === "1") {'), "gas-station dedup is off unless asked for");
   assert.ok(read("services/collector/tasks/alert-matcher/index.ts").includes('process.env.ALERT_MATCHER_REDIS_ACCUMULATE === "1"'), "alert accumulation is off unless asked for");
+  // The third one, missed in #200: typesense-sync's deltas keep their last-sync
+  // time in Redis, and the incidents delta queries a field TrafficIncident
+  // doesn't have. Off, so every sync is a full load as before.
+  const ts = read("services/collector/tasks/typesense-sync/collector.ts");
+  assert.ok(ts.includes('const REDIS_DELTA = process.env.TYPESENSE_SYNC_REDIS_DELTA === "1";'), "typesense deltas are off unless asked for");
+  assert.ok(/async function getLastSyncTime[^{]*\{\n\s+if \(!REDIS_DELTA\) return null;/.test(ts), "no last-sync time: a full load");
+  assert.ok(/async function setLastSyncTime[^{]*\{\n\s+if \(!REDIS_DELTA\) return;/.test(ts), "and none is written");
+  // Every collector path that imports ioredis is the lock or behind a flag.
+  const IOREDIS_USERS = ["shared/run-lock.ts", "tasks/gas-station/collector.ts", "tasks/alert-matcher/index.ts", "tasks/typesense-sync/collector.ts"];
+  const walk = (dir: string): string[] =>
+    readdirSync(join(ROOT, dir)).flatMap((n) => {
+      const rel = `${dir}/${n}`;
+      if (n === "node_modules") return [];
+      return statSync(join(ROOT, rel)).isDirectory() ? walk(rel) : /\.(ts|mts|js|mjs)$/.test(n) ? [rel] : [];
+    });
+  const users = walk("services/collector")
+    .filter((rel) => /["']ioredis["']/.test(read(rel)))
+    .map((rel) => rel.replace("services/collector/", ""))
+    .sort();
+  assert.deepEqual(users, [...IOREDIS_USERS].sort(), "a new ioredis user in the collector needs its own flag or gate");
 
   console.log("run-lock: ok (single run across containers, holder and age on a skip, compare-and-delete after a failed renewal, fail-open, recovery backoff 60/120/240)");
 }

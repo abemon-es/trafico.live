@@ -90,6 +90,32 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (119) — #200 woke up typesense-sync's deltas: incidents stopped syncing; back to full loads
+
+**Found by SENSE:** collector-realtime's error lines climbed 116 → 154 →
+192/h. 41/h were «[typesense-sync] Load FAILED for incidents:
+PrismaClientValidationError». None in the 24 h before; from #200's deploy
+(10:47Z) on, every incident and v16 run.
+
+**Cause, a miss of mine in #200:** typesense-sync's deltas keep their
+last-sync time in Redis.
+- Without ioredis in the image they always fell back to a full load.
+- With it, the first run saved a time (10:48:31Z) and every later run took
+  the delta loader.
+- The incidents delta filters TrafficIncident on `updatedAt`, which that
+  model doesn't have. Incidents stopped syncing to search from 10:48Z.
+- #200 put gas-station's and alert-matcher's Redis paths behind flags and
+  missed this one, though my own grep had listed it.
+
+**Fix:** `TYPESENSE_SYNC_REDIS_DELTA=1`, off by default. No last-sync time
+is read or written, so every sync is a full load, as before #200. The
+deltas, starting with incidents' wrong field, get their own gate later.
+- `run-lock` test: every file in the collector that imports ioredis must be
+  on a reviewed list (the lock and the three flagged paths). A new one fails
+  the test, so the next dependency can't wake a path unreviewed.
+
+---
+
 ## Cycle 2026-10-22 (118) — one run per task across containers, and recovery that backs off
 
 **Why:** the off-schedule charger runs were health-check's inline
