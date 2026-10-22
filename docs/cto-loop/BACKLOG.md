@@ -90,6 +90,61 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (116) — collector errors reach GlitchTip once, from the dispatcher
+
+**Why:** supercronic read SENTRY_DSN and reported every job that exited
+non-zero as «error running command: exit status 1»: one issue for every
+task, 14,544 events by 22-10, each a copy of a dispatcher event (CTO
+decision).
+
+**What changes:**
+- `Dockerfile.cron`: the CMD hands the DSN to node as
+  `COLLECTOR_SENTRY_DSN` and unsets `SENTRY_DSN` before exec'ing
+  supercronic. collector-ais runs node directly and keeps `SENTRY_DSN`.
+- `shared/sentry-init.ts`, the dispatcher's first import: Sentry is up
+  before any other module loads, so a module that fails to load is reported
+  too.
+- A run that records status "error" without throwing (aemet-forecast when
+  it aborts) is reported by the dispatcher, one issue per task. supercronic
+  used to be its only report.
+- `collector-sentry` test: runs the CMD's shell line with `env` in place of
+  supercronic. supercronic gets no SENTRY_DSN, and node gets
+  COLLECTOR_SENTRY_DSN.
+
+Checks: collector-sentry (new), heartbeat-success, heartbeat-progress and
+public-docs ok · collector tsc 626 · web tsc 11 · lint 64.
+
+**After the deploy:** GlitchTip issue 8 is resolved. If it comes back,
+something reached supercronic without going through the dispatcher.
+
+**Daily — traffic (SeoSnapshot 2026-10-22 04:00Z) + GlitchTip (project 9):**
+- **GSC 30 d:** 11 clicks · 1,265 impressions · position 46.6. Yesterday
+  11 / 1,254 / 46.4: flat.
+  - By day (data runs to 10-19): 21, 45, 46, 36, 34, 42, 39, **26**
+    impressions, from 10-12 to 10-19. The last day is the lowest since
+    10-12, at position 58.6. One day isn't a trend; the CMO reads GSC daily.
+  - Top page by impressions: / (364, position 50.9). Queries stay long-tail
+    («el trafico en tiempo real», AVLO, CNMC, OpenSky, gasoline prices).
+- **GA4 30 d:** 1,393 sessions (+8) · 1,255 users · 3,594 pageviews.
+  - Last 8 days: 54, 41, 39, 29, 51, 75, 55, 36.
+  - By source: bing 683 · direct 178 · yahoo 169 · **chatgpt.com 108** ·
+    duckduckgo 95. Google organic still isn't in the top 5.
+  - Top pages: /mapa 415 · /trenes/incidencias 300 · / 212 · /trenes 157 ·
+    /rondas/ronda-dalt 106.
+  - Devices: desktop 883 / mobile 509 / tablet 2. Spain 1,280 of 1,393.
+- **GlitchTip:** 100+ unresolved · 10 active and 2 new in 24 h · 7 new in 7 d.
+  - All the growth is outside us:
+    - the DGT infocar host (detector locations/measurements, +1 charger):
+      every run since ~21-10 15:00Z, upstream (Akamai edge 502);
+    - the expired AEMET key (MJ).
+  - «error running command: exit status 1» (14,544 lifetime) isn't a task.
+    It's supercronic's report of every failed job, 96 of the last 100
+    detector. To be dropped: next item after #197.
+  - transit-rt-valencia / transit-realtime «fetch failed»: no new events.
+  - Nothing new from today's PRs (#194–#196).
+
+---
+
 ## Cycle 2026-10-22 (115) — /api/health measures age from the last success (`lastSuccessAt`)
 
 **Why:** a failed run refreshed lastRunAt, so a task failing every run never
@@ -124,6 +179,18 @@ column · web tsc 11 · lint 64.
 
 **Follow-up:** the public /status page (`src/lib/heartbeat.ts`) still ages
 tasks from lastRunAt.
+
+**Shipped:** #197, merged as bd95d5fb. The CTO applied the migration first
+(08:25:41Z; 59 rows, 4 NULL), and marked it with `migrate resolve` after
+the web deploy. Collectors deployed 08:29Z, web 08:36Z.
+
+**Live gate (green):**
+- /api/health: degraded, HTTP 200, lastSuccessAt on every row, stale
+  exactly {aemet-forecast, aemet-historical, charger, detector}; the
+  partials not stale; detector carries `cause: upstream` and its error
+  message.
+- GlitchTip: the two DGT issues were flat over the next runs (GV 124 /
+  JS 87, 08:37→08:47Z). There is one warning per run instead of two events.
 
 ---
 
