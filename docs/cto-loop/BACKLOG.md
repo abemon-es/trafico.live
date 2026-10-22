@@ -126,6 +126,30 @@ own text on hubs).
 1. The cleanup with `--apply`.
 2. Then the merge: the search filter needs the field to exist.
 
+**Cleanup applied (CTO's go):**
+- First pass (12:22Z): 6,600 of 9,954 requests, 792,000 deleted, the guard
+  at 4,130/4,130 at every check. Then the container-guardian restarted the
+  one-off container: the image's HEALTHCHECK made it «unhealthy» after 13
+  min, and the restart re-ran `--apply` for 51 s, harmlessly. The CTO's
+  server#653 makes the guardian leave `--rm` and compose-run containers
+  alone; one-offs also take `--no-healthcheck`.
+- The export then hit the client's 10 s timeout while Typesense compacted:
+  it is a plain fetch now.
+- Second pass: 402,802 deleted, guard 4,325/4,325 at all 34 checks.
+- Third pass: 199 more deleted; the isActive field added; 4,309 of 4,309
+  active documents marked.
+- **After:** 4,309 documents = 4,309 active, all present; filter
+  isActive:true finds 4,309.
+
+**Before → after:**
+- Ended incidents in the top 8: A-7 4→0 · AP-7 4→0 · A-2 7→0 · M-30 4→0 ·
+  N-340 6→0 · «accidente Madrid» 8→0.
+- p95 in ms: A-7 121→55 · AP-7 72→17 · A-2 89→17 · M-30 37→37 ·
+  N-340 46→31 · «accidente Madrid» 15→29. p50 now 8–10 ms everywhere.
+- Typesense resident memory: 4.96 → 4.95 GiB, so no drop yet: the
+  allocator keeps what was freed until a compaction or a restart (CTO's
+  call).
+
 Checks: typesense-incidents (new), run-lock, heartbeat-success and
 public-docs ok · collector tsc 626 · web tsc 11 · lint 64.
 
