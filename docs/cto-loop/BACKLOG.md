@@ -90,6 +90,43 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (107) — AccidentMicrodata gets 12 columns for deaths at 30 days by user type
+
+**#188 applied** (CTO, after a backup of the 294,596 rows):
+- each year re-downloaded its file, with 0 mismatched: 2019 65,178 · 2020
+  45,267 · 2021 56,521 · 2022 63,065 · 2023 64,565, committed
+  04:56–04:59Z;
+- afterwards there are **0 NULL**; 2023 is 65,976 urban / 35,330
+  interurban, equal to ZONA_AGRUPADA.
+
+The urban/interurban split can come back to the /analisis/accidentes FAQ,
+with figures from the DB (CMO). Queued.
+
+**This PR (B):**
+- `prisma/schema.prisma`: 12 `Int?` fields, one per DGT `TOT_*_MU30DF`
+  column: pedestrian, cyclist, moped, motorcycle, car, van, truck ≤ 3,500 kg,
+  truck > 3,500 kg, bus, PMV, other, unspecified.
+- Migration `20261022060000_microdata_deaths_by_user_type`:
+  - `ADD COLUMN IF NOT EXISTS … INTEGER` with no DEFAULT, NOT NULL or index;
+    catalogue-only on 466k rows;
+  - one transaction with `SET LOCAL lock_timeout = '5s'`.
+- Every web read of AccidentMicrodata uses `select`, so a deploy that lands
+  before the SQL breaks nothing. Order anyway: SQL first.
+- Test `microdata-deaths-migration`: schema and migration agree, catalogue-only,
+  lock timeout.
+- Checks on compute: prisma validate ok, web tsc 11, lint 64.
+
+**Apply (CTO, PLAYBOOK «Migrations do NOT auto-apply»):**
+1. the SQL by hand;
+2. merge + deploy;
+3. `prisma migrate resolve --applied 20261022060000_microdata_deaths_by_user_type`;
+4. no migration left unfinished.
+
+**Then C:** a backfill keyed like A, also checking that the 12 add up to
+TOTAL_MU30DF on every row.
+
+---
+
 ## Cycle 2026-10-22 (106) — isUrban row by row from the DGT files, and an importer that can't switch to 24 h deaths
 
 **#187 gated** (`25cf76ae`, deployed 04:17Z): the 3 pages carry the title
