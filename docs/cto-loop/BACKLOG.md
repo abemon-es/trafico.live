@@ -100,6 +100,19 @@ own text on hubs).
   recorded and no sick container (the AIS blackout signature).
 - The line reads «no success on record (ran Ns ago)» instead of
   «age=nulls», and shows the cause (`cause=upstream`) when there is one.
+- GlitchTip issue 8 can't be resolved with the read-only token (CTO), so it
+  stays open and quiet. The probe now says «⚠ SUPERCRONIC REPORTING AGAIN»
+  if any «error running command: exit status» issue is seen after the
+  #198 recreate (09:27:08Z).
+
+**Contact forms (#175), the sender:** an SES sender for trafico.live already
+exists in the group's AWS account (CIFEX). The web env has none of the four
+`AWS_SES_*` variables.
+- **Waiting on MJ:** a new key for it, kept in the vault.
+- **Then:** the CTO sets the variables (eu-west-1; the CMO picks the From)
+  and redeploys; one real end-to-end test; the forms go back on.
+- The CSO deactivates the old key when the new one goes live, and deletes it
+  after 7 days without incidents.
 
 ---
 

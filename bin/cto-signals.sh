@@ -243,7 +243,16 @@ if (( NO_REMOTE == 0 )); then
           new_7d_issues: ([$i[] | select(.first > $now - 604800)]
                    | sort_by(-.count) | .[0:8]
                    | map(. + {first: (.first | todate), last: (.last | todate)})),
-          counts: (map({(.id): .count}) | add // {})
+          counts: (map({(.id): .count}) | add // {}),
+          # supercronic has had no DSN since #198 (collectors recreated
+          # 2026-10-22T09:27:08Z). Its issues cannot be resolved with the
+          # read-only token, so they stay open and quiet: a lastSeen after
+          # the cutoff means a job reached the Sentry of supercronic without
+          # the dispatcher.
+          supercronic_regression: ([$i[]
+                   | select((.title | test("^error running command: exit status"))
+                            and .last > ("2026-10-22T09:27:08Z" | fromdateiso8601))]
+                   | map({short, count, last: (.last | todate)}))
         }
     end' <<<"${GT_RAW:-null}" 2>/dev/null)"
   GLITCHTIP="$(json_or_null "$GLITCHTIP")"
@@ -395,6 +404,9 @@ if (( PRETTY )); then
     (if (.glitchtip|type) != "object" then "glitchtip:   not probed"
      elif .glitchtip.ok != true then "⚠ GLITCHTIP PROBE FAILED: \(.glitchtip.error // "?")"
      else
+       (if ((.glitchtip.supercronic_regression // []) | length) > 0
+        then "⚠ SUPERCRONIC REPORTING AGAIN (no DSN since #198): \([.glitchtip.supercronic_regression[] | "[\(.short)] last \(.last)"] | join(", "))"
+        else empty end),
        "glitchtip:   \(.glitchtip.unresolved)\(if .glitchtip.capped then "+" else "" end) unresolved · active24h=\(.glitchtip.active_24h) new24h=\(.glitchtip.new_24h) new7d=\(.glitchtip.new_7d) · \(if .glitchtip.since_prev_s == null then "first probe, no rate yet" else "+\(.glitchtip.events_since_prev) events in \((.glitchtip.since_prev_s / 60) | floor)m" end)",
        (.glitchtip.active[]? |
          "  \(if .delta == null then "   ?" else "+\(.delta)" end)  n=\(.count)  [\(.short)] \(.title[0:70])  ← \(.source)"),
