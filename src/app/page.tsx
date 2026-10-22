@@ -3,6 +3,7 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { HomeClient } from "./HomeClient";
 import type { HomeArticle } from "@/components/home/counts";
+import { CITY_SENSOR_WHERE, REPORTED_WHERE, VEHICLE_STOP_WHERE } from "@/lib/incident-classes";
 import {
   StructuredData,
   generateDatasetSchema,
@@ -56,9 +57,10 @@ const MORE_SECTIONS = [
 
 async function getHomeStats() {
   try {
-    const [incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount, detectorCount, portugalStationCount, lastIncident] =
+    const [incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount, detectorCount, portugalStationCount, lastIncident, vehicleStopCount, citySensorCount] =
       await Promise.all([
-        prisma.trafficIncident.count({ where: { isActive: true } }),
+        // «Incidencias» are reported only; the other classes on their own tiles.
+        prisma.trafficIncident.count({ where: { AND: [{ isActive: true }, REPORTED_WHERE] } }),
         prisma.camera.count(),
         prisma.radar.count(),
         prisma.gasStation.count(),
@@ -68,14 +70,16 @@ async function getHomeStats() {
         prisma.portugalGasStation.count(),
         // The incident collector stamps fetchedAt on every row it reads.
         prisma.trafficIncident.aggregate({ _max: { fetchedAt: true }, where: { isActive: true } }),
+        prisma.trafficIncident.count({ where: { AND: [{ isActive: true }, VEHICLE_STOP_WHERE] } }),
+        prisma.trafficIncident.count({ where: { AND: [{ isActive: true }, CITY_SENSOR_WHERE] } }),
       ]);
     // Only while fresh (the incident feed is read every minute or two): a time
     // that looks current but is stale is worse than none.
     const fetched = lastIncident._max.fetchedAt;
     const lastIncidentAt = fetched && Date.now() - fetched.getTime() < 30 * 60_000 ? fetched.toISOString() : null;
-    return { incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount, detectorCount, portugalStationCount, lastIncidentAt };
+    return { incidentCount, cameraCount, radarCount, stationCount, v16Count, chargerCount, detectorCount, portugalStationCount, lastIncidentAt, vehicleStopCount, citySensorCount };
   } catch {
-    return { incidentCount: 0, cameraCount: 0, radarCount: 0, stationCount: 0, v16Count: 0, chargerCount: 0, detectorCount: 0, portugalStationCount: 0, lastIncidentAt: null };
+    return { incidentCount: 0, cameraCount: 0, radarCount: 0, stationCount: 0, v16Count: 0, chargerCount: 0, detectorCount: 0, portugalStationCount: 0, lastIncidentAt: null, vehicleStopCount: 0, citySensorCount: 0 };
   }
 }
 

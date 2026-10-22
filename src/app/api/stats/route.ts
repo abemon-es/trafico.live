@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
 import { getFromCache, setInCache } from "@/lib/redis";
+import { CITY_SENSOR_WHERE, REPORTED_WHERE, VEHICLE_STOP_WHERE } from "@/lib/incident-classes";
 
 // Cache the response for 60 seconds
 export const revalidate = 60;
@@ -12,6 +13,14 @@ interface Stats {
   v16Change: number | null;
   incidents: number;
   incidentsChange: number | null;
+  /**
+   * Active rows by class (src/lib/incident-classes.ts), added 2026-10-22.
+   * `incidents` keeps its meaning (every active row) for API clients; the
+   * site reads these: reported incidents, vehicle stops, city sensors.
+   */
+  incidentsReported: number;
+  vehicleStops: number;
+  citySensors: number;
   cameras: number;
   chargers: number;
   zbeZones: number;
@@ -93,6 +102,9 @@ export async function GET(request: NextRequest) {
       climateStationCount,
       accidentRecordCount,
       maritimeStationCount,
+      incidentsReported,
+      vehicleStops,
+      citySensors,
     ] = await Promise.all([
       // Active V16 beacons count
       prisma.v16BeaconEvent.count({ where: { isActive: true } }),
@@ -172,6 +184,10 @@ export async function GET(request: NextRequest) {
       prisma.climateStation.count(),
       prisma.accidentMicrodata.count(),
       prisma.maritimeStation.count(),
+      // Active rows by class, by the one rule in src/lib/incident-classes.ts.
+      prisma.trafficIncident.count({ where: { AND: [{ isActive: true }, REPORTED_WHERE] } }),
+      prisma.trafficIncident.count({ where: { AND: [{ isActive: true }, VEHICLE_STOP_WHERE] } }),
+      prisma.trafficIncident.count({ where: { AND: [{ isActive: true }, CITY_SENSOR_WHERE] } }),
     ]);
 
     // Build severity breakdown
@@ -270,6 +286,9 @@ export async function GET(request: NextRequest) {
       v16Change,
       incidents: incidentCount,
       incidentsChange,
+      incidentsReported,
+      vehicleStops,
+      citySensors,
       cameras: cameraCount,
       chargers: chargerCount,
       zbeZones: zbeCount,

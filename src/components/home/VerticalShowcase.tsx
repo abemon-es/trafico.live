@@ -7,6 +7,8 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 interface StatsResponse {
   incidents?: number;
+  /** Reported incidents only (src/lib/incident-classes.ts): what «Incidencias» counts. */
+  incidentsReported?: number;
   cameras?: number;
   radars?: number;
   panels?: number;
@@ -31,7 +33,7 @@ const COLUMN_1 = {
   heading: "Tráfico en vivo",
   links: [
     { label: "Mapa en vivo", href: "/mapa", statKey: null },
-    { label: "Incidencias", href: "/incidencias", statKey: "incidents" as const },
+    { label: "Incidencias", href: "/incidencias", statKey: "incidentsReported" as const },
     { label: "Atascos", href: "/atascos", statKey: null },
     { label: "Cortes de tráfico", href: "/cortes-trafico", statKey: null },
     { label: "Cámaras DGT", href: "/camaras", statKey: "cameras" as const },
@@ -125,6 +127,7 @@ const DESTACADO_LINKS = [
 
 type StatKey =
   | "incidents"
+  | "incidentsReported"
   | "cameras"
   | "radars"
   | "panels"

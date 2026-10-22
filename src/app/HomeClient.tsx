@@ -16,6 +16,9 @@ export interface HomeStats {
   portugalStationCount: number;
   /** When the incident collector last read the active incidents (ISO), or null. */
   lastIncidentAt: string | null;
+  /** Active vehicle stops and city sensors (src/lib/incident-classes.ts). */
+  vehicleStopCount: number;
+  citySensorCount: number;
 }
 
 // Hero map moved to HeroMapDeferred: static panel first paint, live map

@@ -9,13 +9,19 @@
  *      logic, put every row in exactly one class, NULL causeType and NULL
  *      source included (a NOT over a nullable column is NULL, not true);
  *   3. trend(): 21-10's «+298.7 %» (Madrid sensors) is now a city-sensor
- *      count, and a rise that one feed makes is «feed», never «up».
+ *      count, and a rise that one feed makes is «feed», never «up»;
+ *   4. the home shows «incidencias» from reported incidents only: no bare
+ *      active count in page.tsx, no read of /api/stats `incidents` (every
+ *      active row, kept for API clients) in the home components.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:incident-classes
  */
 
 import assert from "node:assert/strict";
+import { readdirSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   CITY_SENSOR_WHERE,
   REPORTED_WHERE,
@@ -94,6 +100,24 @@ for (const [row, cls] of ROWS) {
   assert.equal(trend({ DGT: 900, SCT: 0, EUSKADI: 0, CYL: 0 }, { DGT: 900 * 7, SCT: 2000 * 7 }, 7), "feed");
   // No base: no verdict.
   assert.equal(trend({ DGT: 10 }, {}, 7), null);
+}
+
+// 4. The home reads the classes, never the raw total.
+{
+  const HERE = typeof __dirname !== "undefined" ? __dirname : dirname(fileURLToPath(import.meta.url));
+  const ROOT = join(HERE, "..");
+  const page = readFileSync(join(ROOT, "src/app/page.tsx"), "utf8");
+  assert.ok(!/trafficIncident\.count\(\{\s*where:\s*\{\s*isActive:\s*true\s*\}\s*\}\)/.test(page), "page.tsx counts every active row as «incidencias»");
+  const homeDir = join(ROOT, "src/components/home");
+  for (const f of readdirSync(homeDir).filter((n) => n.endsWith(".tsx"))) {
+    const text = readFileSync(join(homeDir, f), "utf8");
+    if (text.includes('"/api/stats"')) {
+      assert.ok(!/(statsData|stats)\?*\.incidents\b(?!Reported)/.test(text), `${f} reads /api/stats \`incidents\` (every active row)`);
+    }
+    assert.ok(!/statKey:\s*"incidents"/.test(text), `${f} links the raw «incidents» stat`);
+  }
+  const ticker = readFileSync(join(homeDir, "IncidentTicker.tsx"), "utf8");
+  assert.ok(/\/api\/incidents\?[^"]*class=reported/.test(ticker), "the ticker lists reported incidents only");
 }
 
 // Leaving causeType and source out (an older caller) reads as a reported incident.

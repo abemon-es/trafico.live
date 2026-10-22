@@ -90,6 +90,33 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (97) — the home counts reported incidents only
+
+**#176 merged** (`84107572`, collectors rebuilt with `incident-classes.js`).
+
+**This PR (step 2, CTO-approved: additive only):**
+- **`/api/stats`** gains `incidentsReported`, `vehicleStops` and `citySensors`
+  (active rows by class). `incidents` keeps its meaning (every active row)
+  for API clients.
+- **`/api/incidents`** gains an optional `class=reported|vehicleStop|citySensor`.
+  Without it, the same rows as before. The cache key already includes every
+  parameter, and the lookup is own-keys only.
+- **Home:**
+  - `incidentCount` is reported only, and so is the sources line «Ahora: N
+    incidencias activas»;
+  - the counter strip shows «incidencias» (reported) plus tiles for
+    «vehículos detenidos» and «sensores urbanos con retención»;
+  - the ticker uses `class=reported`; the directory's «Incidencias» reads
+    `incidentsReported`.
+- **Guard (in `incident-classes`):** no bare active count in page.tsx, no
+  /api/stats `incidents` read in the home components, and the ticker filters
+  reported. On main's files it fails.
+
+**Next:** gate (the new fields on /api/stats, the ticker without stops or
+sensors), then the history correction (L1).
+
+---
+
 ## Cycles 2026-10-22 (95–96) — three kinds of row, one rule: reported incidents, vehicle stops, city sensors
 
 **Merged and gated:**

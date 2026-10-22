@@ -11,12 +11,17 @@ interface LiveCounterStripProps {
     v16Count: number;
     chargerCount: number;
     detectorCount: number;
+    vehicleStopCount: number;
+    citySensorCount: number;
   };
 }
 
 // /api/stats response shape (relevant fields only)
 interface StatsResponse {
   incidents: number;
+  incidentsReported?: number;
+  vehicleStops?: number;
+  citySensors?: number;
   cameras: number;
   chargers: number;
   v16Active: number;
@@ -70,7 +75,11 @@ export function LiveCounterStrip({ initialStats }: LiveCounterStripProps) {
     { refreshInterval: 300000 }
   );
 
-  const incidents = statsData?.incidents ?? initialStats.incidentCount;
+  // «Incidencias» are reported incidents only (src/lib/incident-classes.ts);
+  // vehicle stops and city sensors get their own tiles.
+  const incidents = statsData?.incidentsReported ?? initialStats.incidentCount;
+  const vehicleStops = statsData?.vehicleStops ?? initialStats.vehicleStopCount;
+  const citySensors = statsData?.citySensors ?? initialStats.citySensorCount;
   const cameras = statsData?.cameras ?? initialStats.cameraCount;
   const chargers = statsData?.chargers ?? initialStats.chargerCount;
   const v16 = statsData?.v16Active ?? initialStats.v16Count;
@@ -85,6 +94,16 @@ export function LiveCounterStrip({ initialStats }: LiveCounterStripProps) {
       value: formatNumber(incidents),
       label: "incidencias",
       color: DOT_RED,
+    },
+    {
+      value: formatNumber(vehicleStops),
+      label: "vehículos detenidos",
+      color: DOT_AMBER,
+    },
+    {
+      value: formatNumber(citySensors),
+      label: "sensores urbanos con retención",
+      color: DOT_AMBER,
     },
     {
       value: formatNumber(detectors),

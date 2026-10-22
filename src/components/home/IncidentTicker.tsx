@@ -35,7 +35,8 @@ function timeAgo(dateStr: string): string {
 
 export function IncidentTicker() {
   const { data } = useSWR<IncidentsResponse>(
-    "/api/incidents?limit=8",
+    // Reported incidents only: vehicle stops and city sensors are not «incidencias».
+    "/api/incidents?limit=8&class=reported",
     fetcher,
     { refreshInterval: 60000 }
   );
