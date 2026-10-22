@@ -90,6 +90,55 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (101) — the vehicle pages are noindex until the microdata hold vehicle types; /analisis and V-16 claim only what has a source
+
+**#181 gated** (`591dfeb4`, deployed 03:10:39Z):
+- /analisis/accidentes «— DGT 2021-2023» (the first request served the build
+  copy, the second the new one), with the FAQ «de 2021 a 2023» and «1806 …
+  frente a 1533 en 2021»;
+- /estadisticas/accidentes «tasa de mortalidad (2021-2023)»; Madrid
+  «Estadísticas 2021-2023»;
+- all 52 province links on the hub 200; /analisis/accidentes/madrid 308.
+
+**#182 merged** (`67ac7eec`, CMO OK at `87b60f6f`). The gate runs on compute.
+voyage-detector recovered by itself: it ran at 03:06:42Z, and health was
+healthy with 0 stale at 03:16Z.
+
+**Found (L1, read-only, all 466,123 rows of AccidentMicrodata):**
+- latitude/longitude: 0 % filled;
+- the six `involves*` flags: false in every row;
+- `isUrban`: 63 % NULL;
+- `roadType`: 88 % OTHER;
+- `municipality` name: 0 % filled;
+- `causeCode`: 0 % filled; the accident-type code is in `causeDescription`.
+
+As a result /inteligencia/camiones, /motociclistas and /ciclistas-y-peatones
+show every accident under vehicle titles. The fix is a re-import with those
+columns mapped, if the DGT XLSX has them; it's a prod write, so the CTO runs
+it after a dry run.
+
+**This PR (CMO's decisions):**
+- **The three vehicle pages:** `noindex, follow`, out of the sitemap, no
+  `Dataset` schema. The banner says «Todavía no tenemos el desglose por tipo
+  de vehículo: la tabla muestra todos los accidentes con víctimas.» (not «en
+  procesamiento»). They go back to the index, with titles from the data, once
+  the flags hold.
+- **/analisis FAQ:** «geolocalización, circunstancias y perfil de los
+  implicados» → what the table holds (CMO's text, verbatim).
+- **/baliza-v-16:** «formato E1 o similar» out (no source). The 40–90 € range
+  becomes the fact with a source: the price includes connectivity for at
+  least 12 years (RD 159/2021).
+- **Test `accident-microdata-claims`** (fails on main's files); `v16-dates`
+  gains E1 and the price range.
+- **Checks on compute:** 5 tests ok, web tsc 11, lint 64.
+
+**Queue after this, one PR at a time (CTO):**
+1. The historical-accidents range: 2024 first, then 2014–2020 (data in the
+   image, a schedule for the task).
+2. The microdata importer.
+
+---
+
 ## Cycle 2026-10-22 (100) — V-16: the connected beacon has been the only valid one since 1-01-2026, not 1-07-2026
 
 **#181 merged** (`591dfeb4`, CMO OK at `488054e9`). The deploy gate runs on

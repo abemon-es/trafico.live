@@ -45,7 +45,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "¿Cuánto cuesta una baliza V-16 homologada?",
-    a: "El precio de las balizas V-16 homologadas por la DGT oscila entre 40 y 90 euros dependiendo del modelo y sus prestaciones (duración de batería, conectividad 4G vs Bluetooth, garantía). Las opciones más vendidas se sitúan en torno a los 45-60 euros.",
+    a: "El precio incluye la conectividad durante al menos 12 años (Real Decreto 159/2021), sin cuotas a una operadora.",
   },
   {
     q: "¿Qué diferencia hay entre una baliza V-16 conectada y no conectada?",
@@ -57,7 +57,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "¿Cómo saber si mi baliza V-16 está homologada por la DGT?",
-    a: "Puedes verificar si un modelo está homologado buscando el número de homologación en la etiqueta o caja del dispositivo (formato E1 o similar) y consultando el listado oficial de dispositivos de la DGT en su sede electrónica.",
+    a: "Puedes verificar si un modelo está homologado buscando el número de homologación en la etiqueta o caja del dispositivo y consultando el listado oficial de dispositivos de la DGT en su sede electrónica.",
   },
   {
     q: "¿Puede la baliza V-16 reemplazar a los triángulos de emergencia?",
@@ -182,12 +182,12 @@ export default function BalizaV16Page() {
             <strong>1 de enero de 2026</strong> es la única válida (disposición transitoria primera
             del Real Decreto 159/2021): los triángulos y las V-16 sin conexión ya no sirven, salvo
             vehículos con matrícula de otro país en circulación internacional.
-            El precio oscila entre <strong>40 y 90 €</strong> según el modelo.
+            El precio incluye la conectividad durante al menos <strong>12 años</strong> (Real Decreto 159/2021).
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
             {[
               { label: "Única válida desde", value: "1 ene 2026", icon: Clock },
-              { label: "Precio aprox.", value: "40–90 €", icon: Euro },
+              { label: "Conectividad incluida", value: "Al menos 12 años", icon: Euro },
               { label: "Colocación", value: "En el techo", icon: ShieldCheck },
             ].map(({ label, value, icon: Icon }) => (
               <div

@@ -75,7 +75,9 @@ assert.ok(page.includes("disposición transitoria primera del Real Decreto 159/2
 assert.ok(!/registrarla|Registro Obligatorio|Registrar dispositivo|HowTo|HOWTO_STEPS/.test(page), "no V-16 registration: the DGT says there is none");
 assert.ok(!/registr/i.test(page.replace("no hay que registrar la baliza", "")), "only the DGT's «no hay que registrar»");
 assert.ok(/cada 100 segundos \(Real Decreto 159\/2021\)/.test(page) && !/10-30 segundos/.test(page), "position every 100 seconds");
-assert.ok(!/UNE 135400/.test(page + info), "no unsourced standard");
+assert.ok(!/UNE 135400|E1 o similar/.test(page + info), "no unsourced standard or approval format");
+assert.ok(!/40 y 90|40[–-]90|45-60 euros/.test(page), "no unsourced price range; the sourced fact is 12 years of connectivity");
+assert.ok(page.includes("conectividad durante al menos 12 años (Real Decreto 159/2021)"), "the price fact with its source");
 assert.ok(!/PLACEHOLDER_ASIN|AFFILIATE_TODO|TOP_BEACONS|top 5/i.test(page), "no top 5 with placeholder links");
 assert.ok(/1 kil[oó]metro de distancia en condiciones favorables/.test(page + info), "«1 km» as the DGT says it");
 for (const p of files(join(ROOT, "src"))) {
