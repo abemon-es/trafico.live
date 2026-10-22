@@ -90,6 +90,62 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (103) — the 52 annual articles: their province link reaches a page, and there will be no more of them
+
+**#183 gated** (`1e6c1c0e`, deployed 03:33:29Z):
+- the 3 vehicle pages give 200 with `noindex, follow`, no Dataset, the
+  notice, and no «en procesamiento»;
+- /analisis has the sentence;
+- /baliza-v-16 has the 12 years, with no E1 or 40–90;
+- /sitemap/0.xml no longer lists the 3 pages (control: lluvia is still
+  there).
+
+**#184 merged** (`845e64fa`). Its gate runs on compute.
+
+**Found on the way to the range load:**
+- The 52 «accidentalidad-{código}-2023» articles (published 2-04) link to
+  `/analisis/accidentes/<Province.slug>`, which 308s to /estadisticas. **5
+  of the 52 ended in a 404**: alava, alicante, baleares, castellon, valencia.
+  The route resolves provinceSlug(name), e.g. «alicantealacant».
+- The insights run and the post-ingestion trigger would have published 52
+  more the day 2024 is loaded.
+
+**Decisions:**
+- **CMO:** no more of these articles for new years (52 template articles a
+  year that repeat the province page). Correct the 52 in place: the link,
+  «carreteras» → «vías», no «definitivos».
+- **CTO:** this PR goes before the range load.
+
+**This PR (L2):**
+- **Province.slug aliases:** `/estadisticas/accidentes/[provincia]` answers
+  a Province-table slug with a 308 to the one the route resolves, so
+  existing links and Googlebot's known URLs land on 200.
+- **Generator removed:** `annual-accidents.ts`, its call in the insights run
+  and the post-ingestion trigger of historical-accidents.
+- **`scripts/correct-annual-accident-articles.ts`:**
+  - in each body, the province link goes straight to its page and
+    /provincias/<code> to its final URL; «en sus vías»; «Datos {años}»;
+  - only the body changes: URL, publishedAt and updatedAt stay;
+  - dry run, read-only: **52 to correct, 0 refused**. All 104 target URLs
+    give 200 with no redirect.
+- **Test `annual-accident-articles`:** the written-out links match
+  provinceSlugByCode/provincePath for the 52 provinces, the stored shape is
+  rewritten once, no generator remains, and the alias redirect is in place.
+- **Checks on compute:** 5 tests ok, collector tsc 626, web tsc 11, lint
+  64, check-src-lib ok.
+
+**Apply after merge + deploy (CTO):** back up the 52 rows with the WHERE in
+the script, then `--apply --expect 52`.
+
+**GSC for the CMO:** our 67 snapshots (16-08 → 21-10) keep only the top 20
+pages. Only `accidentalidad-32-2023` appears, in 24 of them, with 1
+impression in 30 days; none of the 52 is in GA4's top pages. The CMO pulls
+the per-URL 90-day figures from the API.
+
+**Then:** the range load (2014–2024), with no generator.
+
+---
+
 ## Cycle 2026-10-22 (102) — without vehicle types the vehicle pages show no charts, only the notice and the general analyses
 
 **#182 gated** (`67ac7eec`, deployed 03:25:21Z):

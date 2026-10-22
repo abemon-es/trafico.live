@@ -142,13 +142,6 @@ async function getPostIngestionTriggers(task: string): Promise<InsightTrigger[]>
         { name: "weather-alert", fn: g.generateEnhancedWeatherAlert },
       ];
     }
-    case "historical-accidents": {
-      // Historical data just loaded → generate annual reports
-      const g = await generatorModule();
-      return [
-        { name: "annual-accidents", fn: g.generateAnnualAccidentReports },
-      ];
-    }
     case "imd": {
       // IMD data just loaded → generate road analyses
       const g = await generatorModule();
