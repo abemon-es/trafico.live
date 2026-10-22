@@ -17,19 +17,20 @@ import {
   todaySlug,
   fmtPrice,
   fmtPct,
-  fmtInt,
   getEditorialWeight,
   estimateReadTime,
   getProvinceNameMap,
   mdTable,
-  INCIDENT_TYPE_NAMES,
   nationalFuel,
   incidentCounts,
   reportedBySource,
   activeCounts,
+  dgtSeenHours,
   num,
 } from "./shared";
-import { trend } from "../../../../../src/lib/incident-classes.js";
+import { dailyIncidentText, outageHours } from "./incident-text";
+
+const HOUR = 3_600_000;
 
 export async function generateDailyReport(prisma: PrismaClient): Promise<number> {
   const slug = `informe-diario-${todaySlug()}`;
@@ -54,6 +55,7 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
     fuel,
     weekBeforeCount,
     provinceNameMap,
+    seen,
   ] = await Promise.all([
     activeCounts(prisma),
     incidentCounts(prisma, yesterdayStart, todayStart),
@@ -67,6 +69,7 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
     // Same unit as `yesterday`: incidents started, over 7 closed days.
     reportedBySource(prisma, weekBeforeStart, yesterdayStart),
     getProvinceNameMap(prisma),
+    dgtSeenHours(prisma, new Date(weekBeforeStart.getTime() - HOUR), new Date(todayStart.getTime() + HOUR)),
   ]);
 
   // ── Fuel deltas ──────────────────────────────────────────────────────────
@@ -85,33 +88,21 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
       ? ((gas95Now - gas95Yest) / gas95Yest) * 100
       : null;
 
-  // ── 7-day average ────────────────────────────────────────────────────────
-  // The three classes apart (src/lib/incident-classes.ts), the same
-  // split on every figure: active, yesterday and the 7 days before.
-  const yesterdayIncidents = yesterday.total;
-  const weekBeforeTotal = Object.values(weekBeforeCount).reduce((s, n) => s + n, 0);
-  const avg7d = weekBeforeTotal > 0 ? weekBeforeTotal / 7 : null;
-  // «Más intensa» / «tranquila» only for a clear move that no single feed
-  // explains (src/lib/incident-classes.ts): 21-10's «+298.7 %» was city sensors.
-  const dayTrend = trend(yesterday.bySource, weekBeforeCount, 7);
-  const active = activeIncidents.incidents;
+  // ── Incidents ────────────────────────────────────────────────────────────
+  // The three classes apart (src/lib/incident-classes.ts), the same split on
+  // every figure: active, yesterday and the 7 days before (incident-text.ts).
+  const incidents = dailyIncidentText({
+    yesterday,
+    weekBefore: weekBeforeCount,
+    missing: {
+      day: outageHours(seen, yesterdayStart, todayStart, now),
+      weekBefore: outageHours(seen, weekBeforeStart, yesterdayStart, now),
+    },
+    provinceNames: provinceNameMap,
+    active: activeIncidents,
+    withCitySensors: true,
+  });
 
-  // ── Yesterday's breakdowns, from the same rows ───────────────────────────
-  const byIncidentType = yesterday.byType;
-  const byProvince = yesterday.byProvince;
-  const peakHour = yesterday.peakHour;
-
-  // Top 5 provinces
-  const topProvinces = Object.entries(byProvince)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([code, count]) => ({
-      code,
-      name: provinceNameMap.get(code) ?? code,
-      count,
-    }));
-
-  // ── Opinionated lead ─────────────────────────────────────────────────────
   const dateStr = now.toLocaleDateString("es-ES", {
     weekday: "long",
     day: "numeric",
@@ -119,48 +110,6 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
     year: "numeric",
   });
   const timeStr = now.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
-
-  let leadSentence: string;
-  if (avg7d == null || dayTrend == null || dayTrend === "feed") {
-    leadSentence = `Ayer se registraron **${fmtInt(yesterdayIncidents)} incidencias** nuevas en las carreteras españolas.`;
-  } else {
-    const pct = fmtPct(((yesterdayIncidents - avg7d) / avg7d) * 100);
-    if (dayTrend === "up") {
-      leadSentence = `Ayer fue una jornada **más intensa de lo habitual**: ${fmtInt(yesterdayIncidents)} incidencias nuevas frente a una media de ${fmtInt(avg7d)} en los 7 días anteriores (${pct}).`;
-    } else if (dayTrend === "down") {
-      leadSentence = `Ayer fue una jornada **tranquila en carretera**: ${fmtInt(yesterdayIncidents)} incidencias nuevas, por debajo de la media de ${fmtInt(avg7d)} de los 7 días anteriores (${pct}).`;
-    } else {
-      leadSentence = `Ayer, tráfico **dentro de lo normal**: ${fmtInt(yesterdayIncidents)} incidencias nuevas, próximo a la media de ${fmtInt(avg7d)} de los 7 días anteriores.`;
-    }
-  }
-
-  // ── Incident type breakdown table ────────────────────────────────────────
-  const typeEntries = Object.entries(byIncidentType)
-    .sort((a, b) => b[1] - a[1])
-    .filter(([, count]) => count > 0);
-
-  // The type table adds the vehicle stops as their own row, so incidents plus
-  // vehicle stops is the whole: nothing hidden.
-  const extraRows: [string, number][] = [["VEHICLE_STOPS", yesterday.vehicleStops], ["CITY_SENSORS", yesterday.citySensors]];
-  const totalTyped = typeEntries.reduce((s, [, c]) => s + c, 0) + yesterday.vehicleStops + yesterday.citySensors || 1;
-  const typeTableRows = [...typeEntries, ...extraRows].filter(([, c]) => c > 0).map(([type, count]) => [
-    INCIDENT_TYPE_NAMES[type] ?? type,
-    String(count),
-    fmtPct((count / totalTyped) * 100).replace("+", ""),
-  ]);
-
-  // ── Province table ───────────────────────────────────────────────────────
-  const provinceTableRows = topProvinces.map(({ name, count }, i) => [
-    String(i + 1),
-    name,
-    String(count),
-  ]);
-
-  // ── Peak hour string ─────────────────────────────────────────────────────
-  const peakHourStr =
-    peakHour != null
-      ? `**${String(peakHour).padStart(2, "0")}:00–${String(peakHour + 1).padStart(2, "0")}:00**`
-      : "N/D";
 
   // ── Weather section ──────────────────────────────────────────────────────
   const alertProvinces = [
@@ -183,42 +132,7 @@ export async function generateDailyReport(prisma: PrismaClient): Promise<number>
   // ── Build body ───────────────────────────────────────────────────────────
   const sections: string[] = [];
 
-  sections.push(`## Informe de tráfico — ${dateStr}\n\n${leadSentence}`);
-
-  // Incident summary
-  sections.push(`### Incidencias
-
-- **${fmtInt(active)}** incidencias activas en este momento
-- **${fmtInt(yesterdayIncidents)}** incidencias nuevas ayer${avg7d != null ? `\n- Media de los 7 días anteriores: **${fmtInt(avg7d)}** incidencias nuevas al día` : ""}
-- Vehículos detenidos (balizas V16 y averías): **${fmtInt(yesterday.vehicleStops)}** nuevos ayer, **${fmtInt(activeIncidents.vehicleStops)}** activos ahora
-- Retenciones detectadas por sensores urbanos (Madrid, Barcelona, Valencia): **${fmtInt(yesterday.citySensors)}** sensores con retención ayer, **${fmtInt(activeIncidents.citySensors)}** ahora`);
-
-  // Type breakdown
-  if (typeTableRows.length > 0) {
-    sections.push(`### Tipo de incidencia (nuevas ayer)
-
-${mdTable(
-  ["Tipo", "Incidencias", "% del total"],
-  typeTableRows,
-  ["left", "right", "right"]
-)}`);
-  }
-
-  // Top provinces
-  if (provinceTableRows.length > 0) {
-    sections.push(`### Provincias con más incidencias nuevas ayer
-
-${mdTable(
-  ["#", "Provincia", "Incidencias"],
-  provinceTableRows,
-  ["center", "left", "right"]
-)}`);
-  }
-
-  // Peak hour
-  sections.push(`### Hora punta
-
-La hora en que empezaron más incidencias ayer fue ${peakHourStr}.`);
+  sections.push(`## Informe de tráfico — ${dateStr}\n\n${incidents.lead}`, ...incidents.sections);
 
   // Fuel prices
   const dieselDeltaStr = dieselDelta != null ? ` (${fmtPct(dieselDelta)} vs ayer)` : "";
@@ -269,7 +183,7 @@ Sin alertas meteorológicas activas en este momento.`);
   const body = sections.join("\n\n");
 
   const title = `Informe de tráfico — ${dateStr}`;
-  const summary = `${fmtInt(active)} incidencias activas, ${fmtInt(yesterdayIncidents)} nuevas ayer${avg7d != null ? ` (media de los 7 días anteriores: ${fmtInt(avg7d)})` : ""}; aparte, ${fmtInt(yesterday.vehicleStops)} vehículos detenidos y ${fmtInt(yesterday.citySensors)} sensores urbanos con retención. Diésel: ${fmtPrice(dieselNow)} €/L. Gasolina 95: ${fmtPrice(gas95Now)} €/L. ${activeAlerts.length} alertas meteorológicas.`;
+  const summary = `${incidents.summaryClause}. Diésel: ${fmtPrice(dieselNow)} €/L. Gasolina 95: ${fmtPrice(gas95Now)} €/L. ${activeAlerts.length} alertas meteorológicas.`;
 
   const category: ArticleCategory = "DAILY_REPORT";
 

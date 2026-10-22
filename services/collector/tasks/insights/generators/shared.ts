@@ -161,6 +161,17 @@ export function countIncidents(prisma: PrismaClient, from: Date, to: Date): Prom
   return prisma.trafficIncident.count({ where: { AND: [{ startedAt: { gte: from, lt: to } }, REPORTED_WHERE] } });
 }
 
+/**
+ * The clock hours (epoch hours, UTC) of [from, to) in which some DGT situation
+ * was first seen: the collector's pulse, for outageHours (incident-text.ts).
+ */
+export async function dgtSeenHours(prisma: PrismaClient, from: Date, to: Date): Promise<Set<number>> {
+  const rows = await prisma.$queryRaw<{ h: Date }[]>`
+    SELECT DISTINCT date_trunc('hour', "firstSeenAt") AS h FROM "TrafficIncident"
+    WHERE source = 'DGT' AND "firstSeenAt" >= ${from} AND "firstSeenAt" < ${to}`;
+  return new Set(rows.map((r) => Math.floor(new Date(r.h).getTime() / 3_600_000)));
+}
+
 /** Active rows of each class, by the same rule. */
 export async function activeCounts(prisma: PrismaClient): Promise<{ incidents: number; vehicleStops: number; citySensors: number }> {
   const active = { isActive: true };

@@ -20,19 +20,20 @@ import {
   weekSlug,
   fmtPrice,
   fmtPct,
-  fmtInt,
   getEditorialWeight,
   estimateReadTime,
   getProvinceNameMap,
   mdTable,
-  INCIDENT_TYPE_NAMES,
   nationalFuel,
   incidentCounts,
   countIncidents,
   reportedBySource,
+  dgtSeenHours,
   num,
 } from "./shared";
-import { trend } from "../../../../../src/lib/incident-classes.js";
+import { outageHours, weeklyIncidentText } from "./incident-text";
+
+const HOUR = 3_600_000;
 
 export async function generateWeeklyReport(prisma: PrismaClient): Promise<number> {
   const now = new Date();
@@ -60,34 +61,24 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
     end.setUTCDate(end.getUTCDate() + 1);
     return { start, end };
   });
-  const [week, lastWeekBySource, thisWeekV16Total, perDay, fuel, provinceNameMap] = await Promise.all([
+  const [week, lastWeekBySource, thisWeekV16Total, perDay, fuel, provinceNameMap, seen] = await Promise.all([
     incidentCounts(prisma, weekAgoUTC, todayUTC),
     reportedBySource(prisma, twoWeeksAgoUTC, weekAgoUTC),
     prisma.v16BeaconEvent.count({ where: { activatedAt: { gte: weekAgoUTC, lt: todayUTC } } }),
     Promise.all(days.map((d) => countIncidents(prisma, d.start, d.end))),
     nationalFuel(prisma, todayUTC),
     getProvinceNameMap(prisma),
+    dgtSeenHours(prisma, new Date(twoWeeksAgoUTC.getTime() - HOUR), new Date(todayUTC.getTime() + HOUR)),
   ]);
 
   if (week.total === 0) return 0;
 
-  const thisWeekTotal = week.total;
-  const lastWeekTotal = Object.values(lastWeekBySource).reduce((s, n) => s + n, 0);
-  const provinceAgg = week.byProvince;
-  const typeAgg = week.byType;
-  const peakHour = week.peakHour;
-
-  // Best / worst day
-  type DayRecord = { dateStart: Date; incidentTotal: number };
-  const dayRecords: DayRecord[] = days.map((d, i) => ({ dateStart: d.start, incidentTotal: perDay[i] }));
-  const worstDay = dayRecords.reduce<DayRecord | null>(
-    (best, d) => (best == null || d.incidentTotal > best.incidentTotal ? d : best),
-    null
-  );
-  const bestDay = dayRecords.reduce<DayRecord | null>(
-    (best, d) => (best == null || d.incidentTotal < best.incidentTotal ? d : best),
-    null
-  );
+  // Reported incidents per closed day, for the best / worst day.
+  const dayRecords = days.map((d, i) => ({
+    dateStart: d.start,
+    incidentTotal: perDay[i],
+    missingHours: outageHours(seen, d.start, d.end, now),
+  }));
 
   // ── Fuel ─────────────────────────────────────────────────────────────────
   // «Now» and «a week ago» from the same stored average (see nationalFuel).
@@ -105,110 +96,25 @@ export async function generateWeeklyReport(prisma: PrismaClient): Promise<number
       ? ((gas95Now - gas95WeekAgo) / gas95WeekAgo) * 100
       : null;
 
-  // ── Opinionated trend word ────────────────────────────────────────────────
+  // ── Incidents ────────────────────────────────────────────────────────────
   const weekLabel = weekSlug();
-  let trendWord: string;
-  let leadSentence: string;
-
-  // «Intensa» / «tranquila» only for a clear move that no single feed explains
-  // (src/lib/incident-classes.ts); otherwise the figures, without a verdict.
-  const weekTrend = trend(week.bySource, lastWeekBySource, 1);
-  const pct = lastWeekTotal > 0 ? fmtPct(((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100) : "";
-  if (weekTrend === "up") {
-    trendWord = "intensa";
-    leadSentence = `Semana **más intensa de lo habitual**: ${fmtInt(thisWeekTotal)} incidencias, un ${pct} más que la semana anterior (${fmtInt(lastWeekTotal)}).`;
-  } else if (weekTrend === "down") {
-    trendWord = "tranquila";
-    leadSentence = `Semana **más tranquila de lo normal**: ${fmtInt(thisWeekTotal)} incidencias, un ${pct} respecto a la semana anterior (${fmtInt(lastWeekTotal)}).`;
-  } else if (weekTrend === "normal") {
-    trendWord = "normal";
-    leadSentence = `Semana **dentro de lo habitual**: ${fmtInt(thisWeekTotal)} incidencias, frente a ${fmtInt(lastWeekTotal)} la semana anterior (${pct}).`;
-  } else {
-    trendWord = "activo";
-    leadSentence = `Esta semana se han registrado **${fmtInt(thisWeekTotal)} incidencias** en las carreteras españolas${lastWeekTotal > 0 ? `, frente a ${fmtInt(lastWeekTotal)} la semana anterior` : ""}.`;
-  }
-
-  // ── Top 10 provinces ─────────────────────────────────────────────────────
-  const topProvinces = Object.entries(provinceAgg)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([code, count]) => ({
-      code,
-      name: provinceNameMap.get(code) ?? code,
-      count,
-    }));
-
-  // ── Type breakdown ────────────────────────────────────────────────────────
-  // Vehicle stops as their own row: incidents plus vehicle stops is the whole.
-  const typeEntries = [...Object.entries(typeAgg), ["VEHICLE_STOPS", week.vehicleStops] as [string, number], ["CITY_SENSORS", week.citySensors] as [string, number]]
-    .sort((a, b) => b[1] - a[1])
-    .filter(([, c]) => c > 0);
-  const totalTyped = typeEntries.reduce((s, [, c]) => s + c, 0) || 1;
+  const incidents = weeklyIncidentText({
+    week,
+    lastWeekBySource,
+    perDay: dayRecords,
+    v16Activations: thisWeekV16Total,
+    missing: {
+      week: outageHours(seen, weekAgoUTC, todayUTC, now),
+      lastWeek: outageHours(seen, twoWeeksAgoUTC, weekAgoUTC, now),
+    },
+    provinceNames: provinceNameMap,
+    withCitySensors: true,
+  });
 
   // ── Build body ───────────────────────────────────────────────────────────
   const sections: string[] = [];
 
-  sections.push(`## Informe semanal de tráfico — ${weekLabel}\n\n${leadSentence}`);
-
-  // Key metrics
-  const metrics: string[] = [
-    `**${fmtInt(thisWeekTotal)}** incidencias nuevas esta semana`,
-    `**${fmtInt(lastWeekTotal)}** incidencias nuevas la semana anterior`,
-    `**${fmtInt(week.vehicleStops)}** vehículos detenidos (balizas V16 y averías) esta semana`,
-    `**${fmtInt(week.citySensors)}** sensores urbanos con retención (Madrid, Barcelona, Valencia) esta semana`,
-    `**${fmtInt(thisWeekV16Total)}** activaciones de balizas V16`,
-  ];
-  if (peakHour != null) {
-    metrics.push(
-      `Hora en que empezaron más incidencias: **${String(peakHour).padStart(2, "0")}:00–${String(peakHour + 1).padStart(2, "0")}:00**`
-    );
-  }
-  if (worstDay) {
-    metrics.push(
-      `Día más conflictivo: **${worstDay.dateStart.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "short" })}** (${fmtInt(worstDay.incidentTotal)} incidencias)`
-    );
-  }
-  if (bestDay) {
-    metrics.push(
-      `Día más tranquilo: **${bestDay.dateStart.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "short" })}** (${fmtInt(bestDay.incidentTotal)} incidencias)`
-    );
-  }
-
-  sections.push(`### Métricas clave
-
-${metrics.map((m) => `- ${m}`).join("\n")}`);
-
-  // Type breakdown table
-  if (typeEntries.length > 0) {
-    const typeRows = typeEntries.map(([type, count]) => [
-      INCIDENT_TYPE_NAMES[type] ?? type,
-      fmtInt(count),
-      fmtPct((count / totalTyped) * 100).replace("+", ""),
-    ]);
-    sections.push(`### Desglose por tipo de incidencia
-
-${mdTable(
-  ["Tipo", "Total", "% del total"],
-  typeRows,
-  ["left", "right", "right"]
-)}`);
-  }
-
-  // Top 10 provinces
-  if (topProvinces.length > 0) {
-    const provRows = topProvinces.map(({ name, count }, i) => [
-      String(i + 1),
-      name,
-      fmtInt(count),
-    ]);
-    sections.push(`### Top 10 provincias por incidencias
-
-${mdTable(
-  ["#", "Provincia", "Incidencias"],
-  provRows,
-  ["center", "left", "right"]
-)}`);
-  }
+  sections.push(`## Informe semanal de tráfico — ${weekLabel}\n\n${incidents.lead}`, ...incidents.sections);
 
   // Fuel prices
   const fuelRows: string[][] = [];
@@ -255,8 +161,8 @@ Consulta las [gasolineras más baratas](/gasolineras/baratas) o los [precios por
 
   const body = sections.join("\n\n");
 
-  const title = `Informe semanal de tráfico — ${weekLabel}: semana ${trendWord}`;
-  const summary = `Resumen ${weekLabel}: ${fmtInt(thisWeekTotal)} incidencias${lastWeekTotal > 0 ? ` (${fmtPct(((thisWeekTotal - lastWeekTotal) / lastWeekTotal) * 100)} vs semana anterior)` : ""}. Diésel: ${fmtPrice(dieselNow)} €/L. Gasolina 95: ${fmtPrice(gas95Now)} €/L.`;
+  const title = `Informe semanal de tráfico — ${weekLabel}${incidents.trendWord ? `: semana ${incidents.trendWord}` : ""}`;
+  const summary = `Resumen ${weekLabel}: ${incidents.summaryClause}. Diésel: ${fmtPrice(dieselNow)} €/L. Gasolina 95: ${fmtPrice(gas95Now)} €/L.`;
 
   const category: ArticleCategory = "WEEKLY_REPORT";
 

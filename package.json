@@ -38,6 +38,7 @@
     "test:home-figures": "tsx tests/home-no-invented-figures.test.ts",
     "test:no-pii-logs": "tsx tests/no-pii-in-api-logs.test.ts",
     "test:insights-fuel": "tsx tests/insights-fuel-same-average.test.ts",
+    "test:incident-reports": "tsx tests/incident-reports-history.test.ts",
     "test:final-urls": "tsx tests/internal-links-final-urls.test.ts",
     "test:fuel-cleanup": "tsx tests/fuel-articles-cleanup.test.ts",
     "test:reports": "tsx tests/reports-closed-days.test.ts",
