@@ -108,6 +108,16 @@ default is gone. `endedAt` keeps its meaning, the declared end.
 Checks: incident-time (new), status-page and public-docs ok · web tsc 11 ·
 lint 64.
 
+**Shipped:** #206, merged as f8f6f40. Web deployed 16:34Z.
+
+**Live gate (green):** 4 incidents that went away early with a declared end
+ahead, last seen 2–20 h before. In /api/incidents/timeline (24 h, 48 slots)
+all 4 stop at their lastSeenAt; none is drawn after it.
+
+**Follow-up (CTO, LOW):** with no lastSeenAt, the fallback to the declared
+end could still be the future. It is now `min(endedAt, now)`, with a test
+for a 2029 declared end.
+
 ---
 
 ## Cycle 2026-10-22 (122) — the public /status page said the platform was «down»
