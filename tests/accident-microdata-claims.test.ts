@@ -53,6 +53,7 @@ const pending = read("src/components/insights/VehicleDataPending.tsx")
   .filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l))
   .join("\n");
 assert.ok(pending.includes(BANNER), "the pending view carries the notice");
+assert.ok(pending.includes("Todavía no tenemos el desglose por tipo de vehículo. Mientras tanto, los análisis de accidentes de trafico.live usan todos los accidentes con víctimas."), "the pending description, as the CMO wrote it");
 assert.ok(pending.includes("Mientras tanto, estos análisis usan todos los accidentes con víctimas:"));
 for (const href of ["/inteligencia/hora-punta-y-accidentes", "/inteligencia/lluvia-y-accidentes", "/analisis/accidentes"]) {
   assert.ok(pending.includes(`href: "${href}"`), `the pending view links ${href}`);
@@ -71,6 +72,12 @@ for (const [slug, flags] of Object.entries(FLAGS)) {
   const guard = body.indexOf("return <VehicleDataPending");
   assert.ok(guard > 0, `${rel} renders VehicleDataPending without vehicle data`);
   for (const f of flags) assert.ok(body.slice(0, guard).includes(`hasVehicleFlag("${f}")`), `${rel} checks ${f} first`);
+  // The metadata follows the same check: no title or description promising
+  // a vehicle analysis while there is none (CMO, 2026-10-22).
+  assert.ok(!/export const metadata\b/.test(page), `${rel} has static metadata`);
+  const meta = page.slice(page.indexOf("export async function generateMetadata"), page.indexOf("export default async function"));
+  for (const f of flags) assert.ok(meta.includes(`hasVehicleFlag("${f}")`), `${rel} metadata checks ${f}`);
+  assert.equal((meta.match(/VEHICLE_DATA_PENDING_DESCRIPTION/g) ?? []).length, 2, `${rel}: description and og:description say the data is missing`);
   const firstQuery = body.search(/await get[A-Za-z]+Data\(\)/);
   const firstJsx = body.indexOf("return (");
   assert.ok(firstQuery > guard && firstJsx > guard, `${rel} queries or renders vehicle charts before the check`);

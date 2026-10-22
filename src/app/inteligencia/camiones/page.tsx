@@ -23,7 +23,7 @@ import {
   Eye,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
-import { VehicleDataPending } from "@/components/insights/VehicleDataPending";
+import { VEHICLE_DATA_PENDING_DESCRIPTION, VehicleDataPending } from "@/components/insights/VehicleDataPending";
 import { hasVehicleFlag } from "@/lib/accident-vehicles";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
@@ -49,7 +49,7 @@ export const dynamic = "force-dynamic";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 const ACCENT_COLOR = "#6366f1"; // indigo for trucks
 
-export const metadata: Metadata = {
+const FULL_METADATA: Metadata = {
   title:
     "Seguridad vial del transporte pesado — Accidentes de camiones en Espana",
   description:
@@ -69,6 +69,26 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
+
+// Without vehicle types the metadata says so too, like the page (CMO,
+// 2026-10-22): no title or description that promises a vehicle analysis.
+export async function generateMetadata(): Promise<Metadata> {
+  if ((await hasVehicleFlag("involvesTruck"))) return FULL_METADATA;
+  return {
+    title: "Seguridad vial del transporte pesado",
+    description: VEHICLE_DATA_PENDING_DESCRIPTION,
+    robots: { index: false, follow: true },
+    alternates: { canonical: `${BASE_URL}/inteligencia/camiones` },
+    openGraph: {
+      title: "Seguridad vial del transporte pesado",
+      description: VEHICLE_DATA_PENDING_DESCRIPTION,
+      url: `${BASE_URL}/inteligencia/camiones`,
+      siteName: "trafico.live",
+      locale: "es_ES",
+      type: "website",
+    },
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Data fetching
