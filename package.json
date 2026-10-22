@@ -43,6 +43,7 @@
     "test:v16-dates": "tsx tests/v16-dates.test.ts",
     "test:accident-microdata": "tsx tests/accident-microdata-claims.test.ts",
     "test:annual-articles": "tsx tests/annual-accident-articles.test.ts",
+    "test:historical-accidents": "tsx tests/historical-accidents-load.test.ts",
     "test:final-urls": "tsx tests/internal-links-final-urls.test.ts",
     "test:fuel-cleanup": "tsx tests/fuel-articles-cleanup.test.ts",
     "test:reports": "tsx tests/reports-closed-days.test.ts",

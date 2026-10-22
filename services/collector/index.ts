@@ -42,10 +42,11 @@ const VALID_TASKS = [
   "renfe-gtfs", "renfe-alerts", "renfe-ld-realtime",
   // Analytics & Historical
   "cnmc-fuel", "aemet-historical", "aemet-forecast", "mobility-od", "accident-microdata",
+  "historical-accidents", // monthly (crontabs/weekly)
   // Aggregation
   "daily-stats", "backfill-profiles",
   // One-shot / manual
-  "historical-accidents", "imd", "sasemar",
+  "imd", "sasemar",
   // Search index
   "typesense-sync",
   // Maritime
