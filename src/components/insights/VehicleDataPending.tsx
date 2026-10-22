@@ -13,6 +13,10 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 export const VEHICLE_DATA_PENDING =
   "Todavía no tenemos el desglose por tipo de vehículo: la tabla muestra todos los accidentes con víctimas.";
 
+/** The pages' description and og:description while the data is missing (CMO). */
+export const VEHICLE_DATA_PENDING_DESCRIPTION =
+  "Todavía no tenemos el desglose por tipo de vehículo. Mientras tanto, los análisis de accidentes de trafico.live usan todos los accidentes con víctimas.";
+
 const MEANWHILE = [
   { title: "Hora punta y accidentes", href: "/inteligencia/hora-punta-y-accidentes" },
   { title: "Lluvia y accidentes", href: "/inteligencia/lluvia-y-accidentes" },

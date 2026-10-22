@@ -21,7 +21,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
-import { VehicleDataPending } from "@/components/insights/VehicleDataPending";
+import { VEHICLE_DATA_PENDING_DESCRIPTION, VehicleDataPending } from "@/components/insights/VehicleDataPending";
 import { hasVehicleFlag } from "@/lib/accident-vehicles";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
@@ -47,7 +47,7 @@ export const dynamic = "force-dynamic";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 const ACCENT_COLOR = "#f59e0b"; // amber for motos
 
-export const metadata: Metadata = {
+const FULL_METADATA: Metadata = {
   title:
     "Seguridad vial para motociclistas — Accidentes de moto en Espana",
   description:
@@ -67,6 +67,26 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
+
+// Without vehicle types the metadata says so too, like the page (CMO,
+// 2026-10-22): no title or description that promises a vehicle analysis.
+export async function generateMetadata(): Promise<Metadata> {
+  if ((await hasVehicleFlag("involvesMotorcycle"))) return FULL_METADATA;
+  return {
+    title: "Seguridad vial para motociclistas",
+    description: VEHICLE_DATA_PENDING_DESCRIPTION,
+    robots: { index: false, follow: true },
+    alternates: { canonical: `${BASE_URL}/inteligencia/motociclistas` },
+    openGraph: {
+      title: "Seguridad vial para motociclistas",
+      description: VEHICLE_DATA_PENDING_DESCRIPTION,
+      url: `${BASE_URL}/inteligencia/motociclistas`,
+      siteName: "trafico.live",
+      locale: "es_ES",
+      type: "website",
+    },
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Data fetching

@@ -90,6 +90,40 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-22 (105) — the vehicle pages' title and description say what they show
+
+**#186 loaded** (CTO):
+- backup of the 156 rows taken first;
+- dry run in collector-weekly: 416 / 156 / 0;
+- «created 416 in 0.9s»; afterwards **572 rows, 2014–2024, 52 per year**.
+
+**Gated live:**
+- /analisis/accidentes reads «DGT 2014-2024», «de 2014 a 2024», and «1785 …
+  frente a 1688 en 2014»;
+- /estadisticas/accidentes reads «tasa de mortalidad (2014-2024)»;
+- Madrid and Alicante read «Estadísticas 2014-2024».
+
+**#185 web gated** (`0040b5d4`):
+- the 5 old slugs go to their canonical one: 1 hop from /estadisticas, 2
+  from /analisis, then 200;
+- no-existe stays a 404.
+
+**This PR (CMO):** /inteligencia/camiones, /motociclistas and
+/ciclistas-y-peatones get a `generateMetadata` with the same check as the
+content (`hasVehicleFlag`, React cache, so one query per render). With no
+vehicle types they carry:
+- title: the page's own name;
+- description and og:description: «Todavía no tenemos el desglose por tipo
+  de vehículo. Mientras tanto, los análisis de accidentes de trafico.live
+  usan todos los accidentes con víctimas.»;
+- noindex, follow.
+
+With data, the full metadata comes back on its own. `accident-microdata-claims`
+also checks this and fails on main's files. Checks on compute: 4 tests ok,
+web tsc 11, lint 64.
+
+---
+
 ## Cycle 2026-10-22 (104) — the province accident table goes from 2021–2023 to 2014–2024
 
 **#185 applied** (CMO OK, CTO backup of the 52 rows):
