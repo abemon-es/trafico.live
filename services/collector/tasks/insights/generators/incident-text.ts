@@ -41,6 +41,10 @@ export function outageHours(seen: Set<number>, from: Date, to: Date, asOf: Date)
 }
 
 const hoursText = (h: number) => (h === 1 ? "1 hora" : `${fmtInt(h)} horas`);
+/** «todo el día» / «toda la semana», or «durante 13 de las 24 horas». */
+const outageSpan = (h: number, of: number, whole: string) => (h >= of ? whole : `durante ${fmtInt(h)} de las ${fmtInt(of)} horas`);
+/** Thousands always grouped («1.080»): es-ES leaves four digits bare. */
+const grouped = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
 export interface ActiveNow {
   incidents: number;
@@ -93,7 +97,7 @@ function provinceSection(heading: string, counts: IncidentCounts, provinceNames:
   const withProvince = [...merged.values()].reduce((s, n) => s + n, 0);
   return (
     `### ${heading}\n\n${mdTable(["#", "Provincia", "Incidencias"], rows, ["center", "left", "right"])}\n\n` +
-    `La tabla cuenta las ${fmtInt(withProvince)} incidencias de ${fmtInt(counts.total)} que indican provincia: no todas las fuentes la dan.`
+    `La tabla solo cuenta las ${grouped(withProvince)} incidencias (de ${grouped(counts.total)}) que indican provincia: no todas las fuentes la dan.`
   );
 }
 
@@ -112,7 +116,7 @@ export function dailyIncidentText(o: {
 
   if (missing.day >= 12) {
     return {
-      lead: `No hay cifras de incidencias de ayer: la recogida de datos estuvo interrumpida ${hoursText(missing.day)} de las 24.`,
+      lead: `No hay cifras de incidencias de ayer: la recogida de datos estuvo interrumpida ${outageSpan(missing.day, 24, "todo el día")}.`,
       sections: [],
       summaryClause: "Sin cifras de incidencias de ayer (recogida de datos interrumpida)",
     };
@@ -209,7 +213,7 @@ export function weeklyIncidentText(o: {
 
   if (missing.week >= 84) {
     return {
-      lead: `No hay cifras de incidencias de esta semana: la recogida de datos estuvo interrumpida ${hoursText(missing.week)} de las 168.`,
+      lead: `No hay cifras de incidencias de esta semana: la recogida de datos estuvo interrumpida ${outageSpan(missing.week, 168, "toda la semana")}.`,
       trendWord: null,
       sections: [],
       summaryClause: "sin cifras de incidencias (recogida de datos interrumpida)",
