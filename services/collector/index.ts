@@ -7,24 +7,12 @@
  * After certain data collectors finish, relevant insight generators
  * are triggered automatically so reports always reflect fresh data.
  */
+// First: Sentry is up before any other module loads (shared/sentry-init.ts).
+import "./shared/sentry-init.js";
 import * as Sentry from "@sentry/node";
 import { getPrisma, getPool } from "./shared/prisma.js";
 import { heartbeat, markRunStarted } from "./shared/heartbeat.js";
 import { errorCause } from "./shared/error-cause.js";
-
-// Initialize Sentry for collector error tracking
-// GlitchTip uses UUID keys with hyphens; Sentry SDK requires \w+ — strip hyphens
-const SENTRY_DSN = process.env.SENTRY_DSN?.replace(
-  /\/\/([0-9a-f-]+)@/,
-  (_, key: string) => `//${key.replace(/-/g, "")}@`
-);
-if (SENTRY_DSN) {
-  Sentry.init({
-    dsn: SENTRY_DSN,
-    environment: process.env.NODE_ENV || "production",
-    tracesSampleRate: 0.1,
-  });
-}
 
 const TASK = process.env.TASK;
 
@@ -245,18 +233,25 @@ async function main() {
     // its own heartbeat (with possibly more specific status="error"/"partial"
     // and richer meta), we leave it untouched.
     const after = await prisma.collectorHeartbeat
-      .findUnique({ where: { task: TASK! }, select: { lastRunAt: true, status: true } })
+      .findUnique({ where: { task: TASK! }, select: { lastRunAt: true, status: true, errorMessage: true } })
       .catch(() => null);
     const afterHeartbeat = after?.lastRunAt ?? null;
     const collectorWroteHeartbeat =
       afterHeartbeat !== null &&
       afterHeartbeat.getTime() !== (beforeHeartbeat?.getTime() ?? -1);
-    // A run that recorded status "error" exits 1, so supercronic reports it to
-    // GlitchTip instead of logging "job succeeded". (2026-10-20: aemet-forecast
-    // lost all 197 municipios to an expired AEMET key and the cron said
-    // "job succeeded"; the failure lived only in the heartbeat.)
+    // A run that recorded status "error" without throwing goes to GlitchTip
+    // from here, one issue per task, and exits 1 so the cron logs "job
+    // failed". (2026-10-20: aemet-forecast lost all 197 municipios to an
+    // expired AEMET key and the cron said "job succeeded"; the failure lived
+    // only in the heartbeat. supercronic used to be the one reporting it;
+    // it has no DSN since 2026-10-22, see shared/sentry-init.ts.)
     if (collectorWroteHeartbeat && after?.status === "error") {
       console.error(`[dispatcher] Task ${TASK} recorded status "error" — exiting 1`);
+      Sentry.captureMessage(`Task ${TASK} recorded status "error": ${after.errorMessage ?? "no message"}`, {
+        level: "error",
+        tags: { task: TASK!, layer: "collector" },
+        fingerprint: ["collector-recorded-error", TASK!],
+      });
       process.exitCode = 1;
     }
     if (!collectorWroteHeartbeat) {
