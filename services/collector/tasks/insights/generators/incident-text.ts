@@ -43,8 +43,6 @@ export function outageHours(seen: Set<number>, from: Date, to: Date, asOf: Date)
 const hoursText = (h: number) => (h === 1 ? "1 hora" : `${fmtInt(h)} horas`);
 /** «todo el día» / «toda la semana», or «durante 13 de las 24 horas». */
 const outageSpan = (h: number, of: number, whole: string) => (h >= of ? whole : `durante ${fmtInt(h)} de las ${fmtInt(of)} horas`);
-/** Thousands always grouped («1.080»): es-ES leaves four digits bare. */
-const grouped = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
 export interface ActiveNow {
   incidents: number;
@@ -97,7 +95,7 @@ function provinceSection(heading: string, counts: IncidentCounts, provinceNames:
   const withProvince = [...merged.values()].reduce((s, n) => s + n, 0);
   return (
     `### ${heading}\n\n${mdTable(["#", "Provincia", "Incidencias"], rows, ["center", "left", "right"])}\n\n` +
-    `La tabla solo cuenta las ${grouped(withProvince)} incidencias (de ${grouped(counts.total)}) que indican provincia: no todas las fuentes la dan.`
+    `La tabla solo cuenta las ${fmtInt(withProvince)} incidencias (de ${fmtInt(counts.total)}) que indican provincia: no todas las fuentes la dan.`
   );
 }
 
