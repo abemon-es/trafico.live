@@ -125,6 +125,13 @@ home tiles render.
 with the PR's WHERE, then `--apply --expect 233`. Counts and timestamp go to
 the CMO (event #10).
 
+**#178 merged** (`35ab4570`), backup taken (233 rows, CTO). The CMO's two
+copy edits came after the head the CTO reviewed, so they ship in a follow-up
+PR, and the apply waits for it: «interrumpida todo el día / toda la semana»
+(«durante 13 de las 24 horas» otherwise), and «La tabla solo cuenta las 558
+incidencias (de 1.080) que indican provincia». Of the 29 weekly titles, 9
+lose the verdict, 9 become «semana normal» and 11 stay as they are.
+
 **Found on the way (queued):**
 - **L2** V16BeaconEvent counts under 1 % of DGT's vehicle-stop situations
   (605 against 81,416 in one week). The live weekly shows both: which one is

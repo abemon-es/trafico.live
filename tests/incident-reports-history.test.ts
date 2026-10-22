@@ -88,6 +88,9 @@ const names = new Map([["24", "León"], ["01", "Álava"], ["28", "Madrid"], ["07
 
   const none = dailyIncidentText({ yesterday, weekBefore, missing: { day: 24, weekBefore: 0 }, provinceNames: names, active: null, withCitySensors: false });
   assert.deepEqual(none.sections, []);
+  assert.equal(none.lead, "No hay cifras de incidencias de ayer: la recogida de datos estuvo interrumpida todo el día.");
+  const most = dailyIncidentText({ yesterday, weekBefore, missing: { day: 13, weekBefore: 0 }, provinceNames: names, active: null, withCitySensors: false });
+  assert.match(most.lead, /interrumpida durante 13 de las 24 horas\.$/);
   assert.ok(!/\d{3}/.test(none.lead + none.summaryClause), "no figures from a day the collector was down");
 
   // A drop that one feed going dark explains is no «tranquila».
@@ -105,7 +108,9 @@ const names = new Map([["24", "León"], ["01", "Álava"], ["28", "Madrid"], ["07
   assert.match(table, /\| 3 \| Baleares \| 4 \|/);
   assert.match(table, /\| 4 \| Álava \| 2 \|/);
   assert.equal((table.match(/León/g) ?? []).length, 1, "one row per province");
-  assert.match(table, /cuenta las 17 incidencias de 20 que indican provincia/);
+  assert.match(table, /La tabla solo cuenta las 17 incidencias \(de 20\) que indican provincia/);
+  const big = dailyIncidentText({ yesterday: counts({ total: 1080, byProvince: { "28": 558 }, bySource: { DGT: 1080 } }), weekBefore: {}, missing: { day: 0, weekBefore: 0 }, provinceNames: names, active: null, withCitySensors: false });
+  assert.match(big.sections.join("\n"), /solo cuenta las 558 incidencias \(de 1\.080\)/, "thousands grouped");
 }
 
 // 4. Weekly.
@@ -126,6 +131,8 @@ const names = new Map([["24", "León"], ["01", "Álava"], ["28", "Madrid"], ["07
   assert.match(outage.summaryClause, /^al menos 8148 incidencias \(datos incompletos\)$/);
   const gone = weeklyIncidentText({ ...base, lastWeekBySource: {}, missing: { week: 103, lastWeek: 0 } });
   assert.deepEqual(gone.sections, []);
+  assert.match(gone.lead, /interrumpida durante 103 de las 168 horas\.$/);
+  assert.match(weeklyIncidentText({ ...base, lastWeekBySource: {}, missing: { week: 168, lastWeek: 0 } }).lead, /interrumpida toda la semana\.$/);
 }
 
 // 5. The rewrite, on the shapes stored in the database.
