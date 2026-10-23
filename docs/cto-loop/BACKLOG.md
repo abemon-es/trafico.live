@@ -138,6 +138,110 @@ only trace was the logs (Loki, kept from 23-09).
 **SES key:** needs MJ in the AWS console: an access key for the sender user,
 a check of its send policy and the verified identity, then sent to the CTO.
 
+**#216 merged** (squash `11d7c27`, CTO review). The CTO's known set: from
+Sunday, speedlimit «error, cause upstream».
+
+**✅ Gated:** collectors `DEPLOY SUCCESS @11d7c27` at 08:47:15Z (179 s).
+- detector, 08:50:53Z: ok, 7,309 detectors and 5,552 readings.
+- incident, 08:50:58Z: ok.
+- 0 «502» lines.
+
+The contact-address test needs MJ: the routing activity log is only in his
+dashboard, so the CTO has no access either. A test from an outside address
+goes on MJ's list.
+
+**New item (L0, CTO): every merge recreates the web container**, even a
+collectors- or docs-only one. Each recreation leaves a gap in /api/health
+that trips a burn-rate alert, twice today, and it clears by itself.
+- (a) The deployer skips the web when every changed path is outside the web
+  image. That change is the CTO's, in the deploy script; the loop sent the
+  path list.
+- (b) A web swap with no gap.
+
+Why (a) is safe:
+- The runtime stage copies only .next, node_modules, package.json, public,
+  prisma and data.
+- `ignoreBuildErrors` is on, and the lint ratchet lints `src/` only, so a
+  non-src change loses no gate.
+- `src/` imports one type from services/, erased at build.
+
+Rule: a deny-list. Skip when every path is under services/, docs/,
+monitoring/, tests/, scripts/, enricher/, .claude/, .blitz/ or .github/, or
+is the collectors' compose or Dockerfiles, a root `*.md`, or `bin/` other
+than lint-ratchet. package.json counts as skippable if only its `scripts`
+changed.
+- Today's 9 merges: 8 would have skipped the web. #212 touched `src/`.
+- CTO: accepted. It goes in on Monday 26-10 in the morning, since the
+  deploy system isn't touched on a Friday for a blip that clears by itself.
+  It's tested first against today's 9 diffs (expect 8 skips, #212 deploys).
+  (b) as a follow-up.
+
+**GlitchTip cleanup (CTO, Monday 26-10, with a write token):** 84 of the 100
+unresolved issues haven't been seen in >7 days, so the probe's «100+
+unresolved» hides the signal.
+- Resolve the issues fixed by code: GV, JS, JT (#212), 3 and JO (#198), and
+  II (#175).
+- Keep JP/JQ/JR/JU (the AEMET key) and 5L (intermittent upstream).
+- Resolve anything else not seen in ≥14 days. It comes back as a regression
+  if it's real.
+- The CTO reports the count before and after.
+
+**Docs-only records** stay as local commits until the deployer skip is in
+(CTO). They go out with a code fix, or on Monday.
+
+**AEMET intake ready (09:4xZ), waiting for MJ's captcha.** A loop-side script,
+outside the repo because it handles a secret:
+- `confirm` opens AEMET's confirmation link from the mail.
+- `stage` takes the key from the follow-up mail and sends it to the host
+  over ssh stdin, as a root 0600 file. It prints only the path, the `iat` and
+  a sha256 prefix.
+- It refuses a key whose claims don't match (issuer, subject domain), the
+  2026-03-31 key, and anything older than 3 days.
+- Checked: with no new mail both steps refuse. On the March key `stage`
+  refuses before ssh, with ssh stubbed.
+
+**✅ AEMET key renewed and swapped (23-10).**
+- The new key arrived at 10:11Z; renewing it is the CTO's job, not MJ's
+  (MJ). It was staged without being printed, and verified with one call:
+  estado 200 «exito».
+- The CTO replaced only that line in the collectors' env (with a backup),
+  recreated through the deploy script (`DEPLOY SUCCESS @11d7c27`, 10:17:12Z,
+  with the guard), checked all 6 collectors by hash, removed the variable
+  from the web's env, and destroyed the staging file.
+
+Gate:
+- **maritime-forecast**: ok, 10:19:34Z. One manual run with the CTO's
+  go-ahead, after checking that no process with that TASK was running: 8
+  coastal and 3 high-seas zones.
+- **weather**: ok, 11:00:17Z, with 0 «401/renovación» lines since the restart.
+  The weather_alerts sync loaded 3,044.
+- **aemet-forecast**: pending, the 13:20Z run.
+- **aemet-historical**: pending, tomorrow's 06:00Z run. The CTO held it back
+  so a backfill wouldn't spend the fresh key's quota today.
+
+**Contact forms and the contact address (MJ: «you're in charge, settle it
+with the CTO»).**
+- The contact address forwards. The CTO sent a test from the
+  infrastructure's outbound sender to it at 11:59Z, and it reached the
+  operator's inbox, addressed only to the contact address. It landed in the
+  «Updates» tab, likely because the sender is automated.
+- So the forms' fallback (503 plus the contact address) loses nothing
+  silently.
+- Outbound mail for the web: the CTO found that the infra's daily report goes
+  out over SES with an IAM user that isn't the root key. The CTO's call as
+  CSO: that credential doesn't go into the public web app. The plan:
+  - (a) a dedicated credential: the sender user's key when the AWS hold
+    moves, or a transactional provider with the domain authenticated
+    (SPF/DKIM);
+  - (b) the shared one only if (a) drags on for weeks: dated, web env only,
+    swapped out when (a) exists.
+- Monday: the CTO probes the domain's identity in SES. No web restart on a
+  Friday afternoon.
+- Owner of (a): the CTO, Monday. The sender user hangs off the AWS hold.
+  For the provider, the CTO first checks for a transactional account already
+  in use. Only a new sign-up goes to MJ, with a figure. The loop tests both
+  forms once the credential is in.
+
 ---
 
 ## Cycle 2026-10-23 (129) — aemet-forecast stops a dead key after 2 min, not 10
