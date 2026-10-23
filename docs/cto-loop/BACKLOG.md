@@ -90,6 +90,41 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-23 (124) — ws and protobufjs patched on the two collector paths with hostile input
+
+**Why:** the two of the 18 high advisories reachable from external input
+(cycle 121):
+- ws, on the AIS WebSocket client: memory-exhaustion DoS from tiny
+  fragments;
+- protobufjs, on the GTFS-RT decoders: unbounded recursion DoS.
+CTO's timing: after the nightly compaction.
+
+**What changes:**
+- `services/collector/package.json`: `ws ^8.21.0` (locked 8.22.0) and
+  `overrides.protobufjs ^7.6.5` (locked 7.6.6, under gtfs-realtime-bindings).
+  The lockfile was generated in a throwaway node:22-slim on compute.
+- npm audit (`--omit=dev`): 39 → 36, high 18 → 16. ws and protobufjs are
+  gone; nothing new.
+- `tests/collector-hostile-input.test.ts`, run inside a collector image
+  built from the branch:
+  - a recorded GTFS-RT frame (`tests/fixtures/gtfs-rt/`, Metro Bilbao vehicle
+    positions, 1.1 KB) decodes into 14 vehicles;
+  - a frame of 200,000 nested groups and a frame declaring a field longer
+    than itself are rejected within the limit, no rows, the process
+    standing;
+  - the AIS client against a local ws server subscribes once and gets a
+    message sent in 4-byte fragments whole;
+  - the image's ws and protobufjs are the patched versions.
+
+Checks: collector-hostile-input (new), collector-sentry, run-lock,
+heartbeat-success and typesense-incidents ok, in the built image · collector
+tsc 626 · web tsc 11 · lint 64.
+
+**Deploy:** through the collectors' guard. Then ais-stream and
+transit-realtime must be fresh within one cycle.
+
+---
+
 ## Cycle 2026-10-22 (123) — incidents: the observed end, not the declared one
 
 **Found:** ended incidents have `endedAt` NULL almost always (DGT 4,034,834
