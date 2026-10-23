@@ -154,6 +154,27 @@ Checks:
 - charger: tomorrow's 06:00 run.
 - The weekly tasks on Sunday 25-10.
 
+**#212 merged** (squash `a92e4226`, CTO review). The CTO checked from compute
+that nap.dgt.es serves DGT's own certificate behind the same CDN.
+
+**✅ Gated:** collectors `DEPLOY SUCCESS @a92e422` at 06:09:21Z (228 s).
+- detector, 06:10:58Z: **ok**, 7,309 detectors and 5,553 readings, in 28.9 s.
+  The prune removed 1,061,013 readings older than 24 h.
+- incident, 06:10:59Z: **ok**, no longer partial.
+  - DT-GV: 78 incidents on each run.
+  - SCT: 208, then 210.
+- 0 «502 Bad Gateway» lines in collector-realtime since the restart.
+- charger: its daily run (06:00:41Z) started 9 min before the deploy, on
+  the old host. **One run by hand, with the CTO's approval:**
+  - first, no process in collector-daily had `TASK=charger` in its
+    environment;
+  - then the cron's own command;
+  - «Total chargers: 12074 … completed in 16.4s», and the Typesense
+    ev_chargers sync loaded 12,074;
+  - /api/health: **ok**, lastSuccessAt 06:15:55Z.
+- radar, risk-zones and zbe on Sunday 25-10. speedlimit as well, though it
+  stays at 0 records (item above).
+
 ---
 
 ## Cycle 2026-10-23 (125) — how a failing collector job is caught (decision), and a probe for process deaths
