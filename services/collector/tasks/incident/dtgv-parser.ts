@@ -2,7 +2,7 @@
  * DT-GV (Dirección de Tráfico del Gobierno Vasco) Parser
  * Parses DATEX II XML from the official Basque Country traffic service feed
  *
- * API: https://infocar.dgt.es/datex2/dt-gv/SituationPublication/all/content.xml
+ * API: https://nap.dgt.es/datex2/dt-gv/SituationPublication/all/content.xml
  * Data: Road incidents in Álava, Bizkaia, and Gipuzkoa
  * Format: DATEX II XML (same structure as SCT)
  * Updates: Near real-time
@@ -13,7 +13,7 @@ import { XMLParser } from "fast-xml-parser";
 import { IncidentType, Severity } from "@prisma/client";
 
 // DT-GV DATEX II endpoint
-export const DTGV_URL = "https://infocar.dgt.es/datex2/dt-gv/SituationPublication/all/content.xml";
+export const DTGV_URL = "https://nap.dgt.es/datex2/dt-gv/SituationPublication/all/content.xml";
 
 // País Vasco provinces (INE codes)
 const PAIS_VASCO_PROVINCES: Record<string, { code: string; name: string }> = {

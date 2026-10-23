@@ -7,7 +7,7 @@
  * Run daily via Railway cron (data updates every ~24h).
  *
  * Data source:
- * - https://infocar.dgt.es/datex2/v3/miterd/EnergyInfrastructureTablePublication/electrolineras.xml
+ * - https://nap.dgt.es/datex2/v3/miterd/EnergyInfrastructureTablePublication/electrolineras.xml
  */
 
 import { PrismaClient, ChargerType } from "@prisma/client";
@@ -17,7 +17,7 @@ import { createXMLParser } from "../../shared/xml.js";
 import { heartbeat } from "../../shared/heartbeat.js";
 
 const DGT_CHARGERS_URL =
-  "https://infocar.dgt.es/datex2/v3/miterd/EnergyInfrastructureTablePublication/electrolineras.xml";
+  "https://nap.dgt.es/datex2/v3/miterd/EnergyInfrastructureTablePublication/electrolineras.xml";
 
 interface ChargerConnector {
   type: string;

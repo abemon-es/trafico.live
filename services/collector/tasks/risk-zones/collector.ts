@@ -10,9 +10,9 @@
  * Run weekly — data changes infrequently.
  *
  * Sources:
- *   INVIVE:     https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/tramos_invive/content.xml
- *   Motorcycle: https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/tramosriesgomotos/content.xml
- *   TEFIVA:     https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/tefiva/content.xml
+ *   INVIVE:     https://nap.dgt.es/datex2/dgt/PredefinedLocationsPublication/tramos_invive/content.xml
+ *   Motorcycle: https://nap.dgt.es/datex2/dgt/PredefinedLocationsPublication/tramosriesgomotos/content.xml
+ *   TEFIVA:     https://nap.dgt.es/datex2/dgt/PredefinedLocationsPublication/tefiva/content.xml
  */
 
 import { PrismaClient, RiskZoneType } from "@prisma/client";
@@ -27,17 +27,17 @@ const TAG = "risk-zones";
 const FEEDS: { type: RiskZoneType; url: string; prefix: string }[] = [
   {
     type: "INVIVE",
-    url: "https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/tramos_invive/content.xml",
+    url: "https://nap.dgt.es/datex2/dgt/PredefinedLocationsPublication/tramos_invive/content.xml",
     prefix: "INVIVE",
   },
   {
     type: "MOTORCYCLE",
-    url: "https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/tramosriesgomotos/content.xml",
+    url: "https://nap.dgt.es/datex2/dgt/PredefinedLocationsPublication/tramosriesgomotos/content.xml",
     prefix: "MOTO",
   },
   {
     type: "WILDLIFE",
-    url: "https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/tefiva/content.xml",
+    url: "https://nap.dgt.es/datex2/dgt/PredefinedLocationsPublication/tefiva/content.xml",
     prefix: "TEFIVA",
   },
 ];
