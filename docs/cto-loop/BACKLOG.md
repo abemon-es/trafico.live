@@ -140,6 +140,40 @@ Checks:
   writes.
 - Collector tsc 626 · web tsc 11 · lint 64.
 
+**#214 merged** (squash `e8067ba0`, CTO review). The CTO agrees with throwing
+before any write, removals included: the feed shares no ids with ours.
+- From 25-10 speedlimit is in the CTO's known set, «degraded, error: TN-ITS
+  feed with nothing usable (DGT/ANTEA dataset of 16-10, all speeds 0)».
+  It reopens if the message changes or the table gets written.
+- Follow-up (CTO, not blocking): report it with a typed upstream cause, if
+  that keeps /api/health degraded and pairs with the #213 probe. A weekly
+  «our failure» that never means anything ends up ignored.
+
+**✅ Gated:** collectors `DEPLOY SUCCESS @e8067ba` at 07:37:15Z (1,001 s,
+against 228 s for #212).
+- detector, 07:41:00Z: ok, 7,309 detectors and 5,532 readings.
+- incident, 07:41:06Z: ok.
+- 0 «502» lines since the restart. charger still ok from 06:15Z.
+- speedlimit is checked on Sunday's run.
+
+**Why 1,001 s (CTO): the guard, not a fault.**
+- It waited ~5 min for collector-daily's aemet-forecast, then for a round of
+  realtime tasks, and found a safe minute at 07:37:03Z: 885 s of waiting plus
+  ~2 min of build.
+- **New item (L0/L1), aemet-forecast with a refused key holds its slot for
+  10 min.** This morning's 07:20Z run: 197 municipalities, 197 errors, 41
+  «quota hits», 601.5 s, then «run aborted (no-answer)».
+  - Every answer was AEMET's 401 «Tu apiKey ha superado el plazo de
+    renovación». `ForecastFetcher` takes it for a quota 401 and retries it
+    until `NO_ANSWER_ABORT_MS` (10 min).
+  - The `key-refused` abort only judges after `KEY_REFUSAL_WINDOW_MS`
+    (15 min), so it never comes first.
+  - `shared/aemet.ts` already tells that text apart (`isKeyExpired` →
+    `AemetKeyExpiredError`).
+  - Fix: abort `key-refused` on the first 401 with that text. The run
+    becomes ~2 s instead of 10 min, four times a day, stops holding up
+    deploys, and spends fewer calls on a dead key.
+
 ---
 
 ## Cycle 2026-10-23 (127) — the process-death probe tells an outage that just ended from a death
