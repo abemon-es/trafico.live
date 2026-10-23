@@ -8,7 +8,10 @@
  * Scans every Markdown file under docs/ and monitoring/, plus the root
  * README and CLAUDE.md, for those names and for private (RFC 1918)
  * addresses. Also scans bin/, scripts/ and enricher/ for the names: their
- * database settings come from the environment, with no default (CSO).
+ * database settings come from the environment, with no default (CSO). Since
+ * 2026-10-23 the scripts carry no private address either, and nothing names a
+ * path under /root: bin/cto-signals.sh reads its Loki and GlitchTip endpoints
+ * from a local file (CTO_REMOTE_ENV).
  * Out of scope: applied migrations (editing them changes their checksum),
  * monitoring configs (container names), compose and nginx files (working
  * config with private addresses; moving it to env is another project).
@@ -41,6 +44,8 @@ const FORBIDDEN = new Set([
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 /** RFC 1918 addresses: 10/8, 172.16/12, 192.168/16. */
 const PRIVATE_IP = /\b(10\.\d{1,3}|172\.(1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}\b(?!\/\d)/; // a CIDR range is generic
+/** A path under the superuser's home: names how the host is laid out. */
+const ROOT_PATH = /(^|[\s'"`=(])\/root\//;
 /** Whether a line has a forbidden name as a whole token. */
 const leaks = (line: string) => (line.match(/[A-Za-z0-9_-]+/g) ?? []).some((t) => FORBIDDEN.has(sha(t.toLowerCase())));
 
@@ -66,11 +71,10 @@ const files = [...markdown(join(ROOT, "docs")), ...markdown(join(ROOT, "monitori
 const scripts = [...code(join(ROOT, "bin"), /\.(sh|mjs|py)$/), ...code(join(ROOT, "scripts"), /\.(sh|py|mjs|ts)$/), ...code(join(ROOT, "enricher"), /\.py$/)];
 const offenders: string[] = [];
 for (const p of [...files, ...scripts]) {
-  const doc = p.endsWith(".md");
   readFileSync(p, "utf8")
     .split("\n")
     .forEach((line, i) => {
-      if (leaks(line) || (doc && PRIVATE_IP.test(line))) offenders.push(`${relative(ROOT, p)}:${i + 1}: ${line.trim().slice(0, 120)}`);
+      if (leaks(line) || PRIVATE_IP.test(line) || ROOT_PATH.test(line)) offenders.push(`${relative(ROOT, p)}:${i + 1}: ${line.trim().slice(0, 120)}`);
     });
 }
 assert.deepEqual(offenders, [], `internal names in public docs:\n${offenders.join("\n")}`);
@@ -78,6 +82,8 @@ assert.deepEqual(offenders, [], `internal names in public docs:\n${offenders.joi
 assert.equal(leaks("psql -U <admin-role> -d <db>"), false);
 assert.ok(PRIVATE_IP.test("upstream 192.168.1.20:80") && PRIVATE_IP.test("10.1.2.3") && !PRIVATE_IP.test("127.0.0.1"), "private ranges, not loopback");
 assert.ok(!PRIVATE_IP.test("allow 10.0.0.0/8;"), "a CIDR range names no host");
+const R = ["", "root", ""].join("/"); // built, so this file passes the same grep
+assert.ok(ROOT_PATH.test(`T=$(cat ${R}.token)`) && ROOT_PATH.test(`\`${R}x/\``) && !ROOT_PATH.test(`src${R}index.ts`), "a /root path, not a dir named root");
 assert.ok(readFileSync(join(ROOT, "docs/cto-loop/PLAYBOOK.md"), "utf8").includes("are in the server repo's docs"), "the PLAYBOOK says where the real values are");
 
-console.log(`public-docs: ok (${files.length} Markdown files without internal names or private addresses; ${scripts.length} scripts without database defaults)`);
+console.log(`public-docs: ok (${files.length} Markdown files without internal names or private addresses; ${scripts.length} scripts without database defaults or private addresses; no /root paths)`);
