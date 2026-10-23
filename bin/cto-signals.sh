@@ -25,6 +25,11 @@ BASE="${CTO_BASE_URL:-https://trafico.live}"
 REMOTE="${CTO_REMOTE_HOST:-compute}"
 APP_DIR="/opt/apps/trafico-live"
 GLITCHTIP_PROJECT="${CTO_GLITCHTIP_PROJECT:-9}"   # trafico-live on errors.abemon.es
+# Loki, GlitchTip and its read-only token, on compute. Defined once: every probe
+# that reads them runs there.
+LOKI_HTTP="http://10.100.0.2:3100"
+GT_HTTP="http://10.100.0.3:8000"
+GT_TOKEN_FILE="/root/.sentinel-glitchtip-token"
 # Lifetime counts from the previous probe, so each run can report a rate.
 GT_STATE="${XDG_CACHE_HOME:-$HOME/.cache}/trafico-cto-loop/glitchtip-counts.json"
 
@@ -100,7 +105,7 @@ else
 fi
 
 # ── 3. Remote: containers, Loki, SEO snapshot ────────────────────────────────
-CONTAINERS='null'; LOKI='null'; SEO='null'; COLLECTOR_LOGS='null'; ORIGIN='null'; GLITCHTIP='null'
+CONTAINERS='null'; LOKI='null'; SEO='null'; COLLECTOR_LOGS='null'; ORIGIN='null'; GLITCHTIP='null'; JOBFAIL='null'
 if (( NO_REMOTE == 0 )); then
 
   # Container state — name, status, health.
@@ -141,7 +146,7 @@ if (( NO_REMOTE == 0 )); then
   LOKI_NOISE='(?i)((^|[^0-9])0 (failed|errors|rejected)|(failed|errors|rejected): 0([^0-9]|$)|read more: https?://|backoff|retrying)'
   LOKI_QUERY="sum by (service) (count_over_time({service=~\"collector-.*|trafico-.*\"} |~ \"${LOKI_ERR}\" !~ \"${LOKI_NOISE}\" [1h]))"
   LOKI_RAW="$("${SSH[@]}" \
-    "curl -sG --max-time 15 'http://10.100.0.2:3100/loki/api/v1/query' \
+    "curl -sG --max-time 15 '${LOKI_HTTP}/loki/api/v1/query' \
       --data-urlencode 'query=${LOKI_QUERY}'" 2>/dev/null \
     | jq '[.data.result[]? | {container: .metric.service, errors_1h: (.value[1] | tonumber)}]
           | sort_by(-.errors_1h)' 2>/dev/null)"
@@ -203,10 +208,10 @@ if (( NO_REMOTE == 0 )); then
   # `count` is lifetime and the API returns no per-period stats, so the rate is
   # the delta against the previous probe (GT_STATE).
   GT_RAW="$("${SSH[@]}" \
-    'T=$(cat /root/.sentinel-glitchtip-token 2>/dev/null)
-     [ -n "$T" ] || { echo "{\"error\":\"token file /root/.sentinel-glitchtip-token missing on compute\"}"; exit 0; }
+    'T=$(cat '"$GT_TOKEN_FILE"' 2>/dev/null)
+     [ -n "$T" ] || { echo "{\"error\":\"token file '"$GT_TOKEN_FILE"' missing on compute\"}"; exit 0; }
      curl -s --max-time 15 -H "Authorization: Bearer $T" \
-       "http://10.100.0.3:8000/api/0/organizations/abemon/issues/?project='"$GLITCHTIP_PROJECT"'&query=is%3Aunresolved&sort=-last_seen&limit=100"' 2>/dev/null)"
+       "'"$GT_HTTP"'/api/0/organizations/abemon/issues/?project='"$GLITCHTIP_PROJECT"'&query=is%3Aunresolved&sort=-last_seen&limit=100"' 2>/dev/null)"
   GT_PREV="$(json_or_null "$(cat "$GT_STATE" 2>/dev/null)")"
   GT_NOW="$(date +%s)"
   GLITCHTIP="$(jq --argjson prev "$GT_PREV" --argjson now "$GT_NOW" '
@@ -264,6 +269,36 @@ if (( NO_REMOTE == 0 )); then
       && mv "$GT_STATE.tmp" "$GT_STATE"
   fi
   GLITCHTIP="$(jq 'del(.counts)' <<<"$GLITCHTIP" 2>/dev/null || printf 'null')"
+
+  # Process deaths: collector jobs that failed in the last hour with no
+  # GlitchTip event from their task (bin/job-failures.mjs; decision in BACKLOG
+  # cycle 125). supercronic has no DSN since #198, so a task that dies outright
+  # (OOM, a recreate's kill, node failing to start) only shows here.
+  JOBFAIL_RAW="$("${SSH[@]}" sh -s -- "$LOKI_HTTP" "$GT_HTTP" "$GT_TOKEN_FILE" "$GLITCHTIP_PROJECT" 2>/dev/null <<'REMOTE'
+out=/tmp/cto-jobfail.$$.json
+code=$(curl -s -o "$out" -w "%{http_code}" -G --max-time 20 "$1/loki/api/v1/query_range" \
+  --data-urlencode 'query={service=~"collector-.+"} |= "error running command"' \
+  --data-urlencode "since=1h" --data-urlencode "limit=5000")
+T=$(cat "$3" 2>/dev/null)
+cut=$(date -u -d "1 hour ago" +%Y-%m-%dT%H:%M:%S)
+tasks="[]"
+if [ -n "$T" ]; then
+  ids=$(curl -s --max-time 15 -H "Authorization: Bearer $T" "$2/api/0/organizations/abemon/issues/?project=$4&query=is%3Aunresolved&sort=-last_seen&limit=30" \
+    | jq -r --arg c "$cut" '.[]? | select(.lastSeen > $c) | .id')
+  tasks=$(for i in $ids; do
+      curl -s --max-time 10 -H "Authorization: Bearer $T" "$2/api/0/issues/$i/events/latest/" | jq -r '(.tags // []) | from_entries | .task // empty'
+    done | sort -u | jq -R . | jq -sc .)
+fi
+jq -nc --arg code "$code" --argjson tasks "${tasks:-[]}" --slurpfile loki "$out" \
+  '{lokiOk: ($code == "200"), lines: [$loki[0].data.result[]?.values[]?[1]], gtTasks: $tasks}' 2>/dev/null || echo '{"lokiOk":false}'
+rm -f "$out"
+REMOTE
+)"
+  JOBFAIL="$(jq -nc --argjson raw "$(json_or_null "$JOBFAIL_RAW")" --argjson health "$HEALTH" \
+    '{lokiOk: ($raw.lokiOk // false), lines: ($raw.lines // null), gtTasks: ($raw.gtTasks // []),
+      upstreamTasks: [($health.collectors // [])[] | select(.cause == "upstream") | .task]}' \
+    | node "$(dirname "$0")/job-failures.mjs" 2>/dev/null)"
+  JOBFAIL="$(json_or_null "$JOBFAIL")"
 fi
 
 # ── 4. Silent-failure detection ───────────────────────────────────────────────
@@ -322,6 +357,7 @@ RESULT="$(jq -n \
   --argjson glitchtip "$GLITCHTIP" \
   --argjson origin "$ORIGIN" \
   --argjson silent "$SILENT" \
+  --argjson jobfail "${JOBFAIL:-null}" \
   --argjson git "$GIT" \
   --argjson logs "${COLLECTOR_LOGS:-null}" \
   '{
@@ -335,6 +371,7 @@ RESULT="$(jq -n \
     glitchtip: $glitchtip,
     origin: $origin,
     degraded_collectors: $silent,
+    job_failures: $jobfail,
     recent_error_logs: $logs,
     git: $git,
     summary: {
@@ -397,6 +434,10 @@ if (( PRETTY )); then
     "degraded collectors:",
     (.degraded_collectors[]? |
       "  \(if .silent_failure then "[SILENT] " else "" end)\(.task)  status=\(.status) stale=\(.stale) \(if .ageSeconds == null then "no success on record" else "age=\(.ageSeconds)s" end)\(if .lastRunAt and .ageSeconds == null then " (ran \(now - (.lastRunAt | sub("\\.[0-9]+"; "") | fromdateiso8601) | floor)s ago)" else "" end)\(if .cause then " cause=\(.cause)" else "" end)  \(.errorMessage // "")\(if .running == true then "  running, slow but alive: last progress \(.progressAgeSeconds)s ago" elif (.meta | type) == "object" and .meta.runStartedAt then "  run started \(.meta.runStartedAt), not finished (running, or killed mid-run)" else "" end)"),
+    "",
+    (if (.job_failures | type) != "object" or .job_failures.ok != true
+     then "⚠ JOB-FAILURE PROBE FAILED: \(.job_failures.error? // "no answer") (a dead query is not «no failures»)"
+     else "job failures (1h): total=\(.job_failures.total) in \(.job_failures.tasks | length) tasks · flagged (no GlitchTip event)=\(.job_failures.flagged | length)\(if (.job_failures.flagged | length) > 0 then " ⚠ " + ([.job_failures.flagged[] | "\(.task):\(.failures)"] | join(" ")) else "" end)\(if (.job_failures.upstream | length) > 0 then " · upstream, reported at start: " + ([.job_failures.upstream[] | "\(.task):\(.failures)"] | join(" ")) else "" end)" end),
     "",
     "top loki error sources (1h):",
     (.loki_errors_1h[]? | "  \(.container): \(.errors_1h)"),

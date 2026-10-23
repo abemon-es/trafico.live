@@ -53,6 +53,7 @@
     "test:status-page": "tsx tests/status-page.test.ts",
     "test:incident-time": "tsx tests/incident-time.test.ts",
     "test:collector-hostile-input": "tsx tests/collector-hostile-input.test.ts",
+    "test:job-failures": "tsx tests/job-failures.test.ts",
     "test:public-docs": "tsx tests/public-docs-no-internals.test.ts",
     "test:final-urls": "tsx tests/internal-links-final-urls.test.ts",
     "test:fuel-cleanup": "tsx tests/fuel-articles-cleanup.test.ts",

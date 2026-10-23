@@ -90,6 +90,38 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-23 (125) — how a failing collector job is caught (decision), and a probe for process deaths
+
+**Decision (CTO, 2026-10-23).** Since #198 supercronic has no DSN, so its
+«error running command: exit status 1» issue stays still. That doesn't mean
+failures go unreported.
+
+| How a job fails | Where it is caught |
+|---|---|
+| the task throws | the dispatcher: `captureException`, tags task/cause; an upstream outage once, at its start |
+| the task records status «error» without throwing | the dispatcher: `captureMessage`, one issue per task (e.g. TRAFICO-LIVE-JU, aemet-forecast) |
+| the task module fails to import | the dispatcher's try, after `shared/sentry-init` (its first import) |
+| the process dies: OOM, a recreate's kill, node failing to start, a crash in index.ts before sentry-init | /api/health (lastSuccessAt → stale), the CTO's monitor, Loki (supercronic «job failed», memcg OOM in dmesg), and now the probe below |
+
+**Probe (`bin/job-failures.mjs`, in `bin/cto-signals.sh`):** counts
+supercronic's failed-job lines per task over the last hour in Loki.
+- It flags a task with a failure and no GlitchTip event from it in that
+  hour: a process death.
+- A task whose last error is upstream (from /api/health) is listed, not
+  flagged: it was reported when the outage started.
+- It always prints the count, 0 included. A dead Loki query prints «⚠
+  JOB-FAILURE PROBE FAILED», never «no failures» (CTO).
+- Live at 04:2xZ: 13 failures in 2 tasks (detector 12, charger 1), both
+  upstream, 0 flagged.
+- The Loki and GlitchTip addresses and the token path are now defined once
+  in the probe, which uses them on compute.
+
+Checks: job-failures (new, with a positive control from a recorded line:
+`TASK=radar … exit status 137` and no GlitchTip event → flagged), status-page
+and public-docs ok · web tsc 11 · lint 64.
+
+---
+
 ## Daily 2026-10-23 — traffic (SeoSnapshot 04:00Z) + GlitchTip (project 9)
 
 - **GSC 30 d:** 12 clicks · 1,282 impressions · position 46.7. Yesterday
