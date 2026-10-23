@@ -123,6 +123,28 @@ tsc 626 · web tsc 11 · lint 64.
 **Deploy:** through the collectors' guard. Then ais-stream and
 transit-realtime must be fresh within one cycle.
 
+**Shipped:** #208, merged as 7997628. The CTO checked the lockfile: all
+entries carry integrity, ws and protobufjs appear once each, their integrity
+values match `npm view`, and no package was recently published. Collectors
+deployed 01:17Z through the guard.
+
+**Live gate (green):**
+- ws 8.22.0 and protobufjs 7.6.6 in all 6 collector images.
+- ais-stream and transit-realtime ok in /api/health a cycle later (39 s, 11
+  s), and writing in Loki: ais «4516 positions stored»; transit-realtime
+  «29 positions written».
+- 0 new GlitchTip issues.
+
+**Typesense compaction (CTO, 03:04 Madrid):** `POST /operations/db/compact`
+succeeded in 83 s, but freed nothing: resident 4.94 → 4.91 GiB, disk 41.2
+→ 43.1 GiB. The compaction acts on the disk store; the resident memory is
+the in-memory index of the 26 collections.
+- The p95s were flat (13/9/10/5/9/11 ms before, 13/8/10/4/8/17 after).
+- No restart (CTO): compute has 144 GiB free and latency doesn't ask for
+  one.
+- Disk is re-checked in the afternoon; report only if it hasn't returned to
+  about 41 GiB.
+
 ---
 
 ## Cycle 2026-10-22 (123) — incidents: the observed end, not the declared one
