@@ -90,6 +90,58 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-23 (128) — speedlimit fails out loud on a TN-ITS feed with nothing usable, and applies removals
+
+**Signal:** 3/54 degraded, all known (AEMET for MJ; transit-gtfs on 25-10),
+and 0 job failures in the hour. The next L1 item is speedlimit's 0 records
+(cycle 126).
+
+**Measured, from compute:**
+- The site reads `SpeedLimit` on 8 pages and 2 API routes: carreteras,
+  radares, limites-velocidad, the guide, and location stats.
+- The table: 4,621 rows on 125 roads, all with a sourceId. The last write was
+  98 rows on 18-10, from infocar's copy.
+- The NAP file, `limitesVelocidad.xml`, is dataset `3b807e4f…`, created
+  2026-10-16, provider «ANTEA GROUP», 2,438 records.
+  - Each one has road, km, posList and `MaximumSpeedLimit`.
+  - **Every speed is 0**: Add 1,197, Modify 107, Remove 1,134.
+  - None of its 2,438 ids is among our 4,621 sourceIds. It isn't a delta on
+    our data, it is another dataset.
+- The parser drops a record with speed ≤ 0, including the Removes, which
+  carry no speed. `run()` then returns with no heartbeat, and the task keeps
+  18-10's success.
+
+**Fix (`tasks/speedlimit/collector.ts`):**
+- `parseRecords` keeps every Remove, and counts the add/modify records it
+  can't use (no road, speed out of range).
+- If the adds are all unusable, or the feed is empty, `run()` throws
+  **before any write**. The dispatcher records the error in the heartbeat
+  and in GlitchTip, with no upstream cause: it's DGT's data, not a 5xx.
+- A feed with usable adds, or with removals only, runs as before. Removals
+  are now applied by sourceId.
+
+**Effect on Sunday 25-10:**
+- speedlimit will be **degraded (error)**, «TN-ITS feed: 1304 add/modify
+  records, none usable», one GlitchTip event a week, until DGT publishes real
+  values.
+- The table stays as of 18-10. Speed limits change slowly, and nothing gets
+  deleted.
+
+Checks:
+- `tests/speedlimit-feed.test.ts` (new), from a recorded NAP record:
+  - speed 0 is unusable, and the same record at 120 km/h parses near
+    Madrid;
+  - a Remove is kept;
+  - an all-unusable or empty feed throws with no Prisma call;
+  - removals only: deleteMany by sourceId.
+- Negative control: it fails on main's file.
+- Dry run of the new `run()` against the live NAP file: «Parsed 1134
+  records: 0 add/modify, 1134 remove, 1304 unusable», then the throw, no
+  writes.
+- Collector tsc 626 · web tsc 11 · lint 64.
+
+---
+
 ## Cycle 2026-10-23 (127) — the process-death probe tells an outage that just ended from a death
 
 **Signal:** 3/54 degraded: aemet-historical and aemet-forecast (the key, MJ),
@@ -120,6 +172,15 @@ Checks:
 - job-failures, with a new case from a recorded Loki line: six upstream runs
   with six lines flag nothing; a seventh failure without its line is flagged.
 - public-docs ok · web tsc 11 · lint 64.
+
+**#213 merged** (squash, CTO review). One edge, not blocking:
+- A run that logs «upstream still failing» and then dies outright (OOM)
+  pairs its two lines, so that death goes unflagged.
+- The line is written in the dispatcher's catch, right before
+  `Sentry.flush` and `exit(1)`. The window is those 2 s, and /api/health
+  staleness still shows the task.
+- If it is ever seen: match by run, not by count. Both supercronic lines carry
+  `iteration=N` for the same job in the same container.
 
 ---
 
@@ -166,15 +227,13 @@ a stub Prisma that records writes and touches no database:
 
 **New item (L1), speedlimit reads none of the NAP's records.** The TN-ITS
 file has 2,438 records (1,197 add, 107 modify, 1,134 remove), and the parser
-reads 0.
-- Every location in the file is `rst:OpenLRLocationString`. `parseRecords`
-  expects `net:SimpleLinearReference` (road + km), so each record is skipped.
-- With 0 records, `run()` returns before its heartbeat. The task goes stale
-  on its weekly threshold, it doesn't report.
-- This isn't caused by the host switch: infocar's copy can't be compared
-  while it answers 502.
-- Next: does the site read SpeedLimit, and can OpenLR be decoded without a
-  map?
+reads 0. With 0 records, `run()` returns before its heartbeat. This isn't
+caused by the host switch: infocar's copy can't be compared while it answers
+502.
+
+I first put it down to OpenLR locations. That was wrong: every record has
+its `SimpleLinearReference`, and the OpenLR element is empty. The cause is
+in cycle 128: every speed is 0.
 
 Checks:
 - dgt-nap-host ok. Negative control: it fails on main's detector file.

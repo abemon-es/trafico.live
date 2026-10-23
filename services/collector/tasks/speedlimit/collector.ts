@@ -106,8 +106,10 @@ function getTag(xml: string, tag: string): string {
   return match ? match[1].trim() : "";
 }
 
-function parseRecords(xml: string): TnItsRecord[] {
+/** Records, and the add/modify records skipped as unusable (no road, speed out of range). */
+export function parseRecords(xml: string): { records: TnItsRecord[]; unusable: number } {
   const records: TnItsRecord[] = [];
+  let unusable = 0;
   const featureRegex = /<rst:GenericSafetyFeature[^>]*gml:id="(\d+)">([\s\S]*?)<\/rst:GenericSafetyFeature>/g;
 
   let match;
@@ -154,7 +156,11 @@ function parseRecords(xml: string): TnItsRecord[] {
       }
     }
 
-    if (!road || speedLimit <= 0 || speedLimit > 150) continue;
+    // A removal names a record by its id; it carries no road or speed.
+    if (operation !== "Remove" && (!road || speedLimit <= 0 || speedLimit > 150)) {
+      unusable++;
+      continue;
+    }
 
     records.push({
       gmlId,
@@ -171,7 +177,7 @@ function parseRecords(xml: string): TnItsRecord[] {
     });
   }
 
-  return records;
+  return { records, unusable };
 }
 
 // ── Mapping helpers ──
@@ -237,14 +243,20 @@ export async function run(prisma: PrismaClient) {
   console.log(`${TAG} Fetched ${(xml.length / 1024).toFixed(0)}KB`);
 
   // 2. PARSE
-  const records = parseRecords(xml);
+  const { records, unusable } = parseRecords(xml);
   const adds = records.filter(r => r.operation === "Add" || r.operation === "Modify");
   const removes = records.filter(r => r.operation === "Remove");
-  console.log(`${TAG} Parsed ${records.length} records: ${adds.length} add/modify, ${removes.length} remove`);
+  console.log(`${TAG} Parsed ${records.length} records: ${adds.length} add/modify, ${removes.length} remove, ${unusable} unusable`);
 
+  // A feed whose records are all unusable is DGT's data, not «nothing to do».
+  // Returning here left the last success in place with no heartbeat
+  // (2026-10-23: the NAP's dataset of 16-10, 2,438 records, every
+  // MaximumSpeedLimit 0). Throwing records the run as failed, before any write.
+  if (adds.length === 0 && unusable > 0) {
+    throw new Error(`TN-ITS feed: ${unusable} add/modify records, none usable (speed 0 or no road)`);
+  }
   if (adds.length === 0 && removes.length === 0) {
-    console.log(`${TAG} No records to process`);
-    return;
+    throw new Error("TN-ITS feed has no records");
   }
 
   // 3. REMOVE records marked for deletion by sourceId
