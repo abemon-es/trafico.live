@@ -90,6 +90,39 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-23 (127) — the process-death probe tells an outage that just ended from a death
+
+**Signal:** 3/54 degraded: aemet-historical and aemet-forecast (the key, MJ),
+and transit-gtfs (recheck on 25-10). The job-failure probe flagged
+`detector:6`, with no GlitchTip event in the hour.
+
+**Measured:**
+- The six failures were the last 502 runs before #212. The current
+  collector-realtime, started 06:09Z, has none.
+- Loki has, for detector in the hour, 6 «error running command» lines and 6
+  «upstream still failing … reported when it started» lines. The second kind
+  is the dispatcher's line for an upstream failure it doesn't report again.
+- The probe treated a task as upstream only while /api/health still said
+  `cause: upstream`. That cleared the moment detector recovered, so its last
+  outage runs read as process deaths for an hour.
+
+**Fix (`bin/job-failures.mjs`):**
+- The Loki query also takes the «upstream still failing» lines.
+- Each failure is matched by the task's own upstream line. A task whose
+  failures all have one is listed as upstream; any failure without one is
+  flagged (failures − lines).
+- /api/health's current cause still counts, for a task in the middle of an
+  outage.
+- Live at 06:38Z: `total=7 in 2 tasks · flagged 0 · upstream detector:6`.
+  aemet-historical has its GlitchTip event.
+
+Checks:
+- job-failures, with a new case from a recorded Loki line: six upstream runs
+  with six lines flag nothing; a seventh failure without its line is flagged.
+- public-docs ok · web tsc 11 · lint 64.
+
+---
+
 ## Cycle 2026-10-23 (126) — the DGT feeds read from the NAP: detector, charger, SCT and DT-GV back, and four weekly tasks spared on Sunday
 
 **Signal:** detector and charger have been in error since 21-10 ~15:00Z
@@ -153,6 +186,27 @@ Checks:
   reasons.
 - charger: tomorrow's 06:00 run.
 - The weekly tasks on Sunday 25-10.
+
+**#212 merged** (squash `a92e4226`, CTO review). The CTO checked from compute
+that nap.dgt.es serves DGT's own certificate behind the same CDN.
+
+**✅ Gated:** collectors `DEPLOY SUCCESS @a92e422` at 06:09:21Z (228 s).
+- detector, 06:10:58Z: **ok**, 7,309 detectors and 5,553 readings, in 28.9 s.
+  The prune removed 1,061,013 readings older than 24 h.
+- incident, 06:10:59Z: **ok**, no longer partial.
+  - DT-GV: 78 incidents on each run.
+  - SCT: 208, then 210.
+- 0 «502 Bad Gateway» lines in collector-realtime since the restart.
+- charger: its daily run (06:00:41Z) started 9 min before the deploy, on
+  the old host. **One run by hand, with the CTO's approval:**
+  - first, no process in collector-daily had `TASK=charger` in its
+    environment;
+  - then the cron's own command;
+  - «Total chargers: 12074 … completed in 16.4s», and the Typesense
+    ev_chargers sync loaded 12,074;
+  - /api/health: **ok**, lastSuccessAt 06:15:55Z.
+- radar, risk-zones and zbe on Sunday 25-10. speedlimit as well, though it
+  stays at 0 records (item above).
 
 ---
 

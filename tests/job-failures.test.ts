@@ -6,7 +6,9 @@
  *   1. a positive control: a recorded «job failed» line from a task with no
  *      GlitchTip event is flagged;
  *   2. an upstream task is listed, not flagged; a task with an event is
- *      neither;
+ *      neither; a task that has just recovered from an upstream outage is
+ *      listed as long as each failure has its «upstream still failing» line,
+ *      and flagged for any failure without one;
  *   3. a dead Loki query is ok:false, never «no failures»; zero lines is a
  *      count of 0;
  *   4. cto-signals prints the count even when 0, and the failure when the
@@ -32,6 +34,9 @@ const RECORDED =
   'time="2026-10-23T06:05:24+02:00" level=error msg="error running command: exit status 1" iteration=33 job.command="TASK=detector npx tsx index.ts 2>&1" job.position=3 job.schedule="*/5 * * * *"';
 const killed = RECORDED.replace("TASK=detector", "TASK=radar").replace("exit status 1", "exit status 137");
 const ok = 'time="2026-10-23T06:05:30+02:00" level=info msg="job succeeded" iteration=33 job.command="TASK=radar npx tsx index.ts 2>&1"';
+// The dispatcher's line for an upstream failure it doesn't report again (Loki, 2026-10-23).
+const STILL =
+  'time="2026-10-23T08:05:19+02:00" level=info msg="[dispatcher] Task detector: upstream still failing (DGT measurements feed error: 502 Bad Gateway); reported when it started" channel=stdout iteration=57 job.command="TASK=detector npx tsx index.ts 2>&1" job.position=3 job.schedule="*/5 * * * *"';
 
 // 1. The positive control.
 {
@@ -48,7 +53,17 @@ const ok = 'time="2026-10-23T06:05:30+02:00" level=info msg="job succeeded" iter
   assert.deepEqual(r.reported, ["radar"]);
   assert.equal(r.total, 3);
 }
-assert.deepEqual(failuresByTask([ok, "unrelated line"]), {}, "only failed-job lines count");
+assert.deepEqual(failuresByTask([ok, "unrelated line", STILL]), {}, "only failed-job lines count");
+
+// 2b. Recovered: /api/health no longer says upstream, the lines still do.
+{
+  const six = [...Array(6)].flatMap(() => [STILL, RECORDED]);
+  const r = classify({ lokiOk: true, lines: six, gtTasks: [], upstreamTasks: [] });
+  assert.deepEqual(r.flagged, [], "six upstream runs, six lines: nothing flagged");
+  assert.deepEqual(r.upstream, [{ task: "detector", failures: 6 }]);
+  const r2 = classify({ lokiOk: true, lines: [...six, RECORDED], gtTasks: [], upstreamTasks: [] });
+  assert.deepEqual(r2.flagged, [{ task: "detector", failures: 1 }], "a seventh failure without its line is a death");
+}
 
 // 3. A dead query is not «no failures»; zero lines is 0.
 assert.equal(classify({ lokiOk: false, lines: null, gtTasks: [], upstreamTasks: [] }).ok, false);
@@ -69,4 +84,4 @@ assert.ok(sh.includes("select(.cause == \"upstream\")"), "upstream tasks come fr
 assert.ok(sh.includes('CTO_REMOTE_ENV="${CTO_REMOTE_ENV:-'), "the endpoints come from a local file");
 assert.ok(sh.includes("⚠ PROBE CONFIG MISSING") && sh.includes('"not configured: $REMOTE_MISSING'), "and their absence is a failure, not silence");
 
-console.log("job-failures: ok (positive control flagged; upstream listed, reported skipped; dead query ≠ no failures; 0 is a count)");
+console.log("job-failures: ok (positive control flagged; upstream listed, by its lines after recovery too; reported skipped; dead query ≠ no failures; 0 is a count)");
