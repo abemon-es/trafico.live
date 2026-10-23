@@ -45,6 +45,15 @@ export const MAX_RUN_MS = 5 * 60 * 60_000;
  * run stops. A key under a tight quota still completes several in that time.
  */
 export const KEY_REFUSAL_WINDOW_MS = 15 * 60_000;
+/**
+ * A key refused as past its renewal deadline with nothing served since the run
+ * started is dead: the run stops as key-refused after this long instead of
+ * waiting out NO_ANSWER_ABORT_MS (2026-10-23 07:20Z: 197 refusals in 10 min,
+ * holding the slot and a deploy). Not on the first refusal: on 2026-10-20
+ * 07:20Z the same 401 text came with a share of 6 requests a minute, and that
+ * run finished every municipio.
+ */
+export const KEY_DEAD_MS = 2 * 60_000;
 export const KEY_REFUSALS_TO_ABORT = 20;
 export const MAX_DONE_WHEN_REFUSED = 1;
 // Pause between AEMET requests: 2 s, 25 % slower after every quota signal, up
@@ -124,6 +133,7 @@ export class ForecastFetcher {
   };
   private readonly budget = new RequestBudget();
   private lastServedAt = 0;
+  private servedAny = false;
   private keyRefusedAt: number[] = [];
   private doneAt: number[] = [];
   private runStartedAt = 0;
@@ -162,6 +172,11 @@ export class ForecastFetcher {
 
       if (out.kind === "retry" && this.deps.now() - this.lastServedAt >= NO_ANSWER_ABORT_MS) {
         lost.push(...this.abort("no-answer", [item, ...queue]));
+        break;
+      }
+      const keyDead = !this.servedAny && this.stats.keyRenewalRequired && this.deps.now() - startedAt >= KEY_DEAD_MS;
+      if (out.kind === "retry" && keyDead) {
+        lost.push(...this.abort("key-refused", [item, ...queue]));
         break;
       }
       if (out.kind === "ok") {
@@ -304,6 +319,7 @@ export class ForecastFetcher {
   /** AEMET answered: the request counts against the budget and the run is alive. */
   private served(): void {
     this.lastServedAt = this.deps.now();
+    this.servedAny = true;
     this.budget.onSuccess(this.lastServedAt);
   }
 
