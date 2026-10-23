@@ -90,6 +90,29 @@ own text on hubs).
 
 ---
 
+## Daily 2026-10-23 — traffic (SeoSnapshot 04:00Z) + GlitchTip (project 9)
+
+- **GSC 30 d:** 12 clicks · 1,282 impressions · position 46.7. Yesterday
+  11 / 1,265 / 46.6: flat.
+  - By day (data runs to 10-20): …36, 34, 42, 39, 26, **31** impressions.
+  - 10-19 was the low (26), and 10-20 recovered a little, with 1 click at
+    position 53.9.
+- **GA4 30 d:** 1,394 sessions (+1) · 1,260 users · 3,614 pageviews.
+  - Last 8 days: 41, 39, 29, 51, 75, 55, 36, **27**. 10-22 is the lowest of
+    the 8; one day, the CMO reads GA4 daily.
+  - By source: bing 688 · direct 173 · yahoo 167 · chatgpt.com 108 ·
+    duckduckgo 96.
+  - Top pages: /mapa 418 · /trenes/incidencias 299 · / 211 · /trenes 157.
+- **GlitchTip:** 100+ unresolved · 8 active and 1 new in 24 h · 0 events in
+  the last hour.
+  - The growth is the known outside causes: the DGT infocar host (detector,
+    charger) and the expired AEMET key.
+  - The «exit status 1» issue stayed at 14,557: no event since supercronic
+    lost its DSN (#198).
+  - Nothing new from #205–#208.
+
+---
+
 ## Cycle 2026-10-23 (124) — ws and protobufjs patched on the two collector paths with hostile input
 
 **Why:** the two of the 18 high advisories reachable from external input
@@ -135,7 +158,7 @@ deployed 01:17Z through the guard.
   «29 positions written».
 - 0 new GlitchTip issues.
 
-**Typesense compaction (CTO, 03:04 Madrid):** `POST /operations/db/compact`
+**Typesense compaction (03:04 Madrid, window set by the CTO):** `POST /operations/db/compact`
 succeeded in 83 s, but freed nothing: resident 4.94 → 4.91 GiB, disk 41.2
 → 43.1 GiB. The compaction acts on the disk store; the resident memory is
 the in-memory index of the 26 collections.
