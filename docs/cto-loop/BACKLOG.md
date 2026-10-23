@@ -136,6 +136,22 @@ Checks:
 **After deploy:** the 13:20Z run (cron `20 3,9,15,21` Madrid) should stop at
 ~2 min as key-refused.
 
+**#215 merged** (squash `86106d4b`, CTO review).
+- The CTO agrees with not stopping on the first 401: the 20-10 run refutes
+  it.
+- The CTO checked that `servedAny` is per run: the fetcher is built inside
+  `run()`, so a success yesterday doesn't hide a dead key today.
+- Known set: aemet-forecast «run aborted (key-refused)», ~2 min, until MJ
+  renews the key.
+
+**✅ Deploy gated:** collectors `DEPLOY SUCCESS @86106d4` at 07:57:16Z (50 s,
+no guard wait).
+- detector, 08:01:15Z: ok, 7,309 detectors and 5,523 readings.
+- incident, 08:02:28Z: ok (DT-GV 86, SCT 193).
+- 0 «502» lines.
+- **Pending:** the 13:20Z aemet-forecast run, which should be key-refused at
+  ~2 min.
+
 ---
 
 ## Cycle 2026-10-23 (128) — speedlimit fails out loud on a TN-ITS feed with nothing usable, and applies removals
