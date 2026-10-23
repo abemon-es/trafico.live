@@ -5,6 +5,8 @@
  * known outage, «DGT upstream», instead of paging), and the dispatcher reports
  * an upstream outage to GlitchTip once, when it starts (2026-10-22: the DGT
  * infocar host answered 502 to every detector run for 16 h, two events each).
+ * So is a third party that answers with nothing usable (UpstreamDataError:
+ * 2026-10-23, DGT's TN-ITS dataset with every speed at 0).
  * Anything else (a 4xx, an expired key, a bug of ours) has no cause.
  */
 
@@ -12,8 +14,17 @@ export type ErrorCause = "upstream";
 
 const HTTP_5XX = /\b(?:error|status)\W{0,3}5\d\d\b|\b5\d\d (?:Bad Gateway|Service Unavailable|Gateway Timeout|Internal Server Error)\b/i;
 
+/** A third party answered, but its data is unusable: their outage, not ours. */
+export class UpstreamDataError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UpstreamDataError";
+  }
+}
+
 export function errorCause(err: unknown): ErrorCause | undefined {
   if (!(err instanceof Error)) return undefined;
+  if (err.name === "UpstreamDataError") return "upstream";
   if (err.name === "TimeoutError" || err.name === "AbortError") return "upstream";
   // undici's network failure: DNS, refused, reset.
   if (err.name === "TypeError" && err.message === "fetch failed") return "upstream";

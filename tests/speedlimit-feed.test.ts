@@ -8,7 +8,8 @@
  *      the same record at 120 km/h: road, km and a position in Spain;
  *   2. a Remove with speed 0 is kept;
  *   3. run() on a feed whose adds are all unusable throws before any write;
- *      an empty feed throws too;
+ *      an empty feed throws too; both as an upstream outage (DGT's data), so
+ *      the dispatcher reports it once and /api/health shows cause upstream;
  *   4. run() on a remove-only feed deletes by sourceId.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure. Run it
@@ -21,6 +22,7 @@ import assert from "node:assert/strict";
 // Loaded at run time: the collector's modules live outside the web tsc's
 // resolution (it type-checks tests/).
 const TASK_MODULE = "../services/collector/tasks/speedlimit/collector";
+const CAUSE_MODULE = "../services/collector/shared/error-cause";
 type Rec = { uuid: string; operation: string; road: string; kmStart: number; speedLimit: number; lat?: number; lng?: number };
 type Mod = {
   parseRecords: (xml: string) => { records: Rec[]; unusable: number };
@@ -63,6 +65,7 @@ async function runOn(mod: Mod, xml: string) {
 
 async function main() {
   const mod = (await import(TASK_MODULE)) as Mod;
+  const { errorCause } = (await import(CAUSE_MODULE)) as { errorCause: (e: unknown) => string | undefined };
 
   // 1. As published: unusable. At 120 km/h: a record.
   assert.deepEqual(mod.parseRecords(dataset(feature("Add", 0))), { records: [], unusable: 1 });
@@ -87,11 +90,13 @@ async function main() {
   {
     const { calls, error } = await runOn(mod, dataset(feature("Add", 0), feature("Modify", 0, "x-1"), feature("Remove", 0, "x-2")));
     assert.match(error?.message ?? "", /2 add\/modify records, none usable/);
+    assert.equal(errorCause(error), "upstream", "DGT's data: an upstream outage");
     assert.deepEqual(calls, [], "nothing written, not even a removal");
   }
   {
     const { calls, error } = await runOn(mod, dataset());
     assert.match(error?.message ?? "", /no records/);
+    assert.equal(errorCause(error), "upstream");
     assert.deepEqual(calls, []);
   }
 
@@ -102,7 +107,7 @@ async function main() {
     assert.ok(calls.some((c) => c.startsWith("speedLimit.deleteMany") && c.includes('"x-2"')), `deleteMany by sourceId: ${calls[0]}`);
   }
 
-  console.log("speedlimit-feed: ok (speed 0 unusable, a real limit parsed; removals kept; an all-unusable or empty feed fails before any write; removals applied)");
+  console.log("speedlimit-feed: ok (speed 0 unusable, a real limit parsed; removals kept; an all-unusable or empty feed fails before any write, as upstream; removals applied)");
   process.exit(0);
 }
 

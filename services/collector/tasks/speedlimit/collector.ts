@@ -18,6 +18,7 @@
 import { PrismaClient, Direction, RoadType, SpeedLimitType } from "@prisma/client";
 import { PROVINCES } from "../../shared/provinces.js";
 import { heartbeat } from "../../shared/heartbeat.js";
+import { UpstreamDataError } from "../../shared/error-cause.js";
 
 const TNITS_URL = "https://nap.dgt.es/tnits/limitesVelocidad.xml";
 
@@ -251,12 +252,13 @@ export async function run(prisma: PrismaClient) {
   // A feed whose records are all unusable is DGT's data, not «nothing to do».
   // Returning here left the last success in place with no heartbeat
   // (2026-10-23: the NAP's dataset of 16-10, 2,438 records, every
-  // MaximumSpeedLimit 0). Throwing records the run as failed, before any write.
+  // MaximumSpeedLimit 0). Throwing records the run as failed, before any write,
+  // as an upstream outage: reported to GlitchTip once, when it starts.
   if (adds.length === 0 && unusable > 0) {
-    throw new Error(`TN-ITS feed: ${unusable} add/modify records, none usable (speed 0 or no road)`);
+    throw new UpstreamDataError(`TN-ITS feed: ${unusable} add/modify records, none usable (speed 0 or no road)`);
   }
   if (adds.length === 0 && removes.length === 0) {
-    throw new Error("TN-ITS feed has no records");
+    throw new UpstreamDataError("TN-ITS feed has no records");
   }
 
   // 3. REMOVE records marked for deletion by sourceId

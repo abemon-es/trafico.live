@@ -25,7 +25,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { errorMessageOf, isSuccess, redactUrls } from "../services/collector/shared/heartbeat";
-import { errorCause } from "../services/collector/shared/error-cause";
+import { errorCause, UpstreamDataError } from "../services/collector/shared/error-cause";
 import { lastSuccess } from "../src/lib/heartbeat-state";
 
 const HERE = typeof __dirname !== "undefined" ? __dirname : dirname(fileURLToPath(import.meta.url));
@@ -61,6 +61,7 @@ for (const m of [
 assert.equal(errorCause(named("TimeoutError", "The operation was aborted due to timeout")), "upstream");
 assert.equal(errorCause(named("AbortError", "This operation was aborted")), "upstream");
 assert.equal(errorCause(named("TypeError", "fetch failed")), "upstream");
+assert.equal(errorCause(new UpstreamDataError("TN-ITS feed: 1304 add/modify records, none usable")), "upstream", "unusable third-party data");
 for (const m of [
   "AEMET refused the API key (401)",
   "DGT Panel API error: 404 Not Found",
