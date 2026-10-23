@@ -121,6 +121,15 @@ Checks:
   with six lines flag nothing; a seventh failure without its line is flagged.
 - public-docs ok · web tsc 11 · lint 64.
 
+**#213 merged** (squash, CTO review). One edge, not blocking:
+- A run that logs «upstream still failing» and then dies outright (OOM)
+  pairs its two lines, so that death goes unflagged.
+- The line is written in the dispatcher's catch, right before
+  `Sentry.flush` and `exit(1)`. The window is those 2 s, and /api/health
+  staleness still shows the task.
+- If it is ever seen: match by run, not by count. Both supercronic lines carry
+  `iteration=N` for the same job in the same container.
+
 ---
 
 ## Cycle 2026-10-23 (126) — the DGT feeds read from the NAP: detector, charger, SCT and DT-GV back, and four weekly tasks spared on Sunday
