@@ -90,6 +90,39 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-23 (127) — the process-death probe tells an outage that just ended from a death
+
+**Signal:** 3/54 degraded: aemet-historical and aemet-forecast (the key, MJ),
+and transit-gtfs (recheck on 25-10). The job-failure probe flagged
+`detector:6`, with no GlitchTip event in the hour.
+
+**Measured:**
+- The six failures were the last 502 runs before #212. The current
+  collector-realtime, started 06:09Z, has none.
+- Loki has, for detector in the hour, 6 «error running command» lines and 6
+  «upstream still failing … reported when it started» lines. The second kind
+  is the dispatcher's line for an upstream failure it doesn't report again.
+- The probe treated a task as upstream only while /api/health still said
+  `cause: upstream`. That cleared the moment detector recovered, so its last
+  outage runs read as process deaths for an hour.
+
+**Fix (`bin/job-failures.mjs`):**
+- The Loki query also takes the «upstream still failing» lines.
+- Each failure is matched by the task's own upstream line. A task whose
+  failures all have one is listed as upstream; any failure without one is
+  flagged (failures − lines).
+- /api/health's current cause still counts, for a task in the middle of an
+  outage.
+- Live at 06:38Z: `total=7 in 2 tasks · flagged 0 · upstream detector:6`.
+  aemet-historical has its GlitchTip event.
+
+Checks:
+- job-failures, with a new case from a recorded Loki line: six upstream runs
+  with six lines flag nothing; a seventh failure without its line is flagged.
+- public-docs ok · web tsc 11 · lint 64.
+
+---
+
 ## Cycle 2026-10-23 (126) — the DGT feeds read from the NAP: detector, charger, SCT and DT-GV back, and four weekly tasks spared on Sunday
 
 **Signal:** detector and charger have been in error since 21-10 ~15:00Z

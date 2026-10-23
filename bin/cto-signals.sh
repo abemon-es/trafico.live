@@ -303,7 +303,7 @@ if (( NO_REMOTE == 0 )); then
   JOBFAIL_RAW="$("${SSH[@]}" sh -s -- "$LOKI_HTTP" "$GT_HTTP" "$GT_TOKEN_FILE" "$GLITCHTIP_PROJECT" 2>/dev/null <<'REMOTE'
 out=/tmp/cto-jobfail.$$.json
 code=$(curl -s -o "$out" -w "%{http_code}" -G --max-time 20 "$1/loki/api/v1/query_range" \
-  --data-urlencode 'query={service=~"collector-.+"} |= "error running command"' \
+  --data-urlencode 'query={service=~"collector-.+"} |~ "error running command|upstream still failing"' \
   --data-urlencode "since=1h" --data-urlencode "limit=5000")
 T=$(cat "$3" 2>/dev/null)
 cut=$(date -u -d "1 hour ago" +%Y-%m-%dT%H:%M:%S)
