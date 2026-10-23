@@ -19,6 +19,7 @@ import { prisma, isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { vesselSlug, parseVesselSlug } from "@/lib/vessel-utils";
+import { ARCHIVE_FIRST_YEAR, getVesselArchiveYears } from "@/lib/maritimo/vessel-archive";
 import {
   Ship,
   Anchor,
@@ -215,7 +216,7 @@ export default async function VesselYearArchivePage({ params }: PageProps) {
   const { mmsi } = parseVesselSlug(slug);
 
   // Validate
-  if (!mmsi || isNaN(yearNum) || yearNum < 2019 || yearNum > CURRENT_YEAR) {
+  if (!mmsi || isNaN(yearNum) || yearNum < ARCHIVE_FIRST_YEAR || yearNum > CURRENT_YEAR) {
     notFound();
   }
 
@@ -225,9 +226,10 @@ export default async function VesselYearArchivePage({ params }: PageProps) {
   const canonicalSlug = vesselSlug(mmsi, vessel.name);
   const name = vessel.name ?? `MMSI ${mmsi}`;
 
-  const [voyages, portCalls] = await Promise.all([
+  const [voyages, portCalls, archiveYears] = await Promise.all([
     getYearVoyages(mmsi, yearNum),
     getYearPortCalls(mmsi, yearNum),
+    getVesselArchiveYears(mmsi, ARCHIVE_FIRST_YEAR, CURRENT_YEAR),
   ]);
 
   // Quality gate: no data for this year
@@ -244,11 +246,11 @@ export default async function VesselYearArchivePage({ params }: PageProps) {
         voyages.filter((v) => v.avgSpeedKn != null).length
       : null;
 
-  // Year nav: adjacent years
-  const prevYear = yearNum - 1;
-  const nextYear = yearNum + 1;
-  const showPrev = prevYear >= 2019;
-  const showNext = nextYear <= CURRENT_YEAR;
+  // Year nav: the nearest older and newer years that have data. An empty year
+  // answers 404, so the plain adjacent year is not always a valid link.
+  // archiveYears is newest first.
+  const prevYear = archiveYears.find((y) => y < yearNum) ?? null;
+  const nextYear = [...archiveYears].reverse().find((y) => y > yearNum) ?? null;
 
   // JSON-LD: ItemList of voyages
   const itemListSchema = {
@@ -324,7 +326,7 @@ export default async function VesselYearArchivePage({ params }: PageProps) {
 
             {/* Year navigation */}
             <div className="flex items-center gap-3 mt-6">
-              {showPrev ? (
+              {prevYear !== null ? (
                 <Link
                   href={`/maritimo/buques/${canonicalSlug}/historial/${prevYear}`}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-semibold transition-colors"
@@ -340,7 +342,7 @@ export default async function VesselYearArchivePage({ params }: PageProps) {
                 {yearNum}
               </span>
 
-              {showNext && nextYear <= CURRENT_YEAR ? (
+              {nextYear !== null ? (
                 <Link
                   href={`/maritimo/buques/${canonicalSlug}/historial/${nextYear}`}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-semibold transition-colors"
@@ -523,7 +525,7 @@ export default async function VesselYearArchivePage({ params }: PageProps) {
 
           {/* Year navigation bottom */}
           <div className="flex justify-between items-center pt-2">
-            {showPrev ? (
+            {prevYear !== null ? (
               <Link
                 href={`/maritimo/buques/${canonicalSlug}/historial/${prevYear}`}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:border-tl-sea-400 transition-colors"
@@ -541,7 +543,7 @@ export default async function VesselYearArchivePage({ params }: PageProps) {
               <Ship className="w-4 h-4" />
               Ficha del buque
             </Link>
-            {showNext && nextYear <= CURRENT_YEAR ? (
+            {nextYear !== null ? (
               <Link
                 href={`/maritimo/buques/${canonicalSlug}/historial/${nextYear}`}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:border-tl-sea-400 transition-colors"
