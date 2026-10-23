@@ -34,6 +34,7 @@ import { TimeHeatmap } from "@/components/maritimo/TimeHeatmap";
 import { vesselSlug, parseVesselSlug } from "@/lib/vessel-utils";
 import { NAV_STATUS, shipTypeLabel, cleanDestination, cleanEta } from "@/lib/ais-labels";
 import { getVesselHistoricalStats } from "@/lib/maritimo/punctuality";
+import { getVesselArchiveYears } from "@/lib/maritimo/vessel-archive";
 
 // ISR: 5 min — vessel AIS data refreshes continuously; 5 min gives a fresh
 // enough snapshot for SEO while keeping DB load low.
@@ -380,11 +381,17 @@ export default async function VesselPage({ params }: PageProps) {
       ? await getNearestPort(latestLat, latestLng)
       : null;
 
-  // Historical stats for all new sections (parallel with the above)
-  const historicalStats = await getVesselHistoricalStats(mmsi);
+  const currentYear = new Date().getFullYear();
+
+  // Historical stats for all new sections, and the archive years (last 5) that
+  // have data: the yearly archive answers 404 for an empty year, so only those
+  // years get a link.
+  const [historicalStats, archiveYears] = await Promise.all([
+    getVesselHistoricalStats(mmsi),
+    getVesselArchiveYears(mmsi, currentYear - 4, currentYear),
+  ]);
 
   const displayName = vessel.name || `Buque MMSI ${mmsi}`;
-  const currentYear = new Date().getFullYear();
 
   // Signal age thresholds
   const signalAgeMs = latestPos ? Date.now() - latestPos.createdAt.getTime() : Infinity;
@@ -1017,28 +1024,30 @@ export default async function VesselPage({ params }: PageProps) {
         )}
 
         {/* ---------------------------------------------------------------- */}
-        {/* Historial por ano — yearly archive links                         */}
+        {/* Historial por ano — yearly archive links (only years with data)  */}
         {/* ---------------------------------------------------------------- */}
-        <section aria-label="Historial por ano">
-          <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-tl-sea-500" />
-            Historial por ano
-          </h2>
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-            {Array.from({ length: 5 }, (_, i) => currentYear - i).map((year) => (
-              <Link
-                key={year}
-                href={`/maritimo/buques/${canonicalSlug}/historial/${year}`}
-                className="flex flex-col items-center gap-1 p-4 rounded-xl border border-tl-sea-100 dark:border-tl-sea-900/40 bg-white dark:bg-gray-900 hover:border-tl-sea-400 dark:hover:border-tl-sea-600 hover:shadow-sm transition-all text-center"
-              >
-                <span className="font-mono text-lg font-bold text-tl-sea-700 dark:text-tl-sea-300 [font-family:var(--font-jetbrains-mono)]">
-                  {year}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">Ver archivo</span>
-              </Link>
-            ))}
-          </div>
-        </section>
+        {archiveYears.length > 0 && (
+          <section aria-label="Historial por ano">
+            <h2 className="font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-tl-sea-500" />
+              Historial por ano
+            </h2>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+              {archiveYears.map((year) => (
+                <Link
+                  key={year}
+                  href={`/maritimo/buques/${canonicalSlug}/historial/${year}`}
+                  className="flex flex-col items-center gap-1 p-4 rounded-xl border border-tl-sea-100 dark:border-tl-sea-900/40 bg-white dark:bg-gray-900 hover:border-tl-sea-400 dark:hover:border-tl-sea-600 hover:shadow-sm transition-all text-center"
+                >
+                  <span className="font-mono text-lg font-bold text-tl-sea-700 dark:text-tl-sea-300 [font-family:var(--font-jetbrains-mono)]">
+                    {year}
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Ver archivo</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* ---------------------------------------------------------------- */}
         {/* Voyage history (client component with SWR)                       */}
