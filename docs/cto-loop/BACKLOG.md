@@ -90,6 +90,56 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-23 (130) — speedlimit's unusable feed is an upstream outage; lost enquiries checked; the AEMET key
+
+**Signal:** 4/54 degraded.
+- aemet-historical, aemet-forecast, and now **weather**: AEMET refuses the
+  key outright. The expired key's small allowance is gone.
+- transit-gtfs: recheck on 25-10.
+
+**Fix (the CTO's follow-up from #214):** `UpstreamDataError` in
+`shared/error-cause.ts`, for a third party that answers with nothing usable.
+`errorCause()` returns `upstream` for it. speedlimit throws it for an
+all-unusable or empty TN-ITS feed, so from Sunday:
+- the dispatcher reports it to GlitchTip once, when it starts;
+- later runs log «upstream still failing», which the #213 probe matches;
+- /api/health shows error with cause upstream, so it stays degraded.
+
+Checks:
+- speedlimit-feed: the throw is upstream.
+- heartbeat-success: UpstreamDataError → upstream.
+- collector-sentry and run-lock ok.
+- Collector tsc 626 · web tsc 11 · lint 64.
+
+**Lost enquiries (MJ, via the CTO).** No form saves to the database, so the
+only trace was the logs (Loki, kept from 23-09).
+- /contacto: no submission in that window.
+- /api/contact: exactly one, on 18-10 21:49Z, which was our own loop test
+  right after #79 (`source: cto-loop-test`, internal domain). It went to a
+  0600 file on the host, never to a terminal, and the CTO deleted it.
+- So **0 real enquiries lost from 23-09 to 22-10**. Anything earlier is past
+  the logs' retention. Since #175 the forms refuse and point to the contact
+  address.
+
+**That contact address:** one test email sent from the operator's mailbox at
+08:32Z.
+- Only the SENT copy appears. Gmail hides a self-sent copy that comes back
+  through a forward, so the test is **inconclusive**, not a pass.
+- It needs a test from an outside address.
+
+**AEMET key:** MJ asked the loop to renew it.
+- The request form has a Google reCAPTCHA. That stays human: MJ ticks it, it
+  isn't automated.
+- The loop then confirms through AEMET's email and stages the key on the host
+  without printing it. The CTO swaps it in and recreates the collectors
+  through the deploy script. The loop gates weather, maritime-forecast,
+  aemet-forecast and aemet-historical.
+
+**SES key:** needs MJ in the AWS console: an access key for the sender user,
+a check of its send policy and the verified identity, then sent to the CTO.
+
+---
+
 ## Cycle 2026-10-23 (129) — aemet-forecast stops a dead key after 2 min, not 10
 
 **Signal:** 3/54 degraded, all known. The item is from cycle 128's gate.
