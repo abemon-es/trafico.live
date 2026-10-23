@@ -7,7 +7,7 @@ import { XMLParser } from "fast-xml-parser";
 import { IncidentType, Severity } from "@prisma/client";
 
 // SCT DATEX II endpoint
-export const SCT_URL = "https://infocar.dgt.es/datex2/sct/SituationPublication/all/content.xml";
+export const SCT_URL = "https://nap.dgt.es/datex2/sct/SituationPublication/all/content.xml";
 
 // Cataluña provinces
 const CATALUNA_PROVINCES: Record<string, { code: string; name: string }> = {

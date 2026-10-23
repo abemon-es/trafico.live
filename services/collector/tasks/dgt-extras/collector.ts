@@ -14,7 +14,6 @@
  * TODO: Confirm live URLs once DGT opens NAP v3 roadworks feeds.
  * Known candidates (as of April 2026):
  *   - https://nap.dgt.es/datex2/v3/dgt/SituationPublication/conos_conectados.xml
- *   - https://infocar.dgt.es/datex2/dgt/SituationPublication/obras/content.xml
  *   - https://nap.dgt.es/datex2/v3/dgt/SituationPublication/obras.xml
  */
 
@@ -31,7 +30,6 @@ const TASK = "dgt-extras";
 
 const ROADWORKS_CANDIDATES = [
   "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/conos_conectados.xml",
-  "https://infocar.dgt.es/datex2/dgt/SituationPublication/obras/content.xml",
   "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/obras.xml",
   "https://nap.dgt.es/datex2/v3/dgt/SituationPublication/roadworks.xml",
 ];

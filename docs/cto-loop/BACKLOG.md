@@ -90,6 +90,72 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-23 (126) — the DGT feeds read from the NAP: detector, charger, SCT and DT-GV back, and four weekly tasks spared on Sunday
+
+**Signal:** detector and charger have been in error since 21-10 ~15:00Z
+(`infocar.dgt.es` 502), «no success on record», cause upstream. incident has
+been partial for the same reason: SCT and DT-GV come from the same host. This
+was logged as «external, monitor only» from cycle 81 on.
+
+**Measured, from compute, 05:5xZ:**
+- `infocar.dgt.es` answers 502, from DGT's CDN, on every path we use: 11
+  feeds across 9 tasks.
+- `nap.dgt.es` serves the same paths with 200 and current data. Detector
+  measurements were published at 05:53Z (3 min old); SCT and DT-GV at 05:48Z.
+- Only the v1 roadworks feed (`SituationPublication/obras/content.xml`) has no
+  NAP copy (404). dgt-extras already tries its NAP v3 candidates first.
+- This is the same move as the panels on 2026-09-30 (`6ed38cdc`).
+- radar, speedlimit, risk-zones and zbe are weekly. They last ran on 18-10,
+  before the 502s, so on Sunday they would all have failed.
+
+**This PR:**
+- The host changes from `infocar.dgt.es` to `nap.dgt.es`, with the same
+  paths, for:
+  - detector (2 feeds), charger, SCT, DT-GV, radar, risk-zones (3),
+    speedlimit (TN-ITS) and zbe;
+  - the web's `fetchDGTChargers`, which has no callers.
+- dgt-extras drops the v1 obras candidate.
+- `tests/dgt-nap-host.test.ts`: no code fetches from infocar, and each feed
+  that moved points at the NAP on the same path.
+
+**Dry run on compute.** Each task's real `run()` ran against the live NAP with
+a stub Prisma that records writes and touches no database:
+
+| Task | Result |
+|---|---|
+| detector | ok, 27 batches, 86,237 values |
+| charger | ok, 205,258 values |
+| radar | ok, 8,844 values |
+| risk-zones | ok, 1,331 zones |
+| zbe | ok, 57 zones |
+| SCT | 206 incidents, all with coordinates |
+| DT-GV | 78 incidents, all with coordinates |
+
+**New item (L1), speedlimit reads none of the NAP's records.** The TN-ITS
+file has 2,438 records (1,197 add, 107 modify, 1,134 remove), and the parser
+reads 0.
+- Every location in the file is `rst:OpenLRLocationString`. `parseRecords`
+  expects `net:SimpleLinearReference` (road + km), so each record is skipped.
+- With 0 records, `run()` returns before its heartbeat. The task goes stale
+  on its weekly threshold, it doesn't report.
+- This isn't caused by the host switch: infocar's copy can't be compared
+  while it answers 502.
+- Next: does the site read SpeedLimit, and can OpenLR be decoded without a
+  map?
+
+Checks:
+- dgt-nap-host ok. Negative control: it fails on main's detector file.
+- Collector tsc 626 · web tsc 11 · lint 64.
+
+**After deploy:**
+- detector, every 5 min: ok, no 502.
+- incident, every 2 min: SCT and DT-GV counted again; partial only for other
+  reasons.
+- charger: tomorrow's 06:00 run.
+- The weekly tasks on Sunday 25-10.
+
+---
+
 ## Cycle 2026-10-23 (125) — how a failing collector job is caught (decision), and a probe for process deaths
 
 **Decision (CTO, 2026-10-23).** Since #198 supercronic has no DSN, so its

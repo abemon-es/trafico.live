@@ -10,7 +10,7 @@
  *
  * Run daily via Railway cron to keep radar data fresh.
  *
- * Source: https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/radares/content.xml
+ * Source: https://nap.dgt.es/datex2/dgt/PredefinedLocationsPublication/radares/content.xml
  */
 
 import { PrismaClient, RadarType, Direction } from "@prisma/client";
@@ -20,7 +20,7 @@ import { createXMLParser } from "../../shared/xml.js";
 import { heartbeat } from "../../shared/heartbeat.js";
 
 const DGT_RADARS_URL =
-  "https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/radares/content.xml";
+  "https://nap.dgt.es/datex2/dgt/PredefinedLocationsPublication/radares/content.xml";
 
 interface RadarData {
   radarId: string;

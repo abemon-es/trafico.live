@@ -306,7 +306,7 @@ function ensureArray<T>(value: T | T[] | undefined): T[] {
 // Fetch chargers from DGT EnergyInfrastructure API
 export async function fetchDGTChargers(): Promise<ChargerData[]> {
   const url =
-    "https://infocar.dgt.es/datex2/v3/miterd/EnergyInfrastructureTablePublication/electrolineras.xml";
+    "https://nap.dgt.es/datex2/v3/miterd/EnergyInfrastructureTablePublication/electrolineras.xml";
 
   const response = await fetch(url, {
     headers: {

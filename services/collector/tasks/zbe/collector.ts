@@ -5,7 +5,7 @@
  * ControlledZoneTablePublication (DATEX II v3) for Spanish cities.
  *
  * Auto-discovers cities from the directory listing at:
- *   https://infocar.dgt.es/datex2/v3/dgt/zbe/ControledZonePublication/
+ *   https://nap.dgt.es/datex2/v3/dgt/zbe/ControledZonePublication/
  *
  * DGT migrated to a new XML schema in 2025 — this collector handles
  * the ControlledZoneTablePublication format with openlrPolygonCorners
@@ -21,7 +21,7 @@ import { heartbeat } from "../../shared/heartbeat.js";
 
 const TAG = "zbe";
 
-const ZBE_BASE_URL = "https://infocar.dgt.es/datex2/v3/dgt/zbe/ControledZonePublication";
+const ZBE_BASE_URL = "https://nap.dgt.es/datex2/v3/dgt/zbe/ControledZonePublication";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

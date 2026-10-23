@@ -7,7 +7,7 @@
  * Run weekly via cron (speed limits rarely change).
  *
  * Data source:
- * - https://infocar.dgt.es/tnits/limitesVelocidad.xml
+ * - https://nap.dgt.es/tnits/limitesVelocidad.xml
  * - Schema: TN-ITS / ROSATTE (rst:ROSATTESafetyFeatureDataset)
  * - Coordinates: ETRS89 / UTM Zone 30N (EPSG:25830)
  * - Feed type: Delta (Add/Modify/Remove operations)
@@ -19,7 +19,7 @@ import { PrismaClient, Direction, RoadType, SpeedLimitType } from "@prisma/clien
 import { PROVINCES } from "../../shared/provinces.js";
 import { heartbeat } from "../../shared/heartbeat.js";
 
-const TNITS_URL = "https://infocar.dgt.es/tnits/limitesVelocidad.xml";
+const TNITS_URL = "https://nap.dgt.es/tnits/limitesVelocidad.xml";
 
 const TASK = "speedlimit";
 const TAG = "[speedlimit]";

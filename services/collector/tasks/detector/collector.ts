@@ -9,8 +9,8 @@
  * Only the latest reading per detector is stored — stale readings (>24h) are pruned.
  *
  * Sources:
- * - https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/detectores/content.xml
- * - https://infocar.dgt.es/datex2/dgt/MeasuredDataPublication/detectores/content.xml
+ * - https://nap.dgt.es/datex2/dgt/PredefinedLocationsPublication/detectores/content.xml
+ * - https://nap.dgt.es/datex2/dgt/MeasuredDataPublication/detectores/content.xml
  *
  * Format: DATEX II XML v2.2 (namespace-stripped by fast-xml-parser)
  */
@@ -23,9 +23,9 @@ import { heartbeat } from "../../shared/heartbeat.js";
 const TASK = "detector";
 
 const LOCATIONS_URL =
-  "https://infocar.dgt.es/datex2/dgt/PredefinedLocationsPublication/detectores/content.xml";
+  "https://nap.dgt.es/datex2/dgt/PredefinedLocationsPublication/detectores/content.xml";
 const MEASUREMENTS_URL =
-  "https://infocar.dgt.es/datex2/dgt/MeasuredDataPublication/detectores/content.xml";
+  "https://nap.dgt.es/datex2/dgt/MeasuredDataPublication/detectores/content.xml";
 
 // 120s timeout — feeds are ~18MB each
 const FETCH_TIMEOUT_MS = 120_000;
