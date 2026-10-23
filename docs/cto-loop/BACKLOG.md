@@ -138,6 +138,16 @@ Checks, on compute:
     GlitchTip fine;
   - `--no-remote`: «not probed».
 
+**#211 merged** (squash `0da36a5e`, CTO review). The CTO's notes, not blocking:
+- `gtTasks` takes the `task` tag of each issue's latest event. An issue fed
+  by two tasks would mark only one of them as reported. That's fine while
+  dispatcher issues stay per task.
+- `lastSeen > $cut` compares strings. That works because both sides are ISO
+  timestamps with the same prefix; keep it that way if the format changes.
+- Only this loop runs `bin/cto-signals.sh`. The local file isn't copied
+  anywhere ahead of time. A session on another machine gets «⚠ PROBE CONFIG
+  MISSING» and asks the CTO for the values.
+
 ---
 
 ## Daily 2026-10-23 — traffic (SeoSnapshot 04:00Z) + GlitchTip (project 9)
