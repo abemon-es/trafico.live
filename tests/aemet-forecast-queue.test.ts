@@ -2,8 +2,8 @@
  * aemet-forecast against a simulated AEMET: the real ForecastFetcher on a fake
  * clock, with AEMET's share of requests per minute as the variable. Checks the
  * retry queue (back of the queue, at most 3 tries), the learned budget, that a
- * 401 counts as a quota signal, both aborts, and that the key never reaches a
- * URL or a log line.
+ * 401 counts as a quota signal, the aborts (no answer, a dead key, a refused
+ * key, the run cap), and that the key never reaches a URL or a log line.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:aemet-forecast
@@ -75,6 +75,8 @@ interface SimOptions {
   latencyMs?: number;
   /** A refused step 2 answers like AEMET's data server: an HTML 500 wrapping the 401. */
   step2RefusalAs500?: boolean;
+  /** Refusals are a plain 429, with no renewal text. */
+  plainRefusal?: boolean;
 }
 
 // AEMET's data server on 2026-10-20 19:51Z: the expired-key 401 inside an HTML 500.
@@ -144,6 +146,7 @@ async function simulate(opts: SimOptions) {
         }
         if (!opts.quota(t)) {
           if (!step1 && opts.step2RefusalAs500) return new Response(WRAPPED_500, { status: 500 });
+          if (opts.plainRefusal) return respond(429, { descripcion: "Límite de peticiones", estado: 429 });
           return respond(401, { descripcion: RENEWAL_TEXT, estado: 401 });
         }
         if (step1) return respond(200, { estado: 200, datos: `https://opendata.aemet.es/opendata/sh/${code}` });
@@ -254,15 +257,26 @@ async function main() {
     assert.equal(new Set(r.step1Order.slice(0, secondTry)).size, MUNICIPIOS.length);
   }
 
-  // 5. A key AEMET has cut off: every request gets the renewal 401. The run
-  // stops after 10 min with nothing served, as an error that names the cause.
+  // 5. A key AEMET has cut off: every request gets the renewal 401 and nothing
+  // is served. The run stops as key-refused after 2 min (KEY_DEAD_MS), not the
+  // 10 min of no-answer it took on 2026-10-23 07:20Z, holding a deploy.
   {
     const r = await simulate({ quota: () => false });
     console.log(`  every request refused: ${fmt(r)}`);
-    assert.equal(r.stats.abortReason, "no-answer");
+    assert.equal(r.stats.abortReason, "key-refused");
     assert.equal(r.stats.keyRenewalRequired, true);
     assert.equal(r.lost.length, MUNICIPIOS.length);
     assert.deepEqual(r.done, []);
+    assert.ok(r.minutes >= 2 && r.minutes <= 3, `${r.minutes.toFixed(1)} min`);
+  }
+
+  // 5b. Every request refused with no renewal text (a plain 429): nothing says
+  // the key is dead, so the run waits out the 10 min of no-answer.
+  {
+    const r = await simulate({ quota: () => false, plainRefusal: true });
+    console.log(`  every request refused, plain 429: ${fmt(r)}`);
+    assert.equal(r.stats.abortReason, "no-answer");
+    assert.equal(r.stats.keyRenewalRequired, false);
     assert.ok(r.minutes >= 10 && r.minutes <= 11, `${r.minutes.toFixed(1)} min`);
   }
 

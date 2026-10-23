@@ -90,6 +90,54 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-23 (129) — aemet-forecast stops a dead key after 2 min, not 10
+
+**Signal:** 3/54 degraded, all known. The item is from cycle 128's gate.
+aemet-forecast with the refused key holds its slot for 10 min, four times a
+day. On 07:20Z the deploy guard waited for it.
+
+**Why not on the first 401 (the CTO's suggestion):** the simulator's case 1
+is the real 2026-10-20 07:20Z run.
+- AEMET answered over-quota requests with this same renewal-text 401, while
+  serving a share of 6 requests a minute.
+- That run finished all 197 municipalities. Stopping on the first renewal 401
+  would have killed it.
+
+What sets a dead key apart is that **nothing is served** from the start of
+the run.
+
+**Fix (`forecast-fetch.ts`):**
+- `KEY_DEAD_MS` = 2 min: with the renewal text seen and nothing served since
+  the run started, the run stops as `key-refused`.
+- A run that has had any answer keeps the existing rules: 10 min of
+  no-answer, and the 15 min key-refusal window.
+
+**Effect:**
+- With the dead key, each run takes ~2 min instead of 10, four times a day.
+- /api/health's errorMessage becomes «run aborted (key-refused)» instead of
+  «(no-answer)».
+- GlitchTip: the same «AEMET API key past its renewal deadline» issue
+  (`reportKeyExpired`).
+
+Checks:
+- aemet-forecast-queue, in the simulator:
+  - case 5, every request refused with the renewal text: **key-refused at
+    2.0 min**, 9 refusals;
+  - case 5b (new), every request refused with a plain 429: no-answer at
+    10.0 min, as before;
+  - cases 1, 3, 6, 8 and 10 unchanged, including the 2026-10-20 runs.
+- Negative control on main's fetcher: case 5 fails at «10.0 min, hits 41,
+  no-answer», which is exactly this morning's production run (41 quota hits,
+  601 s).
+- aemet-quota-window, aemet-request-budget, health-public-meta,
+  heartbeat-progress and aemet-shared ok.
+- Collector tsc 626 · web tsc 11 · lint 64.
+
+**After deploy:** the 13:20Z run (cron `20 3,9,15,21` Madrid) should stop at
+~2 min as key-refused.
+
+---
+
 ## Cycle 2026-10-23 (128) — speedlimit fails out loud on a TN-ITS feed with nothing usable, and applies removals
 
 **Signal:** 3/54 degraded, all known (AEMET for MJ; transit-gtfs on 25-10),
@@ -139,6 +187,40 @@ Checks:
   records: 0 add/modify, 1134 remove, 1304 unusable», then the throw, no
   writes.
 - Collector tsc 626 · web tsc 11 · lint 64.
+
+**#214 merged** (squash `e8067ba0`, CTO review). The CTO agrees with throwing
+before any write, removals included: the feed shares no ids with ours.
+- From 25-10 speedlimit is in the CTO's known set, «degraded, error: TN-ITS
+  feed with nothing usable (DGT/ANTEA dataset of 16-10, all speeds 0)».
+  It reopens if the message changes or the table gets written.
+- Follow-up (CTO, not blocking): report it with a typed upstream cause, if
+  that keeps /api/health degraded and pairs with the #213 probe. A weekly
+  «our failure» that never means anything ends up ignored.
+
+**✅ Gated:** collectors `DEPLOY SUCCESS @e8067ba` at 07:37:15Z (1,001 s,
+against 228 s for #212).
+- detector, 07:41:00Z: ok, 7,309 detectors and 5,532 readings.
+- incident, 07:41:06Z: ok.
+- 0 «502» lines since the restart. charger still ok from 06:15Z.
+- speedlimit is checked on Sunday's run.
+
+**Why 1,001 s (CTO): the guard, not a fault.**
+- It waited ~5 min for collector-daily's aemet-forecast, then for a round of
+  realtime tasks, and found a safe minute at 07:37:03Z: 885 s of waiting plus
+  ~2 min of build.
+- **New item (L0/L1), aemet-forecast with a refused key holds its slot for
+  10 min.** This morning's 07:20Z run: 197 municipalities, 197 errors, 41
+  «quota hits», 601.5 s, then «run aborted (no-answer)».
+  - Every answer was AEMET's 401 «Tu apiKey ha superado el plazo de
+    renovación». `ForecastFetcher` takes it for a quota 401 and retries it
+    until `NO_ANSWER_ABORT_MS` (10 min).
+  - The `key-refused` abort only judges after `KEY_REFUSAL_WINDOW_MS`
+    (15 min), so it never comes first.
+  - `shared/aemet.ts` already tells that text apart (`isKeyExpired` →
+    `AemetKeyExpiredError`).
+  - Fix: cycle 129. It stops after 2 min with nothing served, not on the
+    first 401, because the 2026-10-20 07:20Z run got the same text with
+    6 requests a minute served.
 
 ---
 
