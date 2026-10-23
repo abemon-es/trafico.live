@@ -10,7 +10,8 @@
  *   3. a dead Loki query is ok:false, never «no failures»; zero lines is a
  *      count of 0;
  *   4. cto-signals prints the count even when 0, and the failure when the
- *      query is dead.
+ *      query is dead or its endpoints aren't configured (they live in a local
+ *      file, CTO_REMOTE_ENV, not in this public repo).
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:job-failures
@@ -65,5 +66,7 @@ assert.ok(sh.includes('node "$(dirname "$0")/job-failures.mjs"'), "cto-signals r
 assert.ok(sh.includes("job failures (1h): total="), "it prints the count, 0 included");
 assert.ok(sh.includes("⚠ JOB-FAILURE PROBE FAILED"), "and a dead query as a failure");
 assert.ok(sh.includes("select(.cause == \"upstream\")"), "upstream tasks come from /api/health");
+assert.ok(sh.includes('CTO_REMOTE_ENV="${CTO_REMOTE_ENV:-'), "the endpoints come from a local file");
+assert.ok(sh.includes("⚠ PROBE CONFIG MISSING") && sh.includes('"not configured: $REMOTE_MISSING'), "and their absence is a failure, not silence");
 
 console.log("job-failures: ok (positive control flagged; upstream listed, reported skipped; dead query ≠ no failures; 0 is a count)");

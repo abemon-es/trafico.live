@@ -25,11 +25,25 @@ BASE="${CTO_BASE_URL:-https://trafico.live}"
 REMOTE="${CTO_REMOTE_HOST:-compute}"
 APP_DIR="/opt/apps/trafico-live"
 GLITCHTIP_PROJECT="${CTO_GLITCHTIP_PROJECT:-9}"   # trafico-live on errors.abemon.es
-# Loki, GlitchTip and its read-only token, on compute. Defined once: every probe
-# that reads them runs there.
-LOKI_HTTP="http://10.100.0.2:3100"
-GT_HTTP="http://10.100.0.3:8000"
-GT_TOKEN_FILE="/root/.sentinel-glitchtip-token"
+# Loki, GlitchTip and its read-only token, as compute reaches them. They are
+# internal, so this public repo doesn't carry them: each comes from the
+# environment or from a local file of KEY=value lines (CTO_REMOTE_ENV). A probe
+# whose value is missing reports itself as failed, never as quiet.
+CTO_REMOTE_ENV="${CTO_REMOTE_ENV:-${XDG_CONFIG_HOME:-$HOME/.config}/trafico-cto-loop/remote.env}"
+REMOTE_KEYS="CTO_LOKI_HTTP CTO_GT_HTTP CTO_GT_TOKEN_FILE"
+if [[ -r "$CTO_REMOTE_ENV" ]]; then
+  while IFS='=' read -r k v; do
+    case " $REMOTE_KEYS " in
+      *" $k "*) [[ -n "${!k:-}" ]] || printf -v "$k" '%s' "${v%$'\r'}" ;;
+    esac
+  done < "$CTO_REMOTE_ENV"
+fi
+LOKI_HTTP="${CTO_LOKI_HTTP:-}"
+GT_HTTP="${CTO_GT_HTTP:-}"
+GT_TOKEN_FILE="${CTO_GT_TOKEN_FILE:-}"
+REMOTE_MISSING=""
+for k in $REMOTE_KEYS; do [[ -n "${!k:-}" ]] || REMOTE_MISSING="$REMOTE_MISSING $k"; done
+REMOTE_MISSING="${REMOTE_MISSING# }"
 # Lifetime counts from the previous probe, so each run can report a rate.
 GT_STATE="${XDG_CACHE_HOME:-$HOME/.cache}/trafico-cto-loop/glitchtip-counts.json"
 
@@ -145,11 +159,16 @@ if (( NO_REMOTE == 0 )); then
   LOKI_ERR='(?i)(level[^a-z0-9]{1,8}error|[[]error[]]|error:|error [[]|failed|failure|fatal|exception|unhandled|rejected|out of memory|killed)'
   LOKI_NOISE='(?i)((^|[^0-9])0 (failed|errors|rejected)|(failed|errors|rejected): 0([^0-9]|$)|read more: https?://|backoff|retrying)'
   LOKI_QUERY="sum by (service) (count_over_time({service=~\"collector-.*|trafico-.*\"} |~ \"${LOKI_ERR}\" !~ \"${LOKI_NOISE}\" [1h]))"
-  LOKI_RAW="$("${SSH[@]}" \
+  # Anything but a successful answer is null, which prints as a failed probe:
+  # an error body must not read as zero errors.
+  LOKI_RAW=""
+  [[ -n "$LOKI_HTTP" ]] && LOKI_RAW="$("${SSH[@]}" \
     "curl -sG --max-time 15 '${LOKI_HTTP}/loki/api/v1/query' \
       --data-urlencode 'query=${LOKI_QUERY}'" 2>/dev/null \
-    | jq '[.data.result[]? | {container: .metric.service, errors_1h: (.value[1] | tonumber)}]
-          | sort_by(-.errors_1h)' 2>/dev/null)"
+    | jq 'if .status == "success" then
+            [.data.result[]? | {container: .metric.service, errors_1h: (.value[1] | tonumber)}]
+            | sort_by(-.errors_1h)
+          else empty end' 2>/dev/null)"
   LOKI="$(json_or_null "$LOKI_RAW")"
 
   # Recent error/warn lines from every collector container — the "why".
@@ -207,11 +226,14 @@ if (( NO_REMOTE == 0 )); then
   # compute; the request runs there so the value never leaves the host.
   # `count` is lifetime and the API returns no per-period stats, so the rate is
   # the delta against the previous probe (GT_STATE).
-  GT_RAW="$("${SSH[@]}" \
+  if [[ -z "$GT_HTTP" || -z "$GT_TOKEN_FILE" ]]; then
+    GT_RAW='{"error":"not configured: CTO_GT_HTTP and CTO_GT_TOKEN_FILE (see CTO_REMOTE_ENV)"}'
+  else GT_RAW="$("${SSH[@]}" \
     'T=$(cat '"$GT_TOKEN_FILE"' 2>/dev/null)
      [ -n "$T" ] || { echo "{\"error\":\"token file '"$GT_TOKEN_FILE"' missing on compute\"}"; exit 0; }
      curl -s --max-time 15 -H "Authorization: Bearer $T" \
        "'"$GT_HTTP"'/api/0/organizations/abemon/issues/?project='"$GLITCHTIP_PROJECT"'&query=is%3Aunresolved&sort=-last_seen&limit=100"' 2>/dev/null)"
+  fi
   GT_PREV="$(json_or_null "$(cat "$GT_STATE" 2>/dev/null)")"
   GT_NOW="$(date +%s)"
   GLITCHTIP="$(jq --argjson prev "$GT_PREV" --argjson now "$GT_NOW" '
@@ -274,6 +296,10 @@ if (( NO_REMOTE == 0 )); then
   # GlitchTip event from their task (bin/job-failures.mjs; decision in BACKLOG
   # cycle 125). supercronic has no DSN since #198, so a task that dies outright
   # (OOM, a recreate's kill, node failing to start) only shows here.
+  # Without all three it would flag every failing task, so it doesn't run.
+  if [[ -n "$REMOTE_MISSING" ]]; then
+    JOBFAIL="{\"ok\":false,\"error\":\"not configured: $REMOTE_MISSING (see CTO_REMOTE_ENV)\"}"
+  else
   JOBFAIL_RAW="$("${SSH[@]}" sh -s -- "$LOKI_HTTP" "$GT_HTTP" "$GT_TOKEN_FILE" "$GLITCHTIP_PROJECT" 2>/dev/null <<'REMOTE'
 out=/tmp/cto-jobfail.$$.json
 code=$(curl -s -o "$out" -w "%{http_code}" -G --max-time 20 "$1/loki/api/v1/query_range" \
@@ -298,6 +324,7 @@ REMOTE
     '{lokiOk: ($raw.lokiOk // false), lines: ($raw.lines // null), gtTasks: ($raw.gtTasks // []),
       upstreamTasks: [($health.collectors // [])[] | select(.cause == "upstream") | .task]}' \
     | node "$(dirname "$0")/job-failures.mjs" 2>/dev/null)"
+  fi
   JOBFAIL="$(json_or_null "$JOBFAIL")"
 fi
 
@@ -360,8 +387,12 @@ RESULT="$(jq -n \
   --argjson jobfail "${JOBFAIL:-null}" \
   --argjson git "$GIT" \
   --argjson logs "${COLLECTOR_LOGS:-null}" \
+  --argjson remote "$(( NO_REMOTE == 0 ))" \
+  --arg remote_missing "$REMOTE_MISSING" \
   '{
     captured_at: $ts,
+    remote_probed: ($remote == 1),
+    remote_config_missing: ($remote_missing | split(" ") | map(select(length > 0))),
     base_url: $base,
     health: $health,
     smoke: $smoke,
@@ -430,17 +461,21 @@ if (( PRETTY )); then
     "smoke:       \(.summary.smoke_ok)",
     "seo pipe:    \(.summary.seo_pipeline_ok)   (snapshots=\(.seo_snapshot.rows // "?"))",
     "git:         \(.git.branch) @\(.git.head) (\(.git.uncommitted) uncommitted)",
+    (if .remote_probed and (.remote_config_missing | length) > 0 then "⚠ PROBE CONFIG MISSING: \(.remote_config_missing | join(" ")) — set them in CTO_REMOTE_ENV (default ~/.config/trafico-cto-loop/remote.env); the Loki, GlitchTip and job-failure probes are off" else empty end),
     "",
     "degraded collectors:",
     (.degraded_collectors[]? |
       "  \(if .silent_failure then "[SILENT] " else "" end)\(.task)  status=\(.status) stale=\(.stale) \(if .ageSeconds == null then "no success on record" else "age=\(.ageSeconds)s" end)\(if .lastRunAt and .ageSeconds == null then " (ran \(now - (.lastRunAt | sub("\\.[0-9]+"; "") | fromdateiso8601) | floor)s ago)" else "" end)\(if .cause then " cause=\(.cause)" else "" end)  \(.errorMessage // "")\(if .running == true then "  running, slow but alive: last progress \(.progressAgeSeconds)s ago" elif (.meta | type) == "object" and .meta.runStartedAt then "  run started \(.meta.runStartedAt), not finished (running, or killed mid-run)" else "" end)"),
     "",
-    (if (.job_failures | type) != "object" or .job_failures.ok != true
+    (if .remote_probed | not then "job failures: not probed"
+     elif (.job_failures | type) != "object" or .job_failures.ok != true
      then "⚠ JOB-FAILURE PROBE FAILED: \(.job_failures.error? // "no answer") (a dead query is not «no failures»)"
      else "job failures (1h): total=\(.job_failures.total) in \(.job_failures.tasks | length) tasks · flagged (no GlitchTip event)=\(.job_failures.flagged | length)\(if (.job_failures.flagged | length) > 0 then " ⚠ " + ([.job_failures.flagged[] | "\(.task):\(.failures)"] | join(" ")) else "" end)\(if (.job_failures.upstream | length) > 0 then " · upstream, reported at start: " + ([.job_failures.upstream[] | "\(.task):\(.failures)"] | join(" ")) else "" end)" end),
     "",
     "top loki error sources (1h):",
-    (.loki_errors_1h[]? | "  \(.container): \(.errors_1h)"),
+    (if (.loki_errors_1h | type) == "array" then (.loki_errors_1h[] | "  \(.container): \(.errors_1h)")
+     elif .remote_probed then "  ⚠ LOKI PROBE FAILED (not configured, or no successful answer)"
+     else "  not probed" end),
     "",
     (if (.glitchtip|type) != "object" then "glitchtip:   not probed"
      elif .glitchtip.ok != true then "⚠ GLITCHTIP PROBE FAILED: \(.glitchtip.error // "?")"

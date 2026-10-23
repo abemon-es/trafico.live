@@ -113,12 +113,30 @@ supercronic's failed-job lines per task over the last hour in Loki.
   JOB-FAILURE PROBE FAILED», never «no failures» (CTO).
 - Live at 04:2xZ: 13 failures in 2 tasks (detector 12, charger 1), both
   upstream, 0 flagged.
-- The Loki and GlitchTip addresses and the token path are now defined once
-  in the probe, which uses them on compute.
 
-Checks: job-failures (new, with a positive control from a recorded line:
-`TASK=radar … exit status 137` and no GlitchTip event → flagged), status-page
-and public-docs ok · web tsc 11 · lint 64.
+**The probe's endpoints leave the repo.** The Loki and GlitchTip addresses and
+the token path were written into `bin/cto-signals.sh`. Now they come from the
+environment or a local file (`CTO_REMOTE_ENV`, default
+`~/.config/trafico-cto-loop/remote.env`; PLAYBOOK, Sense).
+- Missing values print «⚠ PROBE CONFIG MISSING», and the Loki, GlitchTip and
+  job-failure lines each read as failed.
+- The Loki section now takes only a `success` answer. An error body used to
+  read as zero errors.
+- The public-docs test now also keeps private addresses out of the scripts,
+  and `/root` paths out of everything it scans. That needed one older line in
+  this file.
+
+Checks, on compute:
+- job-failures: new, with a positive control from a recorded line.
+  `TASK=radar … exit status 137` with no GlitchTip event is flagged.
+- public-docs and status-page: ok.
+- Web tsc 11, lint 64.
+- The probe, four ways:
+  - with the file: same output as before;
+  - without it: four failure lines;
+  - with an unreachable Loki in the environment: both Loki lines failed,
+    GlitchTip fine;
+  - `--no-remote`: «not probed».
 
 ---
 
@@ -7086,7 +7104,7 @@ is far from the 6 h period. Note only.
     account, which CIFEX production also uses (~20 containers).
   - The script also read the DB password from `/opt/trafico/collector.env`.
 - The CSO retired that file and the legacy `run-collector.sh` on 2026-10-20.
-  They now sit in `/root/retirado-20261020-trafico/` on compute.
+  They now sit in a retired-files folder on the host.
 - The fix: the 3 credentials come from `os.environ`, and `docs/operations.md`
   no longer says to `cat` the env.
 - **The literals stay in history.** They are in 554 main commits up to

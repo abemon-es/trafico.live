@@ -26,6 +26,12 @@ staleness thresholds), the 112-check smoke test, container state on `compute`,
 Loki error volume, recent `docker logs` errors across all 6 collector
 containers, GSC/GA4 snapshot freshness, and git/deploy state.
 
+The Loki, GlitchTip and job-failure probes need their internal endpoints, which
+this public repo doesn't carry: three `KEY=value` lines (`CTO_LOKI_HTTP`,
+`CTO_GT_HTTP`, `CTO_GT_TOKEN_FILE`) in `~/.config/trafico-cto-loop/remote.env`
+(or `CTO_REMOTE_ENV`, or the environment). The CTO has the values. Without them
+the probe prints `⚠ PROBE CONFIG MISSING`, never a quiet section.
+
 Never open a cycle by guessing what might be wrong. Run the probe.
 
 ### 2. Triage — rank, don't sweep
