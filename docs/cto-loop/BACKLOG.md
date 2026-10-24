@@ -90,6 +90,67 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-10-24 (132) — cams-aq says where its rows come from; the forecast page claims CAMS only when it is
+
+**Hand-over:** the trafico.live session moved to a new seat on 24-10. Same
+split with the CTO. Production deploys still need MJ's go in that session.
+
+**Signal (06:24Z):**
+- /api/health 200 `healthy`, commit 64bcc49d (#217 live).
+- 53/54 ok; transit-gtfs partial (known, recheck 25-10).
+- The three AEMET tasks are ok on the renewed key.
+
+**Item: L1.4, open since 15-08.** cams-aq has never stored CAMS data:
+- the RAQ host it asks first doesn't resolve (NXDOMAIN on 24-10), so its
+  «fetch failed» was never an upstream outage;
+- the ADS path was never written.
+
+Every run wrote the latest MITECO reading repeated over five days and said
+`ok`. /calidad-aire/prevision and /api/calidad-aire/forecast called that a
+5-day CAMS forecast, credited to Copernicus/ECMWF.
+
+**#218:**
+- **Collector:** `meta.sources = {cams, persistence}`. `ok` only when every
+  gridpoint got CAMS; `partial` with `reason` otherwise; `error` when no row
+  is written (before, that could say `partial`).
+- **Reading:** `src/lib/aq-forecast-source.ts` fails closed. It answers CAMS
+  only for fresh counts (within the 14 h threshold) where every point with
+  data is CAMS. Page, API and sitemap read it through one helper.
+- **Without CAMS (CMO's rules):**
+  - title, H1 and crumb «Calidad del aire hoy en España»;
+  - today's column only, MITECO as the source, no Dataset schema;
+  - `noindex, follow`, canonical to itself;
+  - the sitemap entry on the same answer, so it comes back with CAMS;
+  - the home's «Previsión de calidad del aire» link now goes to /calidad-aire;
+  - per request (`force-dynamic`), so no build-blank copy stays.
+- **API:** `source` and `forecastKind` from the heartbeat.
+- **Checks on compute, without network:**
+  - `npm run test:cams-aq` ok in the web and collector images;
+  - web tsc 11, collector tsc 626, lint 64, all as on main.
+
+**After the deploy:**
+- The next cams-aq run (06:30 or 18:30) is `partial`, with
+  `sources = {cams: 0, persistence: 50}`.
+- The page serves `noindex` with one column; the API says `persistence`;
+  the sitemap has no /calidad-aire/prevision.
+
+**Next:** the real CAMS fetch (ADS/NetCDF). Until then the page says what it
+shows.
+
+**The CMO's 5xx (Daily Site Report):**
+- The 500s on 20-10, 07:15–08:41Z, are cycle 29: the web's Redis client
+  gave up after a mesh blip; fixed that day.
+- The 502s on 18-10 at 20:47Z fall in that evening's chain of 9 merges
+  (#76–#84), each a web swap: the known L0 item. To confirm in Loki once the
+  CTO's read path exists (Monday).
+
+**Worktrees:**
+- Removed `next-16-3-6` and `collector-heartbeat`: clean, with the same
+  patch-id as #72 and #73.
+- `cto-loop/c26-aemet` (#104) kept: it holds untracked files.
+
+---
+
 ## Cycle 2026-10-23 (130) — speedlimit's unusable feed is an upstream outage; lost enquiries checked; the AEMET key
 
 **Signal:** 4/54 degraded.
@@ -9764,7 +9825,7 @@ achieve nothing** — the code never reads those names. Needs the OAuth2
 client-credentials token flow implemented instead. Checked before copying; a
 blind propagation here would have looked like a fix and changed nothing.
 
-### L1.4 `cams-aq` runs green but ingests no CAMS data
+### L1.4 `cams-aq` runs green but ingests no CAMS data — honest since #218 (cycle 132); the CAMS fetch is still open
 Now that it executes, every city logs `CAMS RAQ error: fetch failed` followed by
 `ADS key present but NetCDF parsing not implemented in S0 — skipping`, then
 falls back to MITECO persistence. The task reports `ok` and writes 1,050 rows,

@@ -50,7 +50,7 @@ const MORE_SECTIONS = [
   { href: "/puntos-negros", label: "Puntos negros" },
   { href: "/zbe", label: "Zonas de Bajas Emisiones" },
   { href: "/corredores", label: "Corredores de transporte" },
-  { href: "/calidad-aire/prevision", label: "Previsión de calidad del aire" },
+  { href: "/calidad-aire", label: "Calidad del aire hoy" },
   { href: "/portugal", label: "Tráfico en Portugal" },
   { href: "/andorra", label: "Tráfico en Andorra" },
 ];

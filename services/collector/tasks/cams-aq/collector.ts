@@ -25,7 +25,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { log, logError } from "../../shared/utils.js";
-import { heartbeat } from "../../shared/heartbeat.js";
+import { heartbeat, type HeartbeatStatus } from "../../shared/heartbeat.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -358,18 +358,52 @@ async function fetchCamsRaqPoint(
 // the forecast endpoint functional even when external APIs are down.
 // ---------------------------------------------------------------------------
 
+/**
+ * Where a gridpoint's slots came from. "persistence" is the latest MITECO
+ * reading repeated over the five days: it is not a forecast, and the page and
+ * the API say so (see src/lib/aq-forecast-source.ts).
+ */
+export type PointSource = "cams" | "persistence";
+
+export interface SourceCounts {
+  cams: number;
+  persistence: number;
+}
+
+/**
+ * ok only when every gridpoint got a CAMS forecast. Until 2026-10-24 a run
+ * made only of MITECO persistence said ok: the RAQ host doesn't resolve and
+ * the ADS path was never written, so for months the «CAMS forecast» was
+ * today's reading repeated, behind a green heartbeat.
+ */
+export function runStatus(sources: SourceCounts, upserted: number, gridpoints: number): HeartbeatStatus {
+  if (upserted === 0) return "error";
+  return sources.cams === gridpoints ? "ok" : "partial";
+}
+
+export function partialReason(sources: SourceCounts, gridpoints: number): string | undefined {
+  if (sources.cams === gridpoints) return undefined;
+  const missing = gridpoints - sources.cams - sources.persistence;
+  if (sources.cams === 0) {
+    return `no CAMS forecast: ${sources.persistence}/${gridpoints} gridpoints are MITECO persistence` +
+      (missing > 0 ? `, ${missing} without data` : "");
+  }
+  return `${sources.cams}/${gridpoints} gridpoints from CAMS, ${sources.persistence} MITECO persistence` +
+    (missing > 0 ? `, ${missing} without data` : "");
+}
+
 async function fetchForecastForPoint(
   prisma: PrismaClient,
   gp: Gridpoint,
   forecastDate: string,
   apiKey: string | null
-): Promise<CamsPointResult[]> {
+): Promise<{ slots: CamsPointResult[]; source: PointSource | null }> {
   // Attempt 1: CAMS RAQ public API (no auth required)
   try {
     const results = await fetchCamsRaqPoint(gp.lat, gp.lon, forecastDate);
     if (results.length > 0) {
       log(TASK, `  ${gp.name}: CAMS RAQ → ${results.length} slots`);
-      return results;
+      return { slots: results, source: "cams" };
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -397,7 +431,7 @@ async function fetchForecastForPoint(
       // Extrapolate: use today's reading for all 5 forecast days (flat persistence)
       // This is a conservative fallback — marks horizonHours as computed
       log(TASK, `  ${gp.name}: using MITECO persistence fallback (station reading)`);
-      return HORIZON_STEPS.map((h) => ({
+      const slots = HORIZON_STEPS.map((h) => ({
         validAt: new Date(startDate.getTime() + h * 3600 * 1000),
         horizonHours: h,
         no2: latestReading.no2 != null ? Number(latestReading.no2) : null,
@@ -406,13 +440,14 @@ async function fetchForecastForPoint(
         o3: latestReading.o3 != null ? Number(latestReading.o3) : null,
         so2: latestReading.so2 != null ? Number(latestReading.so2) : null,
       }));
+      return { slots, source: "persistence" };
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     log(TASK, `  ${gp.name}: MITECO fallback error: ${msg}`);
   }
 
-  return [];
+  return { slots: [], source: null };
 }
 
 // ---------------------------------------------------------------------------
@@ -438,16 +473,18 @@ export async function run(prisma: PrismaClient): Promise<void> {
   let upserted = 0;
   let skipped = 0;
   const errors: string[] = [];
+  const sources: SourceCounts = { cams: 0, persistence: 0 };
 
   for (const gp of GRIDPOINTS) {
     try {
-      const slots = await fetchForecastForPoint(prisma, gp, forecastDate, CAMS_API_KEY);
+      const { slots, source } = await fetchForecastForPoint(prisma, gp, forecastDate, CAMS_API_KEY);
 
-      if (slots.length === 0) {
+      if (slots.length === 0 || source === null) {
         log(TASK, `  ${gp.name}: no data from any source`);
         skipped++;
         continue;
       }
+      sources[source]++;
 
       for (const slot of slots) {
         const icaExpected = computeIcaExpected(slot.no2, slot.pm10, slot.pm25, slot.o3);
@@ -508,9 +545,10 @@ export async function run(prisma: PrismaClient): Promise<void> {
     log(TASK, `Cleaned up ${deleted.count} forecast rows older than 7 days`);
   }
 
-  const status = upserted > 0 ? "ok" : skipped === GRIDPOINTS.length ? "error" : "partial";
+  const status = runStatus(sources, upserted, GRIDPOINTS.length);
+  const reason = partialReason(sources, GRIDPOINTS.length);
 
-  log(TASK, `Complete — upserted=${upserted} skipped=${skipped} errors=${errors.length}`);
+  log(TASK, `Complete — upserted=${upserted} skipped=${skipped} errors=${errors.length} cams=${sources.cams} persistence=${sources.persistence}`);
   if (errors.length > 0) {
     logError(TASK, `${errors.length} upsert errors:`, errors.slice(0, 5).join("; "));
   }
@@ -521,5 +559,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
     errors: errors.length,
     forecastDate,
     gridpoints: GRIDPOINTS.length,
+    sources,
+    ...(status === "error" ? { error: "no forecast row written" } : reason ? { reason } : {}),
   });
 }
