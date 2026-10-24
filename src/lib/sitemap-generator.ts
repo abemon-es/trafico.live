@@ -3,6 +3,7 @@ import { CAMERA_CITY_PROVINCES } from "@/lib/geo/area-routes";
 import { EPHEMERAL_ARTICLE_CATEGORIES, EPHEMERAL_ARTICLE_MAX_AGE_MS, POSTAL_CODE_MIN_GAS_STATIONS, cameraCityIndexable } from "@/lib/seo/indexability";
 import { fingerprintKey, loadChangedAt, type FingerprintFamily } from "@/lib/seo/lastmod";
 import { reportApiError } from "@/lib/api-error";
+import { getAqForecastSource } from "@/lib/aq-forecast-source-server";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug, slugify } from "@/lib/geo/slugify";
 import { PROVINCE_SLUG_TO_COMMUNITY_SLUG } from "@/lib/geo/province-slugs";
@@ -669,6 +670,7 @@ async function contentChangedAt(families: FingerprintFamily[]): Promise<Map<stri
 async function coreSitemap(): Promise<SitemapEntry[]> {
   // The SASEMAR stats page is noindex while MaritimeEmergency is empty.
   const hasSasemarData = (await prisma.maritimeEmergency.count().catch(() => 0)) > 0;
+  const camsForecast = (await getAqForecastSource()).cams;
   // /camaras/<city> is noindex while its province has no active camera
   // (Barcelona, Bilbao, Vitoria, Las Palmas and Santa Cruz on 2026-10-20: their
   // cameras are not DGT's). A failed count leaves the cities out.
@@ -1100,10 +1102,18 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "hourly" as const,
       priority: 0.85,
     },
-    // /calidad-aire/prevision is out while it is noindex: it shows a CAMS
-    // forecast only when the cams-aq run got one for every gridpoint, and
-    // until 2026-10-24 none ever did (src/lib/aq-forecast-source.ts). It comes
-    // back here when the collector carries CAMS data.
+    // The 5-day forecast, only while it is one: the same answer as the page's
+    // noindex (src/lib/aq-forecast-source.ts), so it comes back on its own the
+    // day cams-aq carries fresh CAMS data (CMO, 2026-10-24). Until then the
+    // rows are the latest MITECO reading repeated, and until 2026-10-24 that
+    // was all they ever were.
+    ...(camsForecast
+      ? [{
+          url: `${BASE_URL}/calidad-aire/prevision`,
+          changeFrequency: "daily" as const,
+          priority: 0.8,
+        }]
+      : []),
     {
       url: `${BASE_URL}/estadisticas-transporte`,
       changeFrequency: "monthly" as const,

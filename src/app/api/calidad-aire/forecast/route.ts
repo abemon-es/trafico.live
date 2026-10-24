@@ -24,7 +24,7 @@ import { applyRateLimit } from "@/lib/api-utils";
 import { authenticateRequest } from "@/lib/auth";
 import { getFromCache, setInCache } from "@/lib/redis";
 import { reportApiError } from "@/lib/api-error";
-import { aqForecastSource } from "@/lib/aq-forecast-source";
+import { getAqForecastSource } from "@/lib/aq-forecast-source-server";
 
 export const dynamic = "force-dynamic";
 
@@ -154,11 +154,7 @@ export async function GET(request: NextRequest) {
 
     // What the rows are: CAMS only when the last run got it for every gridpoint,
     // otherwise MITECO persistence (src/lib/aq-forecast-source.ts).
-    const hb = await prisma.collectorHeartbeat.findUnique({
-      where: { task: "cams-aq" },
-      select: { meta: true },
-    });
-    const source = aqForecastSource(hb?.meta ?? null);
+    const source = await getAqForecastSource();
 
     if (provinceParam) {
       // Province mode: all gridpoints in province

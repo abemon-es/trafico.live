@@ -17,7 +17,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { aqForecastSource, type AqForecastSource } from "@/lib/aq-forecast-source";
+import { getAqForecastSource } from "@/lib/aq-forecast-source-server";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import {
@@ -36,17 +36,9 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 // after every deploy.
 export const dynamic = "force-dynamic";
 
-async function getSource(): Promise<AqForecastSource> {
-  try {
-    const hb = await prisma.collectorHeartbeat.findUnique({
-      where: { task: "cams-aq" },
-      select: { meta: true },
-    });
-    return aqForecastSource(hb?.meta ?? null);
-  } catch {
-    return aqForecastSource(null);
-  }
-}
+// Without CAMS the page says what it shows (CMO, 2026-10-24): «Previsión…»
+// alone would still promise a forecast.
+const TITLE_TODAY = "Calidad del aire hoy en España";
 
 // ---------------------------------------------------------------------------
 // Province metadata (the same 50-gridpoint catalog the API uses)
@@ -167,7 +159,7 @@ function isToday(iso: string): boolean {
 // ---------------------------------------------------------------------------
 
 export async function generateMetadata(): Promise<Metadata> {
-  const source = await getSource();
+  const source = await getAqForecastSource();
   const base = {
     alternates: { canonical: `${BASE_URL}/calidad-aire/prevision` },
     openGraph: {
@@ -182,10 +174,10 @@ export async function generateMetadata(): Promise<Metadata> {
       "Hoy no hay pronóstico CAMS: la tabla muestra la última medición de MITECO de cada provincia. El dato observado, estación a estación, está en la página de calidad del aire.";
     return {
       ...base,
-      title: "Previsión de calidad del aire en España",
+      title: TITLE_TODAY,
       description,
       robots: { index: false, follow: true },
-      openGraph: { ...base.openGraph, title: "Previsión de calidad del aire en España", description },
+      openGraph: { ...base.openGraph, title: TITLE_TODAY, description },
     };
   }
   return {
@@ -209,8 +201,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function CalidadAirePrevisionPage() {
   const [{ byProvince, days: forecastDays, rowCount }, source] = await Promise.all([
     getForecast(),
-    getSource(),
+    getAqForecastSource(),
   ]);
+  const crumb = source.cams ? "Previsión" : "Hoy";
   // Persistence repeats one reading over every day: only today's column is true.
   const days = source.cams ? forecastDays : forecastDays.filter(isToday);
 
@@ -248,7 +241,7 @@ export default async function CalidadAirePrevisionPage() {
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Inicio", item: BASE_URL },
       { "@type": "ListItem", position: 2, name: "Calidad del aire", item: `${BASE_URL}/calidad-aire` },
-      { "@type": "ListItem", position: 3, name: "Previsión", item: `${BASE_URL}/calidad-aire/prevision` },
+      { "@type": "ListItem", position: 3, name: crumb, item: `${BASE_URL}/calidad-aire/prevision` },
     ],
   };
 
@@ -261,7 +254,7 @@ export default async function CalidadAirePrevisionPage() {
           items={[
             { name: "Inicio", href: "/" },
             { name: "Calidad del aire", href: "/calidad-aire" },
-            { name: "Previsión", href: "/calidad-aire/prevision" },
+            { name: crumb, href: "/calidad-aire/prevision" },
           ]}
         />
       </div>
@@ -288,7 +281,7 @@ export default async function CalidadAirePrevisionPage() {
             </span>
           </div>
           <h1 className="font-heading text-4xl md:text-5xl font-bold text-white mb-3 leading-tight">
-            Previsión de calidad del aire
+            {source.cams ? "Previsión de calidad del aire" : TITLE_TODAY}
           </h1>
           {source.cams ? (
             <p className="text-teal-100 text-lg max-w-2xl leading-relaxed">
