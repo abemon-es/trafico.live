@@ -1100,14 +1100,10 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "hourly" as const,
       priority: 0.85,
     },
-    // 5-day CAMS forecast (iter-4 dark-data unlock — AQForecast collector
-    // populates this every 12h; no competitor in ES publishes a 5-day AQ
-    // pronóstico at provincial granularity).
-    {
-      url: `${BASE_URL}/calidad-aire/prevision`,
-      changeFrequency: "daily" as const,
-      priority: 0.8,
-    },
+    // /calidad-aire/prevision is out while it is noindex: it shows a CAMS
+    // forecast only when the cams-aq run got one for every gridpoint, and
+    // until 2026-10-24 none ever did (src/lib/aq-forecast-source.ts). It comes
+    // back here when the collector carries CAMS data.
     {
       url: `${BASE_URL}/estadisticas-transporte`,
       changeFrequency: "monthly" as const,

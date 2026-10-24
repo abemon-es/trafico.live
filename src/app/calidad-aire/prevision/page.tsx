@@ -5,11 +5,19 @@
  * (refreshed every 12h from Copernicus Atmosphere Monitoring Service).
  * Currently the only AQ-forecast surface on trafico.live — MITECO and
  * other Spanish sources only publish the current hour.
+ *
+ * The page claims CAMS only when the last cams-aq run got a CAMS forecast for
+ * every gridpoint (src/lib/aq-forecast-source.ts). Otherwise the rows are the
+ * latest MITECO reading repeated, so it shows today's column only, says so,
+ * carries no Dataset schema and is noindex, follow, out of the sitemap (the
+ * CMO's rule for the vehicle pages, 2026-10-22). Until 2026-10-24 it showed
+ * that repetition as a 5-day CAMS forecast.
  */
 
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { aqForecastSource, type AqForecastSource } from "@/lib/aq-forecast-source";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import {
@@ -23,10 +31,22 @@ import {
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-// 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
-// page prerenders empty and the revalidate window is how long that blank copy
-// survives every deploy. Data freshness is not the constraint here.
-export const revalidate = 300; // 6h — slightly less than the 12h CAMS cadence
+// Per request, like the vehicle pages: the Docker build has no DB, and a
+// prerendered copy would be the blank, noindex one for its revalidate window
+// after every deploy.
+export const dynamic = "force-dynamic";
+
+async function getSource(): Promise<AqForecastSource> {
+  try {
+    const hb = await prisma.collectorHeartbeat.findUnique({
+      where: { task: "cams-aq" },
+      select: { meta: true },
+    });
+    return aqForecastSource(hb?.meta ?? null);
+  } catch {
+    return aqForecastSource(null);
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Province metadata (the same 50-gridpoint catalog the API uses)
@@ -146,28 +166,53 @@ function isToday(iso: string): boolean {
 // Metadata
 // ---------------------------------------------------------------------------
 
-export const metadata: Metadata = {
-  title: "Previsión de calidad del aire en España — 5 días (CAMS)",
-  description:
-    "Pronóstico de calidad del aire en España a 5 días por provincia. Índice ICA esperado, NO₂, PM10, PM2.5 y O₃. Datos del Copernicus Atmosphere Monitoring Service (CAMS).",
-  alternates: { canonical: `${BASE_URL}/calidad-aire/prevision` },
-  openGraph: {
-    title: "Previsión calidad del aire España — 5 días CAMS",
+export async function generateMetadata(): Promise<Metadata> {
+  const source = await getSource();
+  const base = {
+    alternates: { canonical: `${BASE_URL}/calidad-aire/prevision` },
+    openGraph: {
+      url: `${BASE_URL}/calidad-aire/prevision`,
+      siteName: "trafico.live",
+      locale: "es_ES",
+      type: "website" as const,
+    },
+  };
+  if (!source.cams) {
+    const description =
+      "Hoy no hay pronóstico CAMS: la tabla muestra la última medición de MITECO de cada provincia. El dato observado, estación a estación, está en la página de calidad del aire.";
+    return {
+      ...base,
+      title: "Previsión de calidad del aire en España",
+      description,
+      robots: { index: false, follow: true },
+      openGraph: { ...base.openGraph, title: "Previsión de calidad del aire en España", description },
+    };
+  }
+  return {
+    ...base,
+    title: "Previsión de calidad del aire en España — 5 días (CAMS)",
     description:
-      "Pronóstico provincia a provincia de NO₂, PM10, PM2.5 y O₃ a 5 días. Fuente Copernicus/ECMWF.",
-    url: `${BASE_URL}/calidad-aire/prevision`,
-    siteName: "trafico.live",
-    locale: "es_ES",
-    type: "website",
-  },
-};
+      "Pronóstico de calidad del aire en España a 5 días por provincia. Índice ICA esperado, NO₂, PM10, PM2.5 y O₃. Datos del Copernicus Atmosphere Monitoring Service (CAMS).",
+    openGraph: {
+      ...base.openGraph,
+      title: "Previsión calidad del aire España — 5 días CAMS",
+      description:
+        "Pronóstico provincia a provincia de NO₂, PM10, PM2.5 y O₃ a 5 días. Fuente Copernicus/ECMWF.",
+    },
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
 export default async function CalidadAirePrevisionPage() {
-  const { byProvince, days, rowCount } = await getForecast();
+  const [{ byProvince, days: forecastDays, rowCount }, source] = await Promise.all([
+    getForecast(),
+    getSource(),
+  ]);
+  // Persistence repeats one reading over every day: only today's column is true.
+  const days = source.cams ? forecastDays : forecastDays.filter(isToday);
 
   // Sort provinces alphabetically by name (fall back to code when unknown)
   const provinceCodes = Array.from(byProvince.keys()).sort((a, b) => {
@@ -209,7 +254,7 @@ export default async function CalidadAirePrevisionPage() {
 
   return (
     <>
-      <StructuredData data={[datasetSchema, breadcrumbSchema]} />
+      <StructuredData data={source.cams ? [datasetSchema, breadcrumbSchema] : [breadcrumbSchema]} />
 
       <div className="max-w-7xl mx-auto px-4 pt-6">
         <Breadcrumbs
@@ -239,17 +284,29 @@ export default async function CalidadAirePrevisionPage() {
           <div className="flex items-center gap-3 mb-3">
             <Wind className="w-9 h-9 text-teal-200" />
             <span className="font-heading text-teal-200 text-sm font-semibold uppercase tracking-widest">
-              Pronóstico CAMS · 5 días
+              {source.cams ? "Pronóstico CAMS · 5 días" : "Sin pronóstico CAMS · última medición MITECO"}
             </span>
           </div>
           <h1 className="font-heading text-4xl md:text-5xl font-bold text-white mb-3 leading-tight">
             Previsión de calidad del aire
           </h1>
-          <p className="text-teal-100 text-lg max-w-2xl leading-relaxed">
-            Pronóstico provincial del índice ICA esperado y las concentraciones de NO₂, PM10,
-            PM2.5 y O₃ a 5 días. Refrescado cada 12 horas por el servicio CAMS del programa
-            Copernicus.
-          </p>
+          {source.cams ? (
+            <p className="text-teal-100 text-lg max-w-2xl leading-relaxed">
+              Pronóstico provincial del índice ICA esperado y las concentraciones de NO₂, PM10,
+              PM2.5 y O₃ a 5 días. Refrescado cada 12 horas por el servicio CAMS del programa
+              Copernicus.
+            </p>
+          ) : (
+            <p className="text-teal-100 text-lg max-w-2xl leading-relaxed">
+              Hoy no recibimos el pronóstico de CAMS, así que no hay previsión a 5 días. La tabla
+              muestra la última medición de MITECO de cada provincia. El dato observado, estación
+              a estación, está en{" "}
+              <Link href="/calidad-aire" className="underline hover:text-white">
+                calidad del aire
+              </Link>
+              .
+            </p>
+          )}
         </div>
       </section>
 
@@ -262,8 +319,9 @@ export default async function CalidadAirePrevisionPage() {
               Previsión no disponible
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-              El colector CAMS no ha publicado una previsión reciente. La próxima actualización
-              ocurre en las próximas 12 horas.
+              {source.cams
+                ? "El colector CAMS no ha publicado una previsión reciente. La próxima actualización ocurre en las próximas 12 horas."
+                : "No hay pronóstico CAMS ni una medición de MITECO de hoy que mostrar."}
             </p>
           </section>
         ) : (
@@ -292,7 +350,7 @@ export default async function CalidadAirePrevisionPage() {
             <section aria-label="Previsión por provincia">
               <h2 className="font-heading text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <Calendar className="w-6 h-6 text-[var(--tl-info)]" />
-                Previsión por provincia
+                {source.cams ? "Previsión por provincia" : "Última medición por provincia"}
               </h2>
               <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
                 <table className="w-full text-sm">
@@ -339,8 +397,17 @@ export default async function CalidadAirePrevisionPage() {
                 </table>
               </div>
               <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-3">
-                Para cada provincia y día se muestra el peor ICA esperado entre los gridpoints
-                CAMS y horizontes disponibles. Datos crudos: {rowCount.toLocaleString("es-ES")} puntos pronóstico.
+                {source.cams ? (
+                  <>
+                    Para cada provincia y día se muestra el peor ICA esperado entre los gridpoints
+                    CAMS y horizontes disponibles. Datos crudos: {rowCount.toLocaleString("es-ES")} puntos pronóstico.
+                  </>
+                ) : (
+                  <>
+                    Para cada provincia se muestra el peor ICA de la última medición de MITECO en
+                    sus estaciones. No es un pronóstico.
+                  </>
+                )}
               </p>
             </section>
           </>
@@ -353,6 +420,14 @@ export default async function CalidadAirePrevisionPage() {
             Cómo se calcula la previsión
           </h2>
           <div className="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-gray-400 space-y-3">
+            {!source.cams && (
+              <p>
+                <strong>Ahora mismo no recibimos el pronóstico de CAMS.</strong> Mientras no
+                llegue, esta página muestra la última medición de MITECO de cada provincia en
+                lugar de una previsión. Lo que sigue explica cómo será la previsión cuando
+                vuelva.
+              </p>
+            )}
             <p>
               CAMS (Copernicus Atmosphere Monitoring Service) ejecuta un ensemble de modelos
               regionales que cubre Europa con resolución de 0,1°. Cada 12 horas publica un
@@ -376,18 +451,25 @@ export default async function CalidadAirePrevisionPage() {
 
         <footer className="flex flex-wrap items-center gap-2 text-xs text-gray-400 dark:text-gray-500 border-t border-gray-100 dark:border-gray-800 pt-6">
           <Cloud className="w-4 h-4 flex-shrink-0" />
-          <span>
-            Fuente:{" "}
-            <a
-              href="https://atmosphere.copernicus.eu"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-gray-600 dark:hover:text-gray-300"
-            >
-              Copernicus Atmosphere Monitoring Service (CAMS) / ECMWF
-            </a>
-            {" "}· Modelo regional ensemble, actualizado cada 12 horas
-          </span>
+          {source.cams ? (
+            <span>
+              Fuente:{" "}
+              <a
+                href="https://atmosphere.copernicus.eu"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                Copernicus Atmosphere Monitoring Service (CAMS) / ECMWF
+              </a>
+              {" "}· Modelo regional ensemble, actualizado cada 12 horas
+            </span>
+          ) : (
+            <span>
+              Fuente: MITECO, Índice de calidad del aire (ica.miteco.es, CC-BY 4.0) · Última
+              medición disponible; no es un pronóstico
+            </span>
+          )}
         </footer>
       </div>
     </>
