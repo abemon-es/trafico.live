@@ -6,6 +6,7 @@ import { reportApiError } from "@/lib/api-error";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug, slugify } from "@/lib/geo/slugify";
 import { PROVINCE_SLUG_TO_COMMUNITY_SLUG } from "@/lib/geo/province-slugs";
+import { priorityEntries } from "@/lib/sitemap-priority";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -313,45 +314,9 @@ export async function generateSitemapForShard(
   return [];
 }
 
-// ---------------------------------------------------------------------------
-// /sitemap/priority.xml — the canonical hubs worth crawling first
-// ---------------------------------------------------------------------------
-// Google barely crawls the site (855 Googlebot requests in 7 weeks) and has
-// never fetched the shards. This short list (CMO plan 2026-10-19, ≤500 URLs)
-// is submitted on its own so the crawl budget goes to pages with their own
-// data. Every URL also stays in its regular shard.
-
-const PRIORITY_MAX_URLS = 500;
-// /mapa duplicates the homepage map, /ciudad is a bare index, and the
-// 2026 holiday pages are past events.
-const PRIORITY_EXCLUDED = new Set(["/mapa", "/ciudad", "/semana-santa-2026", "/puente-mayo-2026"]);
-
-function isPriorityPath(path: string, priority: number): boolean {
-  if (PRIORITY_EXCLUDED.has(path)) return false;
-  // Rail hubs and the canonical community/province pages go in whole.
-  if (path.startsWith("/espana") || path.startsWith("/trenes")) return true;
-  // Roads: the three road-type hubs, plus state roads' own page and their
-  // /hoy page. Not regional roads, not /estadisticas.
-  const road = path.match(/^\/carreteras\/([^/]+)(?:\/([^/]+))?$/);
-  if (road) {
-    if (["autopistas", "autovias", "nacionales"].includes(road[1])) return !road[2];
-    const isState = NATIONAL_ROAD_RE.test(decodeURIComponent(road[1]));
-    return isState && (!road[2] || road[2] === "hoy") && priority >= 0.8;
-  }
-  return priority >= 0.8;
-}
-
+// /sitemap/priority.xml — the list and its rationale live in sitemap-priority.ts.
 export async function generatePrioritySitemap(): Promise<SitemapEntry[]> {
-  const seen = new Set<string>();
-  return (await coreSitemap())
-    .filter((e) => {
-      const path = e.url.slice(BASE_URL.length) || "/";
-      if (seen.has(path)) return false;
-      seen.add(path);
-      return isPriorityPath(path, e.priority);
-    })
-    .sort((a, b) => b.priority - a.priority)
-    .slice(0, PRIORITY_MAX_URLS);
+  return priorityEntries(await coreSitemap(), BASE_URL);
 }
 
 /**
