@@ -4,7 +4,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 import { buildPageMetadata } from "@/lib/seo/metadata";
-import { PageIntro } from "@/components/seo/PageIntro";
+import { introCopy } from "@/lib/seo/intro-copy";
 
 export const revalidate = 1800; // ISR: regenerate every 30 minutes (IMD data is annual)
 
@@ -32,9 +32,8 @@ export default function IntensidadPage() {
           { name: "Inicio", href: "/" },
           { name: "Intensidad de Tráfico", href: "/intensidad" },
         ]} />
-        <PageIntro path="/intensidad" className="mt-2 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" />
       </div>
-      <IntensidadContent />
+      <IntensidadContent intro={introCopy("/intensidad")} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
         <RelatedLinks links={[
           { title: "Predicción de tráfico", description: "Mapa de calor: cuándo hay más tráfico en Madrid por hora y día", href: "/prediccion-trafico", icon: <Clock className="w-5 h-5" /> },

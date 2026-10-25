@@ -145,16 +145,18 @@ export function HomeClient({
                 </>
               )}
             </p>
-            {/* Not on phones: the card sits over a 70vh map there. */}
-            {intro && (
-              <p className="mt-2 hidden md:block text-sm text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
-                {intro}
-              </p>
-            )}
           </div>
         </header>
         <HeroMapDeferred />
       </section>
+
+      {/* Under the map, not in the card over it: on phones the card already
+          covers the map, and the text has to show at every width. */}
+      {intro && (
+        <p className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed" data-page-intro="">
+          {intro}
+        </p>
+      )}
 
       <Suspense fallback={null}>
         <IncidentTicker />

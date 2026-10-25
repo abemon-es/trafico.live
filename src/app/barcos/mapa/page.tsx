@@ -19,7 +19,9 @@ export default function BarcosMapaPage() {
       <h1 className="sr-only">
         Mapa de barcos en directo — Tracker AIS de buques en aguas españolas
       </h1>
-      <PageIntro path="/barcos/mapa" className="sr-only" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <PageIntro path="/barcos/mapa" className="text-sm leading-snug text-gray-600 dark:text-gray-300" />
+      </div>
       <MapaClient />
     </>
   );
