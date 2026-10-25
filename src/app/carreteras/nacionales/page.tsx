@@ -6,6 +6,7 @@ import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 export const revalidate = 300;
 
@@ -80,6 +81,7 @@ export default async function NacionalesPage() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Carreteras Nacionales</h1>
               <p className="text-gray-600 dark:text-gray-400">Red principal del Estado (N)</p>
+              <PageIntro path="/carreteras/nacionales" />
             </div>
           </div>
 

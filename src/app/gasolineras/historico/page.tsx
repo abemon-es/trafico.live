@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData, generateWebPageSchema, generateDatasetSchema } from "@/components/seo/StructuredData";
 import { HistoricoContent } from "./content";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -69,6 +70,7 @@ export default function HistoricoPage() {
           { name: "Histórico de precios", href: "/gasolineras/historico" },
         ]}
       />
+      <PageIntro path="/gasolineras/historico" className="mt-2 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" />
 
       <HistoricoContent />
     </div>

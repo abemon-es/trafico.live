@@ -5,6 +5,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -43,6 +44,7 @@ export default function EstacionesAforoPage() {
           { name: "Inicio", href: "/" },
           { name: "Estaciones de Aforo", href: "/estaciones-aforo" },
         ]} />
+        <PageIntro path="/estaciones-aforo" className="mt-2 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" />
       </div>
       <EstacionesAforoContent />
 

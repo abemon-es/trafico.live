@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { MapaClient } from "./MapaClient";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -18,6 +19,7 @@ export default function BarcosMapaPage() {
       <h1 className="sr-only">
         Mapa de barcos en directo — Tracker AIS de buques en aguas españolas
       </h1>
+      <PageIntro path="/barcos/mapa" className="sr-only" />
       <MapaClient />
     </>
   );

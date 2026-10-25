@@ -107,7 +107,16 @@ function CardGridSkeleton() {
   );
 }
 
-export function HomeClient({ initialStats, articles }: { initialStats: HomeStats; articles: HomeArticle[] }) {
+export function HomeClient({
+  initialStats,
+  articles,
+  intro,
+}: {
+  initialStats: HomeStats;
+  articles: HomeArticle[];
+  /** The page's intro text (src/lib/seo/intro-copy.ts); passed in so the copy map stays out of the client bundle. */
+  intro?: string | null;
+}) {
   return (
     <>
       {/* Hero map — TraficoMap preset="home" (phase 4 migration) */}
@@ -136,6 +145,12 @@ export function HomeClient({ initialStats, articles }: { initialStats: HomeStats
                 </>
               )}
             </p>
+            {/* Not on phones: the card sits over a 70vh map there. */}
+            {intro && (
+              <p className="mt-2 hidden md:block text-sm text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
+                {intro}
+              </p>
+            )}
           </div>
         </header>
         <HeroMapDeferred />

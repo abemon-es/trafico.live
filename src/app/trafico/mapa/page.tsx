@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { MapaClient } from "./MapaClient";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -11,5 +12,10 @@ export const metadata: Metadata = {
 };
 
 export default function TraficoMapaPage() {
-  return <MapaClient />;
+  return (
+    <>
+      <PageIntro path="/trafico/mapa" className="sr-only" />
+      <MapaClient />
+    </>
+  );
 }

@@ -17,6 +17,7 @@ import prisma from "@/lib/db";
 import { cameraImage } from "@/lib/cameras/snapshot";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 export const revalidate = 300;
 
@@ -197,6 +198,7 @@ export default async function CamarasCarreteraPage({ params }: Props) {
                   Imágenes en tiempo real de las cámaras de vigilancia de la DGT instaladas en
                   la {roadId}. Agrupadas por provincia y ordenadas por punto kilométrico.
                 </p>
+                <PageIntro path={`/camaras/carretera/${roadId}`} />
               </div>
               <div className="hidden md:flex flex-col items-center bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg px-5 py-3 text-center flex-shrink-0">
                 <span className="text-3xl font-bold text-tl-700 dark:text-tl-300 font-data">

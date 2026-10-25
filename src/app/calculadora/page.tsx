@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import CalculadoraContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -38,6 +39,7 @@ export default function CalculadoraPage() {
           { name: "Inicio", href: "/" },
           { name: "Calculadora de Ruta", href: "/calculadora" },
         ]} />
+        <PageIntro path="/calculadora" className="mt-2 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" />
       </div>
       <CalculadoraContent />
     </>
