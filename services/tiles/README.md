@@ -25,10 +25,10 @@ Browser (MapLibre GL JS)
 
 ## Stack
 
-- **Server:** hetzner-prod (<compute-public-ip>)
+- **Server:** the tiles host
 - **Container:** `trafico-tiles` (nginx:alpine + custom config)
-- **Network:** Coolify's `coolify` Docker network
-- **Routing:** Traefik v3.6 via file provider (`/data/coolify/proxy/dynamic/tiles.yaml`)
+- **Network:** the tiles compose project network
+- **Routing:** Traefik v3.6 via its file provider on the host
 - **SSL:** Let's Encrypt via Traefik ACME
 - **DNS:** `tiles.trafico.live` → A → <compute-public-ip> (Cloudflare, DNS-only)
 
@@ -60,7 +60,7 @@ pmtiles extract \
   --maxzoom=14
 
 # Upload to server
-rsync -avP /tmp/spain-iberia.pmtiles hetzner-prod:/opt/trafico/tiles/tiles/spain.pmtiles
+rsync -avP /tmp/spain-iberia.pmtiles <tiles-host>:/opt/trafico/tiles/tiles/spain.pmtiles
 
 # No container restart needed — nginx serves static files
 ```
@@ -80,7 +80,7 @@ ssh compute "docker logs trafico-tiles --tail 20"
 ### Check Traefik routing
 
 ```bash
-ssh compute "docker logs coolify-proxy 2>&1 | grep tiles | tail -5"
+ssh compute "docker logs <traefik-container> 2>&1 | grep tiles | tail -5"
 ```
 
 ### Verify endpoints
@@ -143,7 +143,7 @@ maplibregl.addProtocol("pmtiles", protocol.tile);
 
 ## Traefik config
 
-Located at `/data/coolify/proxy/dynamic/tiles.yaml` on hetzner-prod:
+In the Traefik file provider directory on the tiles host:
 
 ```yaml
 http:
