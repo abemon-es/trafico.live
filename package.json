@@ -64,6 +64,7 @@
     "test:cams-aq": "tsx tests/cams-aq-source.test.ts",
     "test:priority-sitemap": "tsx tests/sitemap-priority.test.ts",
     "test:indexnow": "tsx tests/notify-indexnow.test.ts",
+    "test:no-route-loading": "tsx tests/no-route-loading.test.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
