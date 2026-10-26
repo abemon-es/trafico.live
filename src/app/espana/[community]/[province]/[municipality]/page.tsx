@@ -235,7 +235,7 @@ export default async function MunicipalityPage({ params }: Props) {
         visibleSections={visibleSections}
       >
         {/* Hero with live traffic health score */}
-        <HeroSection entity={entity} />
+        <HeroSection entity={entity} introPath={`/espana/${community}/${province}/${munSlug}`} />
 
         {/* Map with all infrastructure */}
         <Suspense fallback={<SectionSkeleton title="Mapa" />}>

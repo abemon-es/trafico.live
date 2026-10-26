@@ -62,6 +62,8 @@
     "test:reports": "tsx tests/reports-closed-days.test.ts",
     "test:incident-classes": "tsx tests/incident-classes.test.ts",
     "test:priority-sitemap": "tsx tests/sitemap-priority.test.ts",
+    "test:intro-copy": "tsx tests/intro-copy.test.ts",
+    "test:no-route-loading": "tsx tests/no-route-loading.test.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",

@@ -197,7 +197,7 @@ export default async function ProvincePage({ params }: Props) {
         breadcrumbs={breadcrumbs}
         visibleSections={visibleSections}
       >
-        <HeroSection entity={entity} />
+        <HeroSection entity={entity} introPath={`/espana/${community}/${provSlug}`} />
         <StatsBar entity={entity} />
 
         <Suspense fallback={<SectionSkeleton title="Inteligencia" />}>

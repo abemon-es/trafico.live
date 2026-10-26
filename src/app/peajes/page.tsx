@@ -4,6 +4,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
 import { Route, MapPin, Clock, Calculator, Building2, ChevronRight } from "lucide-react";
 import tollData from "../../../data/tolls.json";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -85,6 +86,7 @@ export default function PeajesPage() {
             Precios para vehículos ligeros con Tag/Telepeaje.
             Fuente: Ministerio de Transportes y SEITT.
           </p>
+          <PageIntro path="/peajes" />
           <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
             Última actualización: {tollData.lastUpdated}
           </p>

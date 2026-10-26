@@ -16,6 +16,7 @@ import {
   Radio,
   Shuffle,
 } from "lucide-react";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 export const revalidate = 300;
 
@@ -653,6 +654,7 @@ export default async function LineaDetailPage({ params }: Props) {
               <span className="font-medium text-gray-900 dark:text-gray-100">{displayName}</span>
             </p>
           )}
+          <PageIntro path={`/trenes/linea/${slug}`} />
         </section>
 
         {/* ── Route map ──────────────────────────────────────── */}

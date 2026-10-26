@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { Route, Clock, Calculator, ChevronRight, CreditCard } from "lucide-react";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -45,6 +46,7 @@ export default function RadialesMadridPage() {
           <p className="mt-2 text-gray-600 dark:text-gray-400 max-w-2xl">
             Las radiales de Madrid (R-2, R-3/R-5, R-4) y las autopistas AP-36, AP-41 y M-12 están gestionadas por SEITT con tarifa por kilómetro. Gratuitas de 00:00 a 06:00.
           </p>
+          <PageIntro path="/peajes/radiales-madrid" />
         </div>
 
         {/* Rate card */}

@@ -21,6 +21,7 @@ import { RelatedLinks } from "@/components/ui/RelatedLinks";
 import { ButtonLink } from "@/components/ui/Button";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { AviationHeroMap } from "../AviationHeroMap";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 export const revalidate = 180;
 
@@ -203,6 +204,7 @@ export default async function AviacionHubPage() {
           tiempo real. Radar aviones vía OpenSky Network, 46 aeropuertos AENA y vuelos
           en directo.
         </p>
+        <PageIntro path="/aviacion" />
         <div className="flex flex-wrap gap-3 mt-2">
           <ButtonLink href="/aviacion/mapa" variant="primary" icon={<Navigation className="w-4 h-4" />}>
             Abrir mapa completo
