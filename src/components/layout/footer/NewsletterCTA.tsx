@@ -15,7 +15,7 @@ export function NewsletterCTA() {
     setErrorMsg("");
 
     try {
-      const res = await fetch("/api/newsletter/subscribe", {
+      const res = await fetch("/api/digest/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -25,7 +25,7 @@ export function NewsletterCTA() {
         setStatus("success");
       } else {
         const data = await res.json().catch(() => ({}));
-        setErrorMsg(data?.message || "Error al suscribirse. Inténtalo de nuevo.");
+        setErrorMsg(data?.error || data?.message || "Error al suscribirse. Inténtalo de nuevo.");
         setStatus("error");
       }
     } catch {
@@ -63,7 +63,7 @@ export function NewsletterCTA() {
               <div className="flex items-center gap-2 text-white bg-white/10 rounded-lg px-4 py-3">
                 <CheckCircle className="w-5 h-5 text-emerald-300 shrink-0" aria-hidden="true" />
                 <span className="text-sm font-medium">
-                  ¡Suscrito! Recibirás el próximo resumen el lunes.
+                  Te hemos enviado un correo: confirma la suscripción desde él.
                 </span>
               </div>
             ) : (

@@ -10,7 +10,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
-import { NewsletterHero } from "@/components/newsletter/NewsletterHero";
 import { Train, Plane, Anchor, Bus, Car, BarChart3, ExternalLink, Clock, Euro, Leaf, ArrowRight } from "lucide-react";
 
 export const revalidate = 86400;
@@ -194,15 +193,6 @@ export default function GuiaMultimodalPage() {
             definitiva para el corredor más transitado del país: Madrid-Barcelona.
           </p>
         </header>
-
-        {/* Newsletter Hero — TOP */}
-        <NewsletterHero
-          source="guia-multimodal"
-          leadMagnet="guia-multimodal"
-          headline="Recibe actualizaciones de esta guía cada semana"
-          pitch="El resumen de trafico.live llega cada lunes con datos frescos de tráfico, trenes, vuelos y combustible."
-          layout="banner"
-        />
 
         {/* Table of Contents */}
         <nav
@@ -561,13 +551,6 @@ export default function GuiaMultimodalPage() {
             </Link>
           ))}
         </div>
-
-        {/* Newsletter Hero — BOTTOM */}
-        <NewsletterHero
-          source="guia-multimodal"
-          leadMagnet="guia-multimodal"
-          layout="banner"
-        />
 
         {/* Sources */}
         <footer className="mt-10 pt-6 border-t border-gray-200 dark:border-gray-700">

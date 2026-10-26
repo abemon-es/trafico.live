@@ -4,7 +4,6 @@ import { prisma } from "@/lib/db";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { Fuel, Anchor, TrendingUp, TrendingDown, Minus, MapPin, Clock, HelpCircle, Droplets, Building2, ChevronRight } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
-import { PriceAlertForm } from "@/components/fuel/PriceAlertForm";
 import { StructuredData, generateDatasetSchema, generateFAQSchema } from "@/components/seo/StructuredData";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
@@ -549,11 +548,6 @@ export default async function GasolinerasPage() {
           </div>
         </div>
       )}
-
-      {/* Price alert subscription */}
-      <div className="mb-8">
-        <PriceAlertForm accent="amber" />
-      </div>
 
       {/* Province Grid */}
       <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 mb-8">

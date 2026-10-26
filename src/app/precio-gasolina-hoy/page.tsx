@@ -7,7 +7,6 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { TrendingUp, TrendingDown, Minus, MapPin, Clock, Fuel, ChevronRight, Camera, Radar, Truck, Route } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
-import { PriceAlertForm } from "@/components/fuel/PriceAlertForm";
 import { FuelPriceChart } from "@/components/charts/FuelPriceChart";
 import { fuelStatsDayLabel, fuelStatsDays } from "@/lib/data/fuel-stats-day";
 
@@ -425,15 +424,6 @@ export default async function PrecioGasolinaHoyPage() {
         />
 
         <AdSlot id="fuel-gasolina-mid" format="inline" className="mb-8" />
-
-        {/* Price alert subscription */}
-        <PriceAlertForm
-          defaultFuelType="gasolina95"
-          defaultTargetPrice={avg95 ?? undefined}
-          accent="blue"
-        />
-
-        <div className="mb-8" />
 
         {/* Top 10 cheapest stations */}
         {cheapestStations.length > 0 && (
