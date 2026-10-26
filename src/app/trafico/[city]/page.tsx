@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { PageIntro } from "@/components/seo/PageIntro";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { TRAFFIC_CITIES } from "@/lib/geo/area-routes";
 
@@ -361,6 +362,7 @@ export default async function TraficoCityPage({ params }: Props) {
                     {formatTimestamp(now)} (hora Madrid)
                   </span>
                 </div>
+                <PageIntro path={`/trafico/${city}`} />
               </div>
 
               {/* Status pill */}

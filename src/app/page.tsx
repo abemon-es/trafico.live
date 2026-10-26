@@ -3,6 +3,7 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { HomeClient } from "./HomeClient";
 import type { HomeArticle } from "@/components/home/counts";
+import { introCopy } from "@/lib/seo/intro-copy";
 import { CITY_SENSOR_WHERE, REPORTED_WHERE, VEHICLE_STOP_WHERE } from "@/lib/incident-classes";
 import {
   StructuredData,
@@ -50,7 +51,7 @@ const MORE_SECTIONS = [
   { href: "/puntos-negros", label: "Puntos negros" },
   { href: "/zbe", label: "Zonas de Bajas Emisiones" },
   { href: "/corredores", label: "Corredores de transporte" },
-  { href: "/calidad-aire/prevision", label: "Previsión de calidad del aire" },
+  { href: "/calidad-aire", label: "Calidad del aire hoy" },
   { href: "/portugal", label: "Tráfico en Portugal" },
   { href: "/andorra", label: "Tráfico en Andorra" },
 ];
@@ -302,7 +303,7 @@ export default async function HomePage() {
       </div>
 
       {/* Client-side interactive homepage */}
-      <HomeClient initialStats={stats} articles={articles} />
+      <HomeClient initialStats={stats} articles={articles} intro={introCopy("/")} />
 
       {/* Visible links and the sources line speakable reads; both used to sit in
           the screen-reader-only block above. */}

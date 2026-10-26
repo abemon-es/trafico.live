@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Ship, Anchor, Map as MapIcon, Info, ArrowRight } from "lucide-react";
 import { BarcosHeroMap } from "./BarcosHeroMap";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 export const revalidate = 60;
 
@@ -22,6 +23,7 @@ export default function BarcosHubPage() {
             <p className="mt-3 max-w-2xl font-['DM_Sans'] text-base text-slate-600 dark:text-slate-300">
               Sigue buques en tiempo real con datos AIS abiertos. Filtra por categoría y consulta rumbo, velocidad y destino.
             </p>
+            <PageIntro path="/barcos" />
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
                 href="/barcos/mapa"

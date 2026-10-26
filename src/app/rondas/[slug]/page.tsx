@@ -17,6 +17,7 @@ import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { RONDAS, RONDA_SLUGS, getRonda, getRondasByCity } from "./_data";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 export const revalidate = 300;
 
@@ -263,6 +264,7 @@ export default async function RondaSlugPage({
                   activas, cámaras DGT, intensidad de tráfico y retenciones
                   actualizadas cada 5 minutos.
                 </p>
+                <PageIntro path={`/rondas/${slug}`} />
               </div>
             </div>
           </div>

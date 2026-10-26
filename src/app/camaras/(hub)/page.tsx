@@ -8,6 +8,7 @@ import {
   StructuredData,
   generateDatasetSchema,
 } from "@/components/seo/StructuredData";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -66,6 +67,7 @@ export default function CamarasPage() {
             autopistas, autovías y carreteras nacionales de toda España. Busca por
             carretera, kilómetro o provincia.
           </p>
+          <PageIntro path="/camaras" className="-mt-3 mb-6 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" />
           <h2 className="sr-only">Cámaras de tráfico en directo de la DGT en toda España</h2>
         </div>
       </div>

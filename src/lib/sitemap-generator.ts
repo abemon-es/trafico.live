@@ -3,9 +3,11 @@ import { CAMERA_CITY_PROVINCES } from "@/lib/geo/area-routes";
 import { EPHEMERAL_ARTICLE_CATEGORIES, EPHEMERAL_ARTICLE_MAX_AGE_MS, POSTAL_CODE_MIN_GAS_STATIONS, cameraCityIndexable } from "@/lib/seo/indexability";
 import { fingerprintKey, loadChangedAt, type FingerprintFamily } from "@/lib/seo/lastmod";
 import { reportApiError } from "@/lib/api-error";
+import { getAqForecastSource } from "@/lib/aq-forecast-source-server";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug, slugify } from "@/lib/geo/slugify";
 import { PROVINCE_SLUG_TO_COMMUNITY_SLUG } from "@/lib/geo/province-slugs";
+import { priorityEntries } from "@/lib/sitemap-priority";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -313,45 +315,9 @@ export async function generateSitemapForShard(
   return [];
 }
 
-// ---------------------------------------------------------------------------
-// /sitemap/priority.xml — the canonical hubs worth crawling first
-// ---------------------------------------------------------------------------
-// Google barely crawls the site (855 Googlebot requests in 7 weeks) and has
-// never fetched the shards. This short list (CMO plan 2026-10-19, ≤500 URLs)
-// is submitted on its own so the crawl budget goes to pages with their own
-// data. Every URL also stays in its regular shard.
-
-const PRIORITY_MAX_URLS = 500;
-// /mapa duplicates the homepage map, /ciudad is a bare index, and the
-// 2026 holiday pages are past events.
-const PRIORITY_EXCLUDED = new Set(["/mapa", "/ciudad", "/semana-santa-2026", "/puente-mayo-2026"]);
-
-function isPriorityPath(path: string, priority: number): boolean {
-  if (PRIORITY_EXCLUDED.has(path)) return false;
-  // Rail hubs and the canonical community/province pages go in whole.
-  if (path.startsWith("/espana") || path.startsWith("/trenes")) return true;
-  // Roads: the three road-type hubs, plus state roads' own page and their
-  // /hoy page. Not regional roads, not /estadisticas.
-  const road = path.match(/^\/carreteras\/([^/]+)(?:\/([^/]+))?$/);
-  if (road) {
-    if (["autopistas", "autovias", "nacionales"].includes(road[1])) return !road[2];
-    const isState = NATIONAL_ROAD_RE.test(decodeURIComponent(road[1]));
-    return isState && (!road[2] || road[2] === "hoy") && priority >= 0.8;
-  }
-  return priority >= 0.8;
-}
-
+// /sitemap/priority.xml — the list and its rationale live in sitemap-priority.ts.
 export async function generatePrioritySitemap(): Promise<SitemapEntry[]> {
-  const seen = new Set<string>();
-  return (await coreSitemap())
-    .filter((e) => {
-      const path = e.url.slice(BASE_URL.length) || "/";
-      if (seen.has(path)) return false;
-      seen.add(path);
-      return isPriorityPath(path, e.priority);
-    })
-    .sort((a, b) => b.priority - a.priority)
-    .slice(0, PRIORITY_MAX_URLS);
+  return priorityEntries(await coreSitemap(), BASE_URL);
 }
 
 /**
@@ -669,6 +635,7 @@ async function contentChangedAt(families: FingerprintFamily[]): Promise<Map<stri
 async function coreSitemap(): Promise<SitemapEntry[]> {
   // The SASEMAR stats page is noindex while MaritimeEmergency is empty.
   const hasSasemarData = (await prisma.maritimeEmergency.count().catch(() => 0)) > 0;
+  const camsForecast = (await getAqForecastSource()).cams;
   // /camaras/<city> is noindex while its province has no active camera
   // (Barcelona, Bilbao, Vitoria, Las Palmas and Santa Cruz on 2026-10-20: their
   // cameras are not DGT's). A failed count leaves the cities out.
@@ -1100,14 +1067,18 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       changeFrequency: "hourly" as const,
       priority: 0.85,
     },
-    // 5-day CAMS forecast (iter-4 dark-data unlock — AQForecast collector
-    // populates this every 12h; no competitor in ES publishes a 5-day AQ
-    // pronóstico at provincial granularity).
-    {
-      url: `${BASE_URL}/calidad-aire/prevision`,
-      changeFrequency: "daily" as const,
-      priority: 0.8,
-    },
+    // The 5-day forecast, only while it is one: the same answer as the page's
+    // noindex (src/lib/aq-forecast-source.ts), so it comes back on its own the
+    // day cams-aq carries fresh CAMS data (CMO, 2026-10-24). Until then the
+    // rows are the latest MITECO reading repeated, and until 2026-10-24 that
+    // was all they ever were.
+    ...(camsForecast
+      ? [{
+          url: `${BASE_URL}/calidad-aire/prevision`,
+          changeFrequency: "daily" as const,
+          priority: 0.8,
+        }]
+      : []),
     {
       url: `${BASE_URL}/estadisticas-transporte`,
       changeFrequency: "monthly" as const,
