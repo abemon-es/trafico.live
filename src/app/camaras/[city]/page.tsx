@@ -261,6 +261,7 @@ export default async function CamarasCityPage({ params }: Props) {
                 Imágenes en tiempo real de las cámaras de vigilancia de la DGT en las carreteras
                 de la provincia de {cityData.name}. Actualización automática cada pocos minutos.
               </p>
+              <PageIntro path={`/camaras/${city}`} className="mt-3 max-w-2xl text-base leading-relaxed text-gray-600 dark:text-gray-300" />
             </div>
             {hasCameras && (
               <div className="hidden md:flex flex-col items-center bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg px-5 py-3 text-center">
