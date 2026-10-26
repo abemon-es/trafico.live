@@ -8,11 +8,14 @@
  *   - province: INE 2-digit province code → returns all gridpoints in province
  *
  * Response:
- *   { gridpoint: { lat, lon, province, name }, forecasts: [{ validAt, no2, pm10, pm25, o3, so2, icaExpected }] }
+ *   { gridpoint: { lat, lon, province, name }, forecasts: [{ validAt, no2, pm10, pm25, o3, so2, icaExpected }],
+ *     source, forecastKind: "cams" | "persistence" }
  *
  * Cache: Redis 30 min (forecast data is refreshed every 12h)
  *
- * Attribution: "Fuente: Copernicus Atmosphere Monitoring Service (CAMS) / ECMWF"
+ * Attribution: `source`. "Copernicus Atmosphere Monitoring Service (CAMS) / ECMWF" only when
+ * forecastKind is "cams"; "persistence" rows are the latest MITECO reading repeated, not a
+ * forecast. Until 2026-10-24 every response said CAMS while every row was persistence.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -21,6 +24,7 @@ import { applyRateLimit } from "@/lib/api-utils";
 import { authenticateRequest } from "@/lib/auth";
 import { getFromCache, setInCache } from "@/lib/redis";
 import { reportApiError } from "@/lib/api-error";
+import { getAqForecastSource } from "@/lib/aq-forecast-source-server";
 
 export const dynamic = "force-dynamic";
 
@@ -148,6 +152,10 @@ export async function GET(request: NextRequest) {
     const cached = await getFromCache(cacheKey);
     if (cached) return NextResponse.json(cached);
 
+    // What the rows are: CAMS only when the last run got it for every gridpoint,
+    // otherwise MITECO persistence (src/lib/aq-forecast-source.ts).
+    const source = await getAqForecastSource();
+
     if (provinceParam) {
       // Province mode: all gridpoints in province
       const gridpoints = getGridpoints().filter((gp) => gp.province === provinceParam);
@@ -200,7 +208,8 @@ export async function GET(request: NextRequest) {
         province: provinceParam,
         count: results.length,
         gridpoints: results,
-        source: "Copernicus Atmosphere Monitoring Service (CAMS) / ECMWF",
+        source: source.label,
+        forecastKind: source.cams ? "cams" : "persistence",
         updatedAt: new Date().toISOString(),
       };
 
@@ -257,7 +266,8 @@ export async function GET(request: NextRequest) {
         so2: r.so2,
         icaExpected: r.icaExpected,
       })),
-      source: "Copernicus Atmosphere Monitoring Service (CAMS) / ECMWF",
+      source: source.label,
+      forecastKind: source.cams ? "cams" : "persistence",
       updatedAt: new Date().toISOString(),
     };
 
