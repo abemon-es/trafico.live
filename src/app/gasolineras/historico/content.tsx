@@ -658,7 +658,7 @@ function NationalEvolutionChart() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function HistoricoContent() {
+export function HistoricoContent({ intro }: { intro?: string | null } = {}) {
   const [fuelKey, setFuelKey] = useState<FuelKey>("gasolina95");
   const [period, setPeriod] = useState("1y");
   const [province, setProvince] = useState("");
@@ -716,6 +716,7 @@ export function HistoricoContent() {
         <p className="text-gray-600 dark:text-gray-400">
           Evolución de precios desde 2016 — datos oficiales de la CNMC por provincia.
         </p>
+        {intro && <p className="mt-3 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" data-page-intro="">{intro}</p>}
       </div>
 
       {/* Fuel type tabs */}

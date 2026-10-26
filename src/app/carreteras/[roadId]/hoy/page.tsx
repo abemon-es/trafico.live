@@ -20,6 +20,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { PageIntro } from "@/components/seo/PageIntro";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 
@@ -310,6 +311,7 @@ export default async function RoadTodayPage({ params }: PageProps) {
                 {typeLabel} · {provinceNames.join(", ")}
                 {road.totalKm ? ` · ${Math.round(Number(road.totalKm))} km` : ""}
               </p>
+              <PageIntro path={`/carreteras/${road.id}/hoy`} />
             </div>
             <div className="flex-shrink-0 flex flex-col items-end gap-2">
               <div className="flex items-center gap-1.5 text-xs text-gray-400">

@@ -5,6 +5,7 @@ import { Fuel, MapPin, Clock, TrendingDown, ChevronRight, Trophy } from "lucide-
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 export const revalidate = 300;
 
@@ -302,6 +303,7 @@ export default async function FuelTypePage({ params }: Props) {
                   {fuel.label} en España — Precios Hoy
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{fuel.description}</p>
+                <PageIntro path={`/gasolineras/tipo/${fuelType}`} />
               </div>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">

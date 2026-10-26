@@ -296,7 +296,7 @@ function HourlyHeatmap({ data }: { data: HourEntry[] }) {
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
-export default function MejorHoraContent() {
+export default function MejorHoraContent({ intro }: { intro?: string | null } = {}) {
   const { data, error, isLoading } = useSWR<AnalyticsData>(
     "/api/incidents/analytics?days=30",
     fetcher,
@@ -367,6 +367,7 @@ export default function MejorHoraContent() {
                 el momento óptimo para circular por las carreteras españolas. Los datos
                 se actualizan cada 5 minutos.
               </p>
+              {intro && <p className="mt-3 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" data-page-intro="">{intro}</p>}
             </div>
           </div>
         </div>
