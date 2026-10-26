@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import MejorHoraContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { introCopy } from "@/lib/seo/intro-copy";
 
 const BASE_URL = "https://trafico.live";
 
@@ -39,7 +40,7 @@ export default function MejorHoraPage() {
           { name: "Mejor Hora para Viajar", href: "/mejor-hora" },
         ]} />
       </div>
-      <MejorHoraContent />
+      <MejorHoraContent intro={introCopy("/mejor-hora")} />
     </>
   );
 }

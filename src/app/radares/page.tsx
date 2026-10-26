@@ -9,6 +9,7 @@ import { StructuredData, generateDatasetSchema } from "@/components/seo/Structur
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import LinkDirectory from "@/components/seo/LinkDirectory";
 import { provincePath } from "@/lib/geo/geo-paths";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -159,6 +160,7 @@ export default async function RadaresPage() {
                   gestionados por la Dirección General de Tráfico. Consulta su ubicación exacta,
                   tipo y límite de velocidad.
                 </p>
+                <PageIntro path="/radares" />
               </div>
               <div className="hidden md:flex flex-col items-center bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg px-5 py-3 text-center">
                 <span className="text-3xl font-bold text-yellow-700 dark:text-yellow-400 font-data">{totalCount.toLocaleString("es-ES")}</span>

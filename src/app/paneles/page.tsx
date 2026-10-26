@@ -16,6 +16,7 @@ import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -246,6 +247,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                   las carreteras españolas. Los PMV muestran información sobre
                   retenciones, obras, cierres y condiciones de la vía.
                 </p>
+                <PageIntro path="/paneles" />
               </div>
               <div className="hidden md:flex flex-col items-center bg-tl-50 dark:bg-tl-900/20 border border-tl-200 dark:border-tl-800 rounded-lg px-5 py-3 text-center flex-shrink-0">
                 <span className="text-3xl font-bold text-tl-700 dark:text-tl-300">

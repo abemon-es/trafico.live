@@ -236,6 +236,8 @@ function FAQSection() {
 // ---------------------------------------------------------------------------
 
 interface MaritimasClientProps {
+  /** The page's intro text (src/lib/seo/intro-copy.ts), rendered under the description. */
+  intro?: string | null;
   initialData: {
     success: boolean;
     data: MaritimeStation[];
@@ -247,7 +249,7 @@ interface MaritimasClientProps {
 // Main component
 // ---------------------------------------------------------------------------
 
-export default function MaritimasClient({ initialData }: MaritimasClientProps) {
+export default function MaritimasClient({ initialData, intro }: MaritimasClientProps) {
   const [search, setSearch] = useState("");
   const [province, setProvince] = useState("");
   const [page, setPage] = useState(1);
@@ -339,6 +341,7 @@ export default function MaritimasClient({ initialData }: MaritimasClientProps) {
           y comerciales de España. Precios de Gasóleo A, Gasóleo B (pesca) y Gasolina 95
           actualizados desde el Ministerio para la Transición Ecológica.
         </p>
+        {intro && <p className="mt-3 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" data-page-intro="">{intro}</p>}
       </div>
 
       {/* Who needs maritime fuel */}

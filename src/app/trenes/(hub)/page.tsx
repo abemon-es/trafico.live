@@ -22,6 +22,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { TrenesHeroMap } from "../TrenesHeroMap";
 import { TrenesAnalytics } from "../TrenesAnalytics";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 export const revalidate = 300;
 
@@ -176,6 +177,7 @@ export default async function TrenesHubPage() {
           y {data.routeCount.toLocaleString("es-ES")} rutas sobre red ADIF. Alertas y puntualidad
           desde GTFS-RT Renfe.
         </p>
+        <PageIntro path="/trenes" />
         <div className="flex flex-wrap gap-3 mt-2">
           <ButtonLink href="/trenes/mapa" variant="primary" icon={<MapIcon className="w-4 h-4" />}>
             Abrir mapa completo

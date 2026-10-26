@@ -22,6 +22,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { RoadLiveSpeed } from "@/components/roads/RoadLiveSpeed";
 import { labelForEnum } from "@/lib/labels";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -220,6 +221,7 @@ export default async function RoadDetailPage({ params }: PageProps) {
               </div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1">{road.id}</h1>
               {road.name && <p className="text-xl text-gray-600 dark:text-gray-400">{road.name}</p>}
+              <PageIntro path={`/carreteras/${road.id}`} />
             </div>
             <Link
               href="/carreteras"

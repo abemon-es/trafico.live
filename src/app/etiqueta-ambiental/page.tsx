@@ -17,6 +17,7 @@ import {
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 const CURRENT_YEAR = new Date().getFullYear();
@@ -329,6 +330,7 @@ export default function EtiquetaAmbientalPage() {
                   guía encontrarás todos los tipos de etiqueta, cómo consultar la tuya y qué
                   implicaciones tiene en cada ciudad.
                 </p>
+                <PageIntro path="/etiqueta-ambiental" />
               </div>
             </div>
           </div>
