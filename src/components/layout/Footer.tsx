@@ -1,4 +1,3 @@
-import { NewsletterCTA } from "@/components/layout/footer/NewsletterCTA";
 import { FooterGrid } from "@/components/layout/footer/FooterGrid";
 import { GeoLinks } from "@/components/layout/footer/GeoLinks";
 import { TrustStrip } from "@/components/layout/footer/TrustStrip";
@@ -7,7 +6,9 @@ import { LegalStrip } from "@/components/layout/footer/LegalStrip";
 /**
  * 5-strip footer
  *
- * Strip 1 — NewsletterCTA   — pre-footer CTA (client component)
+ * Strip 1 — NewsletterCTA   — pre-footer CTA (client component). Not rendered
+ *            while the digest has no sender: render NewsletterCTA again first
+ *            in <footer> once SES sends (it signs up to /api/digest/subscribe).
  * Strip 2 — FooterGrid      — 6-column primary link grid (server)
  * Strip 3 — GeoLinks        — 130+ geo deep-links SEO workhorse (server)
  * Strip 4 — TrustStrip      — data attribution / E-E-A-T signal (server)
@@ -16,9 +17,6 @@ import { LegalStrip } from "@/components/layout/footer/LegalStrip";
 export function Footer() {
   return (
     <footer>
-      {/* Strip 1 — Newsletter CTA */}
-      <NewsletterCTA />
-
       {/* Strip 2 — Primary link grid */}
       <FooterGrid />
 
