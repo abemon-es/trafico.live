@@ -24,6 +24,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Email no válido" }, { status: 400 });
   }
 
+  // A subscription only counts once its owner confirms it by email. Without a
+  // sender that confirmation can't go out, so nothing is stored.
+  if (!isSESConfigured()) {
+    reportApiError(
+      new Error("Digest subscription refused: no email sender configured"),
+      "digest-subscribe"
+    );
+    return NextResponse.json(
+      { error: "La suscripción no está disponible ahora mismo. Inténtalo más tarde." },
+      { status: 503 }
+    );
+  }
+
   const normalizedEmail = email.toLowerCase().trim();
 
   // Check for existing subscription
@@ -46,24 +59,16 @@ export async function POST(request: NextRequest) {
       });
 
   // Send confirmation email (double opt-in)
-  if (isSESConfigured()) {
-    const confirmUrl = `${BASE_URL}/api/digest/confirm?token=${subscriber.unsubscribeToken}`;
-    try {
-      await sendEmail({
-        to: normalizedEmail,
-        subject: "Confirma tu suscripción — trafico.live",
-        html: confirmationHtml(confirmUrl),
-        tags: { type: "digest-confirmation" },
-      });
-    } catch (error) {
-      reportApiError(error, "digest] Failed to send confirmation");
-    }
-  } else {
-    // SES not configured — auto-confirm for development
-    await prisma.digestSubscriber.update({
-      where: { id: subscriber.id },
-      data: { confirmedAt: new Date() },
+  const confirmUrl = `${BASE_URL}/api/digest/confirm?token=${subscriber.unsubscribeToken}`;
+  try {
+    await sendEmail({
+      to: normalizedEmail,
+      subject: "Confirma tu suscripción — trafico.live",
+      html: confirmationHtml(confirmUrl),
+      tags: { type: "digest-confirmation" },
     });
+  } catch (error) {
+    reportApiError(error, "digest] Failed to send confirmation");
   }
 
   return NextResponse.json({ success: true }, { status: 201 });
