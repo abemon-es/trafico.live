@@ -121,14 +121,13 @@ async function getPostIngestionTriggers(task: string): Promise<InsightTrigger[]>
       ];
     }
     case "v16": {
-      // DailyStats/HourlyStats just updated → trigger traffic reports + weekly digest
+      // DailyStats/HourlyStats just updated → trigger traffic reports (the digest email is TASK=weekly-digest)
       const g = await generatorModule();
       return [
         { name: "daily-report", fn: g.generateDailyReport },
         { name: "weekly-report", fn: g.generateWeeklyReport },
         { name: "incident-spike", fn: g.generateEnhancedIncidentSpike },
         { name: "monthly-accidents", fn: g.generateMonthlyAccidentReport },
-        { name: "weekly-digest", fn: g.sendWeeklyDigest }, // Monday: sends email after weekly report
       ];
     }
     case "weather": {

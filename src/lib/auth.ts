@@ -19,6 +19,13 @@ const AUTH_EXEMPT = ["/api/health", "/api/cron/", "/api/sitemap", "/api/newslett
 // that is already public through the sitemaps.
 const AUTH_EXEMPT_GET = ["/api/geo/resolve"];
 
+// The digest's confirm and unsubscribe links are opened from a mail client
+// (no Origin, a foreign Referer or none) and the one-click unsubscribe is a
+// POST from the mail provider's servers, so this gate answered 401 to every
+// one of them. Each request carries the subscriber's unguessable token, and
+// the route acts only on the row that token names.
+const AUTH_EXEMPT_EXACT = ["/api/digest/confirm", "/api/digest/unsubscribe"];
+
 /**
  * Check if a request is genuinely same-origin.
  *
@@ -89,6 +96,7 @@ function hasValidApiKey(request: NextRequest): boolean {
 function isExempt(pathname: string, method: string): boolean {
   return (
     AUTH_EXEMPT.some((p) => pathname.startsWith(p)) ||
+    AUTH_EXEMPT_EXACT.includes(pathname) ||
     (method === "GET" && AUTH_EXEMPT_GET.includes(pathname))
   );
 }
