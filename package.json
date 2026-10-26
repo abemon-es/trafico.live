@@ -63,6 +63,7 @@
     "test:incident-classes": "tsx tests/incident-classes.test.ts",
     "test:cams-aq": "tsx tests/cams-aq-source.test.ts",
     "test:priority-sitemap": "tsx tests/sitemap-priority.test.ts",
+    "test:indexnow": "tsx tests/notify-indexnow.test.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
