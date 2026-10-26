@@ -7,7 +7,6 @@ export { generateMonthlyAccidentReport } from "./monthly-accidents";
 export { generateMonthlyFuelReport } from "./monthly-fuel";
 export { generateEnhancedWeatherAlert } from "./weather-alert";
 export { generateEnhancedIncidentSpike } from "./incident-spike";
-export { sendWeeklyDigest } from "./weekly-digest";
 export { generateMaritimeReport } from "./maritime-report";
 export { generateMaritimeFuelRanking } from "./maritime-fuel-ranking";
 export { generateMaritimeZoneReports, generateWeeklyMaritimeSummary } from "./maritime-zones";

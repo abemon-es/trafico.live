@@ -61,6 +61,7 @@
     "test:fuel-cleanup": "tsx tests/fuel-articles-cleanup.test.ts",
     "test:reports": "tsx tests/reports-closed-days.test.ts",
     "test:incident-classes": "tsx tests/incident-classes.test.ts",
+    "test:weekly-digest": "tsx tests/weekly-digest-send.test.ts",
     "test:indexnow": "tsx tests/notify-indexnow.test.ts",
     "test:cams-aq": "tsx tests/cams-aq-source.test.ts",
     "test:priority-sitemap": "tsx tests/sitemap-priority.test.ts",

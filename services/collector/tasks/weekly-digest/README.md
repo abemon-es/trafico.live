@@ -69,6 +69,18 @@ open /tmp/digest.html
 | `AWS_SES_FROM_NAME` | No | `trafico.live` | Display name |
 | `AWS_SES_REGION` | No | `eu-west-1` | SES region |
 | `NEXT_PUBLIC_BASE_URL` | No | `https://trafico.live` | Canonical URL for CTAs |
+| `DIGEST_SEND_ENABLED` | For the list send | — | Must be `true` for the Monday run to mail the list. SES credentials alone send nothing |
+| `DIGEST_TEST_TO` | No | — | One test email to this single address; the subscriber list is never read |
+| `DIGEST_MAX_PER_SECOND` | No | `5` | List send pacing, one email at a time (capped at 14/s) |
+
+## Send rules
+
+`send.ts` decides what a run may send (`npm run test:weekly-digest`):
+
+- No `DIGEST_SEND_ENABLED=true` and no `DIGEST_TEST_TO`: nothing is sent.
+- `DIGEST_TEST_TO=<address>`: one email marked «[Prueba]» to that address. Its unsubscribe link uses that address's own row; a missing row is created inactive and unconfirmed, so the list send never picks it up.
+- Every email carries `List-Unsubscribe` and `List-Unsubscribe-Post` (one-click, RFC 8058); `/api/digest/unsubscribe` accepts that POST.
+- This task is the only digest sender.
 
 ### Resend webhook (for event tracking)
 

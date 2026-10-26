@@ -4,9 +4,10 @@
  * Sends the weekly traffic newsletter to all confirmed DigestSubscriber records.
  * Scheduled: Monday 09:00 CET (0 9 * * 1) in the `daily` collector container.
  *
- * Usage:
- *   TASK=weekly-digest npx tsx index.ts            # Production send
- *   TASK=weekly-digest npx tsx index.ts --preview  # Print HTML to stdout
+ * Usage (send rules in send.ts):
+ *   TASK=weekly-digest npx tsx index.ts --preview                    # Print HTML to stdout
+ *   DIGEST_TEST_TO=a@b.es TASK=weekly-digest npx tsx index.ts        # One test email, list never read
+ *   DIGEST_SEND_ENABLED=true TASK=weekly-digest npx tsx index.ts     # List send (Monday cron)
  *
  * Required env vars:
  *   DATABASE_URL           — PostgreSQL connection
@@ -21,6 +22,7 @@
 import { getPrisma, getPool } from "../../shared/prisma.js";
 import { composeDigest } from "./compose.js";
 import { renderDigestHtml, renderDigestText } from "./render.js";
+import { digestEmailInput, digestMode, pacingMs } from "./send.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -62,7 +64,11 @@ async function getSESClient() {
 // ---------------------------------------------------------------------------
 
 export async function run(prisma: import("@prisma/client").PrismaClient): Promise<void> {
-  const isPreview = process.argv.includes("--preview");
+  const mode = digestMode(process.env, process.argv);
+  if (mode.kind === "off") {
+    console.log(`[weekly-digest] Not sending: ${mode.reason}.`);
+    return;
+  }
 
   // Determine the week window
   // On Monday we look at the *previous* completed week (Mon-Sun)
@@ -70,7 +76,7 @@ export async function run(prisma: import("@prisma/client").PrismaClient): Promis
   const { weekStart, weekEnd } = getWeekBounds();
 
   // For preview, weekEnd might be in the future — that's fine for dev
-  const effectiveWeekEnd = isPreview ? weekEnd : new Date(Math.min(weekEnd.getTime(), now.getTime()));
+  const effectiveWeekEnd = mode.kind === "preview" ? weekEnd : new Date(Math.min(weekEnd.getTime(), now.getTime()));
 
   console.log(
     `[weekly-digest] Week: ${weekStart.toISOString().slice(0, 10)} → ${effectiveWeekEnd.toISOString().slice(0, 10)}`
@@ -80,12 +86,56 @@ export async function run(prisma: import("@prisma/client").PrismaClient): Promis
   const digestData = await composeDigest(prisma, weekStart, effectiveWeekEnd);
 
   // --preview mode: dump HTML to stdout and exit
-  if (isPreview) {
+  if (mode.kind === "preview") {
     const html = renderDigestHtml(digestData, "https://trafico.live/api/digest/unsubscribe?token=PREVIEW_TOKEN");
     process.stdout.write(html);
     process.stdout.write("\n\n<!-- TEXT VERSION -->\n\n");
     const text = renderDigestText(digestData, "https://trafico.live/api/digest/unsubscribe?token=PREVIEW_TOKEN");
     process.stdout.write(text);
+    return;
+  }
+
+  const sesClient = await getSESClient();
+  const { SendEmailCommand } = await import("@aws-sdk/client-sesv2");
+
+  const fromEmail = process.env.AWS_SES_FROM_EMAIL || "noticias@trafico.live";
+  const fromName = process.env.AWS_SES_FROM_NAME || "trafico.live";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
+  const subject = `Resumen semanal de tráfico — ${digestData.weekLabel}`;
+
+  const send = (to: string, unsubscribeToken: string, test = false) => {
+    const unsubscribeUrl = `${baseUrl}/api/digest/unsubscribe?token=${unsubscribeToken}`;
+    return sesClient.send(
+      new SendEmailCommand(
+        digestEmailInput({
+          from: `${fromName} <${fromEmail}>`,
+          to,
+          subject: test ? `[Prueba] ${subject}` : subject,
+          html: renderDigestHtml(digestData, unsubscribeUrl),
+          text: renderDigestText(digestData, unsubscribeUrl),
+          unsubscribeUrl,
+          weekLabel: digestData.weekLabel,
+          test,
+        })
+      )
+    );
+  };
+
+  // Test send: one email to one address. The subscriber list is never read.
+  // The unsubscribe link uses that address's own row; a missing row is
+  // created inactive and unconfirmed, so the list send can never pick it up.
+  if (mode.kind === "test") {
+    const row =
+      (await prisma.digestSubscriber.findUnique({
+        where: { email: mode.to },
+        select: { unsubscribeToken: true },
+      })) ??
+      (await prisma.digestSubscriber.create({
+        data: { email: mode.to, isActive: false, confirmedAt: null },
+        select: { unsubscribeToken: true },
+      }));
+    await send(mode.to, row.unsubscribeToken, true);
+    console.log("[weekly-digest] Test email sent to the DIGEST_TEST_TO address only.");
     return;
   }
 
@@ -105,11 +155,6 @@ export async function run(prisma: import("@prisma/client").PrismaClient): Promis
     return;
   }
 
-  // Check SES configuration
-  if (!process.env.AWS_SES_ACCESS_KEY || !process.env.AWS_SES_SECRET_KEY) {
-    throw new Error("[weekly-digest] SES not configured — set AWS_SES_ACCESS_KEY and AWS_SES_SECRET_KEY");
-  }
-
   // Fetch confirmed subscribers
   const subscribers = await prisma.digestSubscriber.findMany({
     where: { isActive: true, confirmedAt: { not: null } },
@@ -122,92 +167,40 @@ export async function run(prisma: import("@prisma/client").PrismaClient): Promis
     return;
   }
 
-  console.log(`[weekly-digest] Sending to ${subscribers.length} subscriber(s)...`);
+  const pauseMs = pacingMs(process.env);
+  console.log(
+    `[weekly-digest] Sending to ${subscribers.length} subscriber(s), one at a time, ${Math.round(1000 / pauseMs)}/s max...`
+  );
 
-  const sesClient = await getSESClient();
-  const { SendEmailCommand } = await import("@aws-sdk/client-sesv2");
-
-  const fromEmail = process.env.AWS_SES_FROM_EMAIL || "noticias@trafico.live";
-  const fromName = process.env.AWS_SES_FROM_NAME || "trafico.live";
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
-  const subject = `Resumen semanal de tráfico — ${digestData.weekLabel}`;
-
-  let sent = 0;
+  const sentIds: string[] = [];
   let failed = 0;
-  const failedEmails: string[] = [];
   const sendStart = Date.now();
 
-  // Send in batches of 100 (Resend API compatible rate; SES limit is higher but
-  // we throttle to 100/batch with a 1s pause between batches as required)
-  const BATCH_SIZE = 100;
-
-  for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
-    const batch = subscribers.slice(i, i + BATCH_SIZE);
-
-    await Promise.all(
-      batch.map(async (sub) => {
-        const unsubscribeUrl = `${baseUrl}/api/digest/unsubscribe?token=${sub.unsubscribeToken}`;
-        const html = renderDigestHtml(digestData, unsubscribeUrl);
-        const text = renderDigestText(digestData, unsubscribeUrl);
-
-        try {
-          await sesClient.send(
-            new SendEmailCommand({
-              FromEmailAddress: `${fromName} <${fromEmail}>`,
-              Destination: { ToAddresses: [sub.email] },
-              Content: {
-                Simple: {
-                  Subject: { Data: subject, Charset: "UTF-8" },
-                  Body: {
-                    Html: { Data: html, Charset: "UTF-8" },
-                    Text: { Data: text, Charset: "UTF-8" },
-                  },
-                },
-              },
-              EmailTags: [
-                { Name: "type", Value: "weekly-digest" },
-                { Name: "week", Value: digestData.weekLabel },
-              ],
-            })
-          );
-          sent++;
-        } catch (error) {
-          console.error(`[weekly-digest] Failed for ${sub.email}:`, error);
-          failedEmails.push(sub.email);
-          failed++;
-        }
-      })
-    );
-
-    // Rate-limit pause between batches (1s)
-    if (i + BATCH_SIZE < subscribers.length) {
-      await new Promise((r) => setTimeout(r, 1000));
+  for (const [i, sub] of subscribers.entries()) {
+    if (i > 0) await new Promise((r) => setTimeout(r, pauseMs));
+    try {
+      await send(sub.email, sub.unsubscribeToken);
+      sentIds.push(sub.id);
+    } catch (error) {
+      // Subscriber id only: addresses stay out of the logs.
+      console.error(`[weekly-digest] Failed for subscriber ${sub.id}:`, error);
+      failed++;
     }
   }
 
+  const sent = sentIds.length;
   const elapsedMs = Date.now() - sendStart;
-  const avgDeliveryMs = sent > 0 ? Math.round(elapsedMs / sent) : 0;
-
   console.log(
-    `[weekly-digest] Done. Sent: ${sent}, Failed: ${failed}, Avg delivery: ${avgDeliveryMs}ms`
+    `[weekly-digest] Done. Sent: ${sent}, Failed: ${failed}, ${(sent / Math.max(elapsedMs / 1000, 1)).toFixed(1)}/s`
   );
-
-  if (failedEmails.length > 0) {
-    console.warn(`[weekly-digest] Failed addresses: ${failedEmails.join(", ")}`);
-  }
 
   // Update lastSentAt for all successfully-sent subscribers
   if (sent > 0) {
-    const successIds = subscribers
-      .filter((s) => !failedEmails.includes(s.email))
-      .map((s) => s.id);
-
     await prisma.digestSubscriber.updateMany({
-      where: { id: { in: successIds } },
+      where: { id: { in: sentIds } },
       data: { lastSentAt: now },
     });
-
-    console.log(`[weekly-digest] Updated lastSentAt for ${successIds.length} subscriber(s)`);
+    console.log(`[weekly-digest] Updated lastSentAt for ${sent} subscriber(s)`);
   }
 
   // Non-zero failures are a warning, not a fatal error — the batch is partially done
