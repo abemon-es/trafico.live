@@ -5,6 +5,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { StructuredData, generateDatasetSchema } from "@/components/seo/StructuredData";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { introCopy } from "@/lib/seo/intro-copy";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -44,7 +45,7 @@ export default function EstacionesAforoPage() {
           { name: "Estaciones de Aforo", href: "/estaciones-aforo" },
         ]} />
       </div>
-      <EstacionesAforoContent />
+      <EstacionesAforoContent intro={introCopy("/estaciones-aforo")} />
 
       {/* Explainer: what is a counting station? — SEO + user education */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

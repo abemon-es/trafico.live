@@ -5,6 +5,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { FAQAccordion } from "@/components/ui/FAQAccordion";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -163,6 +164,7 @@ export default async function LimitesVelocidadPage() {
             vehículo. Datos basados en el Reglamento General de Circulación (RGC) y las señales
             verticales de la DGT.
           </p>
+          <PageIntro path="/carreteras/limites-velocidad" />
         </div>
 
         {/* Stats Row */}

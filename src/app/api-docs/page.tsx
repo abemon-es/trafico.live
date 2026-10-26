@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { ApiKeyForm } from "./ApiKeyForm";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -495,6 +496,7 @@ export default function ApiDocsPage() {
             datos en tiempo real e históricos sobre tráfico, combustible, ferrocarril,
             meteorología, movilidad y seguridad vial.
           </p>
+          <PageIntro path="/api-docs" className="-mt-4 mb-8 max-w-2xl text-base leading-relaxed text-tl-200" />
 
           {/* Quick stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

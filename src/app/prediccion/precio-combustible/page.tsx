@@ -30,6 +30,7 @@ import {
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { HistoryChart, SeasonalityChart } from "./fuel-charts";
 import type { HistoryPoint, SeasonalityPoint } from "./fuel-charts";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 export const revalidate = 3600;
 export const dynamic = "force-dynamic";
@@ -544,6 +545,7 @@ export default async function PrecioCombustiblePage() {
             </span>{" "}
             desde 2016.
           </p>
+          <PageIntro path="/prediccion/precio-combustible" />
         </header>
 
         {/* ── Current Prices ─────────────────────────────────────── */}

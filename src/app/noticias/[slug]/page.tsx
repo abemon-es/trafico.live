@@ -10,6 +10,7 @@ import { renderMarkdown } from "@/lib/insights/render-markdown";
 import {
   ArrowLeft, Calendar, ExternalLink, Clock, Tag, ChevronRight,
 } from "lucide-react";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -265,6 +266,7 @@ export default async function ArticlePage({ params }: Props) {
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-3">
                   {article.title}
                 </h1>
+                <PageIntro path={`/noticias/${slug}`} className="mb-3 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" />
                 <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
                   <time
                     dateTime={article.publishedAt.toISOString()}

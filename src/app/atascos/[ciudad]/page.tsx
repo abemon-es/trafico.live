@@ -35,6 +35,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 export const revalidate = 120; // 2 min — las páginas de atascos necesitan frescura
 
@@ -949,6 +950,7 @@ export default async function AtascosCiudadPage({
                 Actualizado a las {lastUpdated} · {incidents.length} incidencia
                 {incidents.length !== 1 ? "s" : ""} activa{incidents.length !== 1 ? "s" : ""}
               </p>
+              <PageIntro path={`/atascos/${ciudad}`} />
             </div>
           </div>
 

@@ -20,6 +20,7 @@ import {
   generateDatasetSchema,
   generateFAQSchema,
 } from "@/components/seo/StructuredData";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -406,6 +407,7 @@ export default async function ZBEIndexPage() {
               españolas. Comprueba si tu vehículo puede circular según su
               etiqueta ambiental DGT.
             </p>
+            <PageIntro path="/zbe" />
           </div>
 
           {/* ── Summary stats bar ───────────────────────────────────────────── */}

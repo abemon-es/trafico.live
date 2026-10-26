@@ -13,6 +13,7 @@ import {
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -132,6 +133,7 @@ export default async function GuiaZBEPage() {
                   a tu vehiculo, multas por incumplimiento, exenciones y el futuro de la
                   movilidad urbana.
                 </p>
+                <PageIntro path="/guias/zonas-bajas-emisiones" />
                 <div className="flex items-center gap-4 mt-4 text-sm text-gray-500 dark:text-gray-400">
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />

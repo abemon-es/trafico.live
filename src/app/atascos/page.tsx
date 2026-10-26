@@ -16,6 +16,7 @@ import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -212,6 +213,7 @@ export default async function AtascosPage() {
                     </span>
                   )}
                 </p>
+                <PageIntro path="/atascos" />
                 <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>Actualizado a las {lastUpdated}</span>

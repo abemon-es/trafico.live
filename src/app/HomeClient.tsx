@@ -107,7 +107,16 @@ function CardGridSkeleton() {
   );
 }
 
-export function HomeClient({ initialStats, articles }: { initialStats: HomeStats; articles: HomeArticle[] }) {
+export function HomeClient({
+  initialStats,
+  articles,
+  intro,
+}: {
+  initialStats: HomeStats;
+  articles: HomeArticle[];
+  /** The page's intro text (src/lib/seo/intro-copy.ts); passed in so the copy map stays out of the client bundle. */
+  intro?: string | null;
+}) {
   return (
     <>
       {/* Hero map — TraficoMap preset="home" (phase 4 migration) */}
@@ -140,6 +149,14 @@ export function HomeClient({ initialStats, articles }: { initialStats: HomeStats
         </header>
         <HeroMapDeferred />
       </section>
+
+      {/* Under the map, not in the card over it: on phones the card already
+          covers the map, and the text has to show at every width. */}
+      {intro && (
+        <p className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed" data-page-intro="">
+          {intro}
+        </p>
+      )}
 
       <Suspense fallback={null}>
         <IncidentTicker />

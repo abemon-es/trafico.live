@@ -1,9 +1,12 @@
 import type { GeoEntity } from "@/lib/geo/types";
 import { getLocationStats } from "@/lib/data/location-stats";
 import { AlertTriangle, Camera, Fuel, Zap, CloudRain, Activity } from "lucide-react";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 interface HeroSectionProps {
   entity: GeoEntity;
+  /** Canonical path, for the page's own intro text (src/lib/seo/intro-copy.ts). */
+  introPath?: string;
 }
 
 /** Map LocationLevel to the scopeType string used by LocationStats */
@@ -34,7 +37,7 @@ function toScopeCode(entity: GeoEntity): string {
   );
 }
 
-export async function HeroSection({ entity }: HeroSectionProps) {
+export async function HeroSection({ entity, introPath }: HeroSectionProps) {
   const scopeType = toScopeType(entity.level);
   const scopeCode = toScopeCode(entity);
 
@@ -81,6 +84,7 @@ export async function HeroSection({ entity }: HeroSectionProps) {
               {entity.parentName}
             </p>
           )}
+          {introPath && <PageIntro path={introPath} />}
           <div className="mt-2 flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-xs font-medium">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Plane, Radar, Map as MapIcon, Info, ArrowRight } from "lucide-react";
 import { VuelosHeroMap } from "./VuelosHeroMap";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 export const revalidate = 60;
 
@@ -22,6 +23,7 @@ export default function VuelosHubPage() {
             <p className="mt-3 max-w-2xl font-['DM_Sans'] text-base text-slate-600 dark:text-slate-300">
               Sigue aeronaves en tiempo real con datos ADS-B abiertos. Filtra por aerolínea, altitud o tipo de aparato.
             </p>
+            <PageIntro path="/vuelos" />
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
                 href="/vuelos/mapa"

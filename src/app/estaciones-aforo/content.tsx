@@ -86,7 +86,7 @@ function imdLabel(imd: number | null): string {
   return "Bajo";
 }
 
-export default function EstacionesAforoContent() {
+export default function EstacionesAforoContent({ intro }: { intro?: string | null } = {}) {
   const [province, setProvince] = useState("");
   const [road, setRoad] = useState("");
   const [stationType, setStationType] = useState("");
@@ -122,6 +122,7 @@ export default function EstacionesAforoContent() {
           Red de {stats?.totalStations?.toLocaleString("es-ES") || "3.458"} estaciones de medición de tráfico en la Red de Carreteras del Estado.
           Datos de Intensidad Media Diaria (IMD) del Ministerio de Transportes.
         </p>
+        {intro && <p className="mt-3 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" data-page-intro="">{intro}</p>}
       </div>
 
       {/* Stats Cards */}

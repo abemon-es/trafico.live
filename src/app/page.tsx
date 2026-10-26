@@ -3,6 +3,7 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { HomeClient } from "./HomeClient";
 import type { HomeArticle } from "@/components/home/counts";
+import { introCopy } from "@/lib/seo/intro-copy";
 import { CITY_SENSOR_WHERE, REPORTED_WHERE, VEHICLE_STOP_WHERE } from "@/lib/incident-classes";
 import {
   StructuredData,
@@ -302,7 +303,7 @@ export default async function HomePage() {
       </div>
 
       {/* Client-side interactive homepage */}
-      <HomeClient initialStats={stats} articles={articles} />
+      <HomeClient initialStats={stats} articles={articles} intro={introCopy("/")} />
 
       {/* Visible links and the sources line speakable reads; both used to sit in
           the screen-reader-only block above. */}

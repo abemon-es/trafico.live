@@ -9,6 +9,7 @@ import {
 import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -102,6 +103,7 @@ export default async function GuiaLimitesVelocidadPage() {
                   Todos los limites de velocidad por tipo de via y vehiculo, condiciones
                   especiales (lluvia, obras, zonas 30), sanciones y puntos del carnet.
                 </p>
+                <PageIntro path="/guias/limites-velocidad-espana" />
                 <div className="flex items-center gap-4 mt-4 text-sm text-gray-500 dark:text-gray-400">
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />

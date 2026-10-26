@@ -10,6 +10,7 @@ import { StructuredData, generateWebPageSchema } from "@/components/seo/Structur
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { CAMERA_CITY_PROVINCES } from "@/lib/geo/area-routes";
 import { cameraCityIndexable } from "@/lib/seo/indexability";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 // 5 min, not 1 h: this page renders live DB state (camera availability per
 // province) and the build prerenders it empty (no DB at build). At 3600 a
@@ -155,6 +156,7 @@ export default async function CamarasCityPage({ params }: Props) {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
             Cámaras {titleLocation}
           </h1>
+          <PageIntro path={`/camaras/${city}`} className="-mt-3 mb-6 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {locationCameras.map((cam) => (
               <Link key={cam.id} href={`/camaras/camara/${cam.id}`} className="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden hover:border-tl-300 transition-colors">

@@ -5,6 +5,7 @@ import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
 import { Route, MapPin, Clock, Building2, Calculator, ArrowRight, ChevronRight, GitCompareArrows } from "lucide-react";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -109,6 +110,7 @@ export default async function TollRoadDetailPage({ params }: Props) {
           <p className="mt-2 text-gray-600 dark:text-gray-400">
             {fmt(r.totalKm, 0)} km · Operador: {r.operator} · Tarifa {r.year} para vehículos ligeros
           </p>
+          <PageIntro path={`/peajes/${r.slug}`} />
         </div>
 
         {/* Price hero card */}

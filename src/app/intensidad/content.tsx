@@ -71,7 +71,7 @@ function formatNumber(n: number): string {
   return n.toLocaleString("es-ES");
 }
 
-export default function IntensidadContent() {
+export default function IntensidadContent({ intro }: { intro?: string | null } = {}) {
   const [yearFilter, setYearFilter] = useState("");
   const [sortField, setSortField] = useState<"avgIMD" | "maxIMD" | "recordCount">("avgIMD");
 
@@ -129,6 +129,7 @@ export default function IntensidadContent() {
           Intensidad Media Diaria (IMD) del tráfico en la Red de Carreteras del Estado.
           Datos oficiales del Ministerio de Transportes y Movilidad Sostenible.
         </p>
+        {intro && <p className="mt-3 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" data-page-intro="">{intro}</p>}
       </div>
 
       {/* Live vs normal comparison */}

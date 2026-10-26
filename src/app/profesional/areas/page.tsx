@@ -14,6 +14,7 @@ import {
   Package,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -356,6 +357,7 @@ export default function AreasPage() {
               <p className="text-gray-600 dark:text-gray-400">
                 {totalAreas} áreas en las principales autopistas y autovías de España
               </p>
+              <PageIntro path="/profesional/areas" />
             </div>
           </div>
         </div>

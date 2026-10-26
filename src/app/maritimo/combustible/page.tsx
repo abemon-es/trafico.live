@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import MaritimasClient from "./MaritimasClient";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { introCopy } from "@/lib/seo/intro-copy";
 
 export const revalidate = 300;
 
@@ -68,7 +69,7 @@ export default async function CombustibleMaritimoPage() {
           { name: "Combustible", href: "/maritimo/combustible" },
         ]} />
       </div>
-      <MaritimasClient initialData={initialData} />
+      <MaritimasClient initialData={initialData} intro={introCopy("/maritimo/combustible")} />
     </>
   );
 }

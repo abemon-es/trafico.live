@@ -20,6 +20,7 @@ import { RelatedLinks } from "@/components/ui/RelatedLinks";
 import { ButtonLink } from "@/components/ui/Button";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { TraficoHeroMap } from "./TraficoHeroMap";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 export const revalidate = 120;
 
@@ -181,6 +182,7 @@ export default async function TraficoHubPage() {
           Incidencias DGT, cámaras en directo, radares, obras y sensores de tráfico urbano en
           Madrid, Barcelona y Valencia. Actualización cada 2–5 minutos.
         </p>
+        <PageIntro path="/trafico" />
         <div className="flex flex-wrap gap-3 mt-2">
           <ButtonLink href="/trafico/mapa" variant="primary" icon={<MapIcon className="w-4 h-4" />}>
             Mapa completo

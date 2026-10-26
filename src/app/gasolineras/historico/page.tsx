@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData, generateWebPageSchema, generateDatasetSchema } from "@/components/seo/StructuredData";
 import { HistoricoContent } from "./content";
+import { introCopy } from "@/lib/seo/intro-copy";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -70,7 +71,7 @@ export default function HistoricoPage() {
         ]}
       />
 
-      <HistoricoContent />
+      <HistoricoContent intro={introCopy("/gasolineras/historico")} />
     </div>
   );
 }

@@ -554,7 +554,7 @@ interface SelectedLocation {
   provinceCode?: string;
 }
 
-export default function CalculadoraContent() {
+export default function CalculadoraContent({ intro }: { intro?: string | null } = {}) {
   // Live fuel prices (existing endpoint)
   const { data: fuelData } = useSWR<{
     national?: {
@@ -685,6 +685,7 @@ export default function CalculadoraContent() {
           Calcula el coste real de tu viaje en coche: combustible, peajes y emisiones de CO
           <sub>2</sub>. Compara los distintos tipos de combustible al instante.
         </p>
+        {intro && <p className="mt-3 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" data-page-intro="">{intro}</p>}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">

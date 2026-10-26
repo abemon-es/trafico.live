@@ -13,6 +13,7 @@ import {
   ArrowRight,
   RefreshCw,
 } from "lucide-react";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 export const revalidate = 60;
 
@@ -299,6 +300,7 @@ export default async function IncidenciasPage() {
                 Alertas y retrasos en tiempo real de la red ferroviaria española.{" "}
                 Datos GTFS-RT actualizados cada 60 segundos.
               </p>
+              <PageIntro path="/trenes/incidencias" />
             </div>
 
             {/* Live indicator */}

@@ -7,6 +7,7 @@ import { Anchor, MapPin, Clock, Navigation, ArrowLeft, TrendingUp, TrendingDown,
 import { PriceComparisonCard, StationRanking, PriceHistoryChart } from "@/components/gas-stations";
 import { TraficoMapCard } from "@/components/map/TraficoMapCard";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -226,6 +227,7 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
                   {station.locality}
                   {station.provinceName && `, ${station.provinceName}`}
                 </p>
+                <PageIntro path={`/maritimo/combustible/${id}`} />
               </div>
             </div>
 

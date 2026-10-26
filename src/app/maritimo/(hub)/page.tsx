@@ -22,6 +22,7 @@ import { RelatedLinks } from "@/components/ui/RelatedLinks";
 import { ButtonLink } from "@/components/ui/Button";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { MaritimoHeroMap } from "../MaritimoHeroMap";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 export const revalidate = 300;
 
@@ -169,6 +170,7 @@ export default async function MaritimoHubPage() {
           Posiciones AIS en directo, red de puertos del Estado, rutas de ferries y
           combustible náutico. Alertas costeras AEMET actualizadas cada 5 minutos.
         </p>
+        <PageIntro path="/maritimo" />
         <div className="flex flex-wrap gap-3 mt-2">
           <ButtonLink href="/maritimo/mapa" variant="primary" icon={<Navigation className="w-4 h-4" />}>
             Abrir mapa completo

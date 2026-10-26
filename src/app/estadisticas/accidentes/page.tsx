@@ -6,6 +6,7 @@ import { AccidentesClient } from "./AccidentesClient";
 import { PROVINCES, PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { provinceSlug } from "@/lib/geo/slugify";
 import { accidentYears, spanText } from "@/lib/accident-years";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -232,6 +233,7 @@ export default async function AccidentesPage() {
               </a>
               , actualizados anualmente.
             </p>
+            <PageIntro path="/estadisticas/accidentes" />
           </div>
 
           {/* ── SSR summary (crawlable) ────────────────────────────────────── */}

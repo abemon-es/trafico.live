@@ -16,6 +16,7 @@ import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -270,6 +271,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                   Lista completa de radares de velocidad de la DGT en la {roadId}. Consulta
                   el punto kilométrico, tipo y límite de velocidad de cada radar.
                 </p>
+                <PageIntro path={`/radares/${roadId}`} />
               </div>
               <div className="hidden md:flex flex-col items-center bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 rounded-lg px-5 py-3 text-center flex-shrink-0">
                 <span className="text-3xl font-bold text-yellow-700 dark:text-yellow-400 font-data">

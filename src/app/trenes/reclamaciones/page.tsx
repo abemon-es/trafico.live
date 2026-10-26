@@ -13,6 +13,7 @@ import {
   CheckCircle,
   Info,
 } from "lucide-react";
+import { PageIntro } from "@/components/seo/PageIntro";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -204,6 +205,7 @@ export default function ReclamacionesPage() {
             </abbr>{" "}
             te da derecho a una indemnización de hasta el 50&nbsp;% del precio del billete.
           </p>
+          <PageIntro path="/trenes/reclamaciones" />
         </section>
 
         {/* ── Quick reference banner ─────────────────────────────────────── */}
