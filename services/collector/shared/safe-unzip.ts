@@ -41,11 +41,14 @@ export interface ExtractLimits {
 /**
  * Real GTFS feeds expand 2.7-11.9× (measured 2026-10-20; the largest, Lisboa
  * TML, 106 MB → 1.26 GB) and have at most 12 files. A bomb expands 1000×.
+ * Small, repetitive feeds go past 50× though: Renfe's long-distance GTFS was
+ * 1.07 MB → 56.8 MB (53×) on 2026-10-25, so the floor is 256 MB, which still
+ * stops a 1 MB bomb.
  */
 export function extractionLimits(zipBytes: number): ExtractLimits {
   return {
     maxEntries: 100,
-    maxTotalBytes: Math.min(4 * GB, Math.max(50 * MB, 50 * zipBytes)),
+    maxTotalBytes: Math.min(4 * GB, Math.max(256 * MB, 50 * zipBytes)),
   };
 }
 
