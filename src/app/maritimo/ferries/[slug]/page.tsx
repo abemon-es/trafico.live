@@ -121,8 +121,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Ruta de ferry no encontrada" };
   }
 
+  const timetable = currentTimetable(route.trips);
   const title = `Ferry ${route.operator} ${route.routeName} — Horarios y paradas`;
-  const description = `Horarios, paradas y mapa de la ruta de ferry ${route.routeName} operada por ${route.operator}. ${route.stops.length} paradas, ${route.trips.length} servicios programados.`;
+  const description = timetable.outdatedSince
+    ? `Paradas y mapa de la ruta de ferry ${route.routeName} operada por ${route.operator}. Horario en revisión: consulta el horario oficial de ${route.operator}.`
+    : `Horarios, paradas y mapa de la ruta de ferry ${route.routeName} operada por ${route.operator}. ${route.stops.length} paradas, ${timetable.trips.length} servicios programados.`;
 
   return {
     title,
@@ -163,6 +166,54 @@ function parseOriginDestination(routeName: string): {
     }
   }
   return null;
+}
+
+const DATED_SERVICE = /^(\d{4})-?(\d{2})-?(\d{2})$/;
+
+/** Official timetable pages, from each feed's agency.txt */
+const OPERATOR_TIMETABLE_URLS: Record<string, string> = {
+  "Baleària": "https://www.balearia.com/",
+};
+
+/** Today and today + 1 year as YYYYMMDD, in Spanish time */
+function datedWindow(): { from: string; to: string } {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const now = new Date();
+  const from = fmt.format(now).replace(/-/g, "");
+  const to = fmt.format(new Date(now.getTime() + 366 * 24 * 3600 * 1000)).replace(/-/g, "");
+  return { from, to };
+}
+
+/**
+ * Keep only the trips that can still run. When a feed's service days are
+ * calendar dates, past days are dropped, and so are placeholder dates more
+ * than a year ahead. If every dated day is gone, the timetable is out of
+ * date: `outdatedSince` holds the last real day and no times are shown.
+ */
+function currentTimetable<T extends { serviceDay: string | null }>(
+  trips: T[]
+): { trips: T[]; outdatedSince: string | null } {
+  const { from, to } = datedWindow();
+  const key = (day: string) => day.replace(/-/g, "");
+  const isDated = (t: T) => !!t.serviceDay && DATED_SERVICE.test(t.serviceDay);
+
+  const dated = trips.filter(isDated);
+  if (dated.length === 0) return { trips, outdatedSince: null };
+
+  const current = trips.filter((t) => {
+    if (!isDated(t)) return true;
+    const day = key(t.serviceDay!);
+    return day >= from && day <= to;
+  });
+  if (current.length > 0) return { trips: current, outdatedSince: null };
+
+  const pastDays = dated.map((t) => key(t.serviceDay!)).filter((d) => d < from).sort();
+  return { trips: [], outdatedSince: pastDays[pastDays.length - 1] ?? null };
 }
 
 /** Group trips by serviceDay */
@@ -255,7 +306,9 @@ export default async function FerryRouteDetailPage({ params }: Props) {
     ? `${parsed.origin} \u2192 ${parsed.destination}`
     : route.routeName;
 
-  const tripsByDay = groupTripsByDay(route.trips);
+  const timetable = currentTimetable(route.trips);
+  const tripsByDay = groupTripsByDay(timetable.trips);
+  const operatorTimetableUrl = OPERATOR_TIMETABLE_URLS[route.operator] ?? null;
 
   // Compute bounding box from stops for potential map reference
   const stopsWithCoords = route.stops.map((s) => ({
@@ -369,13 +422,13 @@ export default async function FerryRouteDetailPage({ params }: Props) {
               <div className="bg-white/10 rounded-xl p-3.5">
                 <div className="text-xs text-tl-sea-100">Servicios</div>
                 <div className="font-data font-bold text-lg tabular-nums mt-0.5">
-                  {route.trips.length}
+                  {timetable.outdatedSince ? "—" : timetable.trips.length}
                 </div>
               </div>
               <div className="bg-white/10 rounded-xl p-3.5">
                 <div className="text-xs text-tl-sea-100">Días de servicio</div>
                 <div className="font-data font-bold text-lg tabular-nums mt-0.5">
-                  {tripsByDay.size}
+                  {timetable.outdatedSince ? "—" : tripsByDay.size}
                 </div>
               </div>
             </div>
@@ -509,7 +562,41 @@ export default async function FerryRouteDetailPage({ params }: Props) {
           {/* ============================================================== */}
           {/* Schedule table                                                  */}
           {/* ============================================================== */}
-          {route.trips.length > 0 && (
+          {timetable.outdatedSince && (
+            <section aria-label="Horarios">
+              <h2 className="text-lg font-heading font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-tl-sea-500" />
+                Horarios
+              </h2>
+              <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 rounded-2xl border border-tl-amber-300 dark:border-tl-amber-700 p-6">
+                <p className="font-heading font-semibold text-gray-900 dark:text-gray-100">
+                  Horario en revisión
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                  El último horario público de {route.operator} para esta ruta terminaba el{" "}
+                  {formatServiceDay(timetable.outdatedSince)}. No mostramos horas que podrían no
+                  ser válidas hoy.
+                </p>
+                {operatorTimetableUrl ? (
+                  <a
+                    href={operatorTimetableUrl}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="inline-flex items-center gap-1 mt-4 px-3 py-1.5 rounded-lg bg-tl-sea-600 hover:bg-tl-sea-700 text-white text-sm font-medium transition-colors"
+                  >
+                    Horario oficial de {route.operator}
+                    <ArrowRight className="w-4 h-4" />
+                  </a>
+                ) : (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    Consulta el horario directamente con {route.operator}.
+                  </p>
+                )}
+              </div>
+            </section>
+          )}
+
+          {timetable.trips.length > 0 && (
             <section aria-label="Horarios">
               <h2 className="text-lg font-heading font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-tl-sea-500" />
@@ -580,7 +667,7 @@ export default async function FerryRouteDetailPage({ params }: Props) {
             </section>
           )}
 
-          {route.trips.length === 0 && (
+          {route.trips.length === 0 && !timetable.outdatedSince && (
             <section aria-label="Horarios">
               <h2 className="text-lg font-heading font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-tl-sea-500" />
