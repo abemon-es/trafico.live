@@ -24,7 +24,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 export const metadata: Metadata = {
   title: "Próximo ferry — Próximas salidas hoy",
   description:
-    "¿Cuándo sale el próximo ferry? Consulta las próximas salidas de ferry en España y Portugal, ordenadas por hora. Rutas Algeciras–Ceuta, Barcelona–Mallorca, Valencia–Ibiza y más.",
+    "¿Cuándo sale el próximo ferry? Las salidas de hoy ordenadas por hora, según los horarios públicos vigentes de las navieras.",
   keywords: [
     "próximo ferry",
     "proximo ferry",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Próximo ferry — Próximas salidas hoy | trafico.live",
     description:
-      "Consulta las próximas salidas de ferry en España y Portugal, ordenadas por hora. Datos GTFS actualizados.",
+      "Las salidas de ferry de hoy ordenadas por hora, según los horarios públicos vigentes de las navieras.",
     url: `${BASE_URL}/maritimo/ferries/proximo`,
     type: "website",
     locale: "es_ES",
@@ -212,17 +212,46 @@ async function getUpcomingDepartures(): Promise<DepartureRow[]> {
 }
 
 // ---------------------------------------------------------------------------
+// FAQ (same text on the page and in the JSON-LD)
+// ---------------------------------------------------------------------------
+
+function faqItems(operators: string[]): { q: string; a: string }[] {
+  const now =
+    operators.length > 0
+      ? `Ahora mismo, ${operators.join(", ")}.`
+      : "Ahora mismo ninguna tiene salidas en lo que queda de hoy.";
+  return [
+    {
+      q: "¿Cómo saber cuándo sale el próximo ferry?",
+      a: "Esta página ordena por hora las salidas de hoy según los horarios GTFS públicos y vigentes de las navieras. Es el horario programado, no el estado en tiempo real: confirma siempre la salida con la naviera.",
+    },
+    {
+      q: "¿Qué navieras aparecen?",
+      a: `Solo las que publican un horario vigente. ${now} Las rutas cuyo último horario público ya terminó, como las de Baleària, tienen el horario en revisión y no salen aquí; su ficha de ruta enlaza al horario oficial de la naviera.`,
+    },
+    {
+      q: "¿Cada cuánto se actualiza?",
+      a: "Descargamos los horarios de las navieras una vez por semana, los domingos, y la lista de próximas salidas se recalcula a lo largo del día a partir de ellos.",
+    },
+    {
+      q: "¿Puedo ver dónde está el barco?",
+      a: "Esta página no sigue los barcos. Su posición AIS en directo está en el mapa marítimo (/maritimo).",
+    },
+  ];
+}
+
+// ---------------------------------------------------------------------------
 // Structured data
 // ---------------------------------------------------------------------------
 
-function buildJsonLd(departures: DepartureRow[]) {
+function buildJsonLd(departures: DepartureRow[], faq: { q: string; a: string }[]) {
   const todayISO = new Date().toISOString().slice(0, 10);
 
   const itemList = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: "Próximas salidas de ferry hoy",
-    description: "Listado de las próximas salidas de ferry en España y Portugal",
+    description: "Salidas de ferry de hoy según los horarios públicos vigentes de las navieras",
     url: `${BASE_URL}/maritimo/ferries/proximo`,
     numberOfItems: departures.length,
     itemListElement: departures.slice(0, 20).map((dep, i) => ({
@@ -252,32 +281,11 @@ function buildJsonLd(departures: DepartureRow[]) {
   const faqPage = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: "¿Cómo saber cuándo sale el próximo ferry?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Consulta esta página para ver las próximas salidas de ferry en España y Portugal ordenadas por hora. Los datos se obtienen de los horarios GTFS oficiales de cada naviera.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "¿Qué rutas de ferry aparecen?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Se muestran las rutas de Fred Olsen, Baleària, Vizcaya y otras navieras con datos GTFS públicos: Algeciras–Ceuta, Barcelona–Palma, Valencia–Ibiza, Dénia–Ibiza y más.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "¿Con qué frecuencia se actualiza el horario?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Los horarios se actualizan cada 5 minutos y se basan en datos GTFS oficiales de las navieras. Para información de reserva, haz clic en 'Ver disponibilidad' en cada salida.",
-        },
-      },
-    ],
+    mainEntity: faq.map(({ q, a }) => ({
+      "@type": "Question",
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
+    })),
   };
 
   return [itemList, faqPage];
@@ -331,10 +339,11 @@ export default async function ProximoFerryPage() {
     if (!byOperator.has(dep.operator)) byOperator.set(dep.operator, []);
     byOperator.get(dep.operator)!.push(dep);
   }
+  const faq = faqItems([...byOperator.keys()]);
 
   return (
     <>
-      <StructuredData data={buildJsonLd(departures)} />
+      <StructuredData data={buildJsonLd(departures, faq)} />
 
       {/* ------------------------------------------------------------------ */}
       {/* Hero                                                                */}
@@ -359,7 +368,7 @@ export default async function ProximoFerryPage() {
                 Próximo ferry
               </h1>
               <p className="text-tl-sea-100 text-sm mt-1">
-                Próximas salidas hoy en España y Portugal · Horarios GTFS actualizados
+                Salidas de hoy según los horarios públicos de las navieras
               </p>
             </div>
           </div>
@@ -384,9 +393,9 @@ export default async function ProximoFerryPage() {
               </div>
             </div>
             <div className="bg-white/10 rounded-xl p-3.5">
-              <div className="text-xs text-tl-sea-100">Actualización</div>
+              <div className="text-xs text-tl-sea-100">Horarios</div>
               <div className="font-mono font-bold text-lg tabular-nums mt-0.5">
-                5 min
+                Semanal
               </div>
             </div>
           </div>
@@ -401,12 +410,20 @@ export default async function ProximoFerryPage() {
           <div className="text-center py-20 text-gray-500 dark:text-gray-400">
             <Ship className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-700" />
             <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              No hay salidas próximas
+              Hoy no quedan salidas programadas en los horarios que tenemos
             </p>
             <p className="text-sm">
-              Los horarios GTFS pueden no incluir todas las navieras. Consulta directamente con la
-              naviera para horarios actualizados.
+              No todas las navieras publican su horario. Para una salida concreta, consulta siempre
+              con la naviera.
             </p>
+            <div className="mt-4 flex flex-wrap justify-center gap-3 text-sm">
+              <Link href="/maritimo/ferries" className="font-semibold text-tl-sea-700 dark:text-tl-sea-300 underline">
+                Todas las rutas de ferry
+              </Link>
+              <Link href="/maritimo" className="font-semibold text-tl-sea-700 dark:text-tl-sea-300 underline">
+                Barcos en directo
+              </Link>
+            </div>
           </div>
         ) : (
           <>
@@ -570,46 +587,34 @@ export default async function ProximoFerryPage() {
               </div>
             </section>
 
-            {/* FAQ section */}
-            <section className="space-y-4">
-              <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
-                Preguntas frecuentes
-              </h2>
-              {[
-                {
-                  q: "¿Cómo saber cuándo sale el próximo ferry?",
-                  a: "Esta página muestra las próximas salidas de ferry en España y Portugal, ordenadas por hora de salida. Los datos provienen de horarios GTFS oficiales de cada naviera y se actualizan cada 5 minutos.",
-                },
-                {
-                  q: "¿Qué navieras aparecen en esta lista?",
-                  a: "Incluimos datos de Fred Olsen, Baleària, Trasmediterránea, Vizcaya y otras navieras con GTFS públicos disponibles. La cobertura se amplía periódicamente.",
-                },
-                {
-                  q: "¿Puedo ver el estado en tiempo real del ferry?",
-                  a: "Sí. Haz clic en 'Horario' junto a cualquier salida para ver la ruta completa. La posición AIS del buque asignado está disponible en la ficha de cada embarcación.",
-                },
-              ].map(({ q, a }) => (
-                <details
-                  key={q}
-                  className="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800"
-                >
-                  <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-semibold text-gray-900 dark:text-gray-100 text-sm select-none list-none">
-                    {q}
-                    <ArrowRight className="w-4 h-4 text-tl-sea-500 group-open:rotate-90 transition-transform flex-shrink-0" />
-                  </summary>
-                  <div className="px-5 pb-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3">
-                    {a}
-                  </div>
-                </details>
-              ))}
-            </section>
           </>
         )}
 
+        {/* FAQ section */}
+        <section className="space-y-4">
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100">
+            Preguntas frecuentes
+          </h2>
+          {faq.map(({ q, a }) => (
+            <details
+              key={q}
+              className="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800"
+            >
+              <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-semibold text-gray-900 dark:text-gray-100 text-sm select-none list-none">
+                {q}
+                <ArrowRight className="w-4 h-4 text-tl-sea-500 group-open:rotate-90 transition-transform flex-shrink-0" />
+              </summary>
+              <div className="px-5 pb-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-3">
+                {a}
+              </div>
+            </details>
+          ))}
+        </section>
+
         {/* Attribution */}
         <p className="text-xs text-gray-400 dark:text-gray-600 text-center">
-          Datos de horarios de fuentes GTFS públicas (Fred Olsen, Baleária, Vizcaya).
-          Horarios orientativos — confirma con la naviera antes de embarcar. ·{" "}
+          Horarios GTFS públicos de las navieras, vía MobilityData. Horario programado,
+          no estado en tiempo real: confirma con la naviera antes de embarcar. ·{" "}
           <Link href="/maritimo" className="underline hover:text-tl-sea-500">
             Hub Marítimo
           </Link>
