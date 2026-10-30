@@ -30,6 +30,7 @@
     "test:sasemar": "tsx tests/sasemar-source.test.ts",
     "test:transit-gtfs": "tsx tests/transit-gtfs-fetch.test.ts",
     "test:safe-unzip": "tsx tests/safe-unzip.test.ts",
+    "test:estrecho": "tsx tests/estrecho-hoy.test.ts",
     "test:ferry-terminals": "tsx tests/ferry-terminals.test.ts",
     "test:ferry-dates": "tsx tests/ferry-service-dates.test.ts",
     "test:feed-link": "tsx tests/transit-feed-link.test.ts",
