@@ -15,22 +15,14 @@
 import { PrismaClient, VoyageStatus } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
+import { FERRY_TERMINALS_BBOX, ferryTerminalAt, haversineNm } from "./ferry-terminals.js";
 
 const TASK = "voyage-detector";
 
 const STOP_SPEED_KN = 0.5;
 const MIN_STOP_MINUTES = 30;
-const EARTH_RADIUS_NM = 3440.065;
-
-function haversineNm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-  return 2 * EARTH_RADIUS_NM * Math.asin(Math.sqrt(a));
-}
+/** Port calls without a port from the last days get a second look at the ferry terminals. */
+const RETAG_DAYS = 7;
 
 interface Position {
   latitude: number;
@@ -48,12 +40,15 @@ interface StopCluster {
   navStatus: number | null;
 }
 
-// Resolve coordinates to nearest port (within 10nm)
+// Resolve coordinates to a ferry terminal, else the nearest port (within 10nm)
 async function resolvePort(
   prisma: PrismaClient,
   lat: number,
   lng: number
 ): Promise<{ portName: string; portCode: string } | null> {
+  const terminal = ferryTerminalAt(lat, lng);
+  if (terminal) return terminal;
+
   const result = await prisma.$queryRaw<
     Array<{ id: string; name: string; dist_nm: number }>
   >`
@@ -73,8 +68,38 @@ async function resolvePort(
   return null;
 }
 
+/** Give a port to recent calls at the ferry terminals that were stored without one. */
+async function retagFerryTerminalCalls(prisma: PrismaClient): Promise<number> {
+  const box = FERRY_TERMINALS_BBOX;
+  const untagged = await prisma.portCall.findMany({
+    where: {
+      portCode: null,
+      arrivedAt: { gte: new Date(Date.now() - RETAG_DAYS * 24 * 60 * 60 * 1000) },
+      latitude: { gte: box.minLat, lte: box.maxLat },
+      longitude: { gte: box.minLng, lte: box.maxLng },
+    },
+    select: { id: true, latitude: true, longitude: true },
+  });
+
+  let retagged = 0;
+  for (const call of untagged) {
+    const terminal = ferryTerminalAt(Number(call.latitude), Number(call.longitude));
+    if (!terminal) continue;
+    await prisma.portCall.update({ where: { id: call.id }, data: terminal });
+    retagged++;
+  }
+  return retagged;
+}
+
 export async function run(prisma: PrismaClient): Promise<void> {
   log(TASK, "Starting voyage detection...");
+
+  try {
+    const retagged = await retagFerryTerminalCalls(prisma);
+    if (retagged > 0) log(TASK, `Ferry terminals: ${retagged} recent port calls got their port`);
+  } catch (err) {
+    logError(TASK, "Ferry terminal retag failed", err);
+  }
 
   // Only process vessels that received a new position in the last 2h.
   // The task runs hourly so a 2h window provides overlap without loading
