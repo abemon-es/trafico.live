@@ -33,6 +33,7 @@
     "test:ferry-terminals": "tsx tests/ferry-terminals.test.ts",
     "test:ferry-dates": "tsx tests/ferry-service-dates.test.ts",
     "test:carga-ev-provincia": "tsx tests/carga-ev-provincia.test.ts",
+    "test:sitemap-hubs": "tsx tests/sitemap-station-hubs.test.ts",
     "test:feed-link": "tsx tests/transit-feed-link.test.ts",
     "test:euskadi": "tsx tests/euskadi-active.test.ts",
     "test:incident-status": "tsx tests/incident-run-status.test.ts",
