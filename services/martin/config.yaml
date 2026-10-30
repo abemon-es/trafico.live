@@ -26,9 +26,14 @@ postgres:
     sensors:
       schema: public
       function: tile_sensors
+    # maxzoom 12 on incidents, fleet and vessels: they are points and their
+    # functions return the same features at every zoom, so past z12 the map
+    # reuses the z12 tile instead of asking for z13+. Martin publishes it in
+    # the TileJSON, which is what every map on the site loads these from.
     incidents:
       schema: public
       function: tile_incidents
+      maxzoom: 12
     roadworks:
       schema: public
       function: tile_roadworks
@@ -40,12 +45,14 @@ postgres:
     fleet:
       schema: public
       function: tile_fleet
+      maxzoom: 12
     aircraft:
       schema: public
       function: tile_aircraft
     vessels:
       schema: public
       function: tile_vessels
+      maxzoom: 12
     transit_vehicles:
       schema: public
       function: tile_transit_vehicles
