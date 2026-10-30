@@ -19,6 +19,7 @@
 import { PrismaClient } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
+import { type ApiDistrict, districtName } from "./districts.js";
 
 const TASK = "portugal-fuel";
 const BASE_URL = "https://precoscombustiveis.dgeg.gov.pt/api/PrecoComb";
@@ -44,10 +45,7 @@ type FuelPriceField = typeof FUEL_TYPES[number]["field"];
 
 interface ApiDistrictsResponse {
   status: boolean;
-  resultado: Array<{
-    Id: string;
-    Nome: string;
-  }>;
+  resultado: ApiDistrict[];
 }
 
 interface ApiStationResult {
@@ -202,7 +200,7 @@ export async function run(prisma: PrismaClient) {
       try {
         data = await fetchJSON<ApiStationsResponse>(url);
       } catch (err) {
-        logError(TASK, `Failed fetching ${district.Nome} / ${fuelType.label}`, err);
+        logError(TASK, `Failed fetching ${districtName(district)} / ${fuelType.label}`, err);
         continue;
       }
 
@@ -232,7 +230,7 @@ export async function run(prisma: PrismaClient) {
             address: result.Morada || null,
             locality: result.Localidade || null,
             postalCode: result.CodPostal || null,
-            district: result.Distrito || district.Nome || null,
+            district: result.Distrito || districtName(district),
             districtId: String(result.IDDistrito || district.Id || ""),
             municipality: result.Municipio || null,
             municipalityId: result.IDMunicipio != null ? String(result.IDMunicipio) : null,
@@ -263,7 +261,7 @@ export async function run(prisma: PrismaClient) {
       }
     }
 
-    log(TASK, `District ${district.Nome} processed (${stationMap.size} stations so far)`);
+    log(TASK, `District ${districtName(district)} processed (${stationMap.size} stations so far)`);
   }
 
   const stations = Array.from(stationMap.values());
