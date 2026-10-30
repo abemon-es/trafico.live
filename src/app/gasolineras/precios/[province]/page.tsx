@@ -1,11 +1,12 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { MapPin, ArrowLeft, Clock, Map, Tag, Fuel, BarChart3 } from "lucide-react";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { PRICE_PROVINCE_SLUGS } from "@/lib/geo/area-routes";
+import { DIRECTORY_PAGE_SIZE, pageHref, resolvePage } from "@/lib/seo/pagination";
 
 // force-dynamic: Coolify builds with DATABASE_URL='' which caches empty ISR pages.
 export const revalidate = 300;
@@ -15,14 +16,102 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 interface Props {
   params: Promise<{ province: string }>;
+  searchParams: Promise<{ page?: string | string[] }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+// Every station of the province, 100 per page, so each station page is reachable
+// from this hub with a plain link (it is not in any sitemap of its own).
+async function directoryPage(provinceCode: string, page: number) {
+  return prisma.gasStation.findMany({
+    where: { province: provinceCode },
+    orderBy: [{ municipality: "asc" }, { name: "asc" }, { id: "asc" }],
+    skip: (page - 1) * DIRECTORY_PAGE_SIZE,
+    take: DIRECTORY_PAGE_SIZE,
+    select: { id: true, name: true, address: true, locality: true, municipality: true },
+  });
+}
+
+type DirectoryItem = Awaited<ReturnType<typeof directoryPage>>[number];
+
+function StationDirectory({
+  provinceName,
+  path,
+  page,
+  pages,
+  total,
+  items,
+}: {
+  provinceName: string;
+  path: string;
+  page: number;
+  pages: number;
+  total: number;
+  items: DirectoryItem[];
+}) {
+  const first = (page - 1) * DIRECTORY_PAGE_SIZE + 1;
+  const last = first + items.length - 1;
+  return (
+    <section aria-labelledby="directorio" className="mt-8 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+        <h2 id="directorio" className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Todas las gasolineras de {provinceName}
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {total.toLocaleString("es-ES")} estaciones por municipio
+          {pages > 1 ? ` · ${first}–${last} · página ${page} de ${pages}` : ""}
+        </p>
+      </div>
+      <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+        {items.map((s) => (
+          <li key={s.id} className="px-4 py-2 text-sm flex flex-wrap gap-x-3">
+            <Link href={`/gasolineras/terrestres/${s.id}`} className="font-medium text-orange-700 dark:text-orange-300 hover:underline">
+              {s.name}
+            </Link>
+            <span className="text-gray-600 dark:text-gray-400">{s.municipality ?? s.locality ?? ""}</span>
+            {s.address && <span className="text-gray-500 dark:text-gray-500">{s.address}</span>}
+          </li>
+        ))}
+      </ul>
+      {pages > 1 && (
+        <nav aria-label="Páginas del listado" className="p-4 border-t border-gray-200 dark:border-gray-800 flex flex-wrap gap-2">
+          {Array.from({ length: pages }, (_, i) => i + 1).map((n) =>
+            n === page ? (
+              <span key={n} aria-current="page" className="px-3 py-1 rounded bg-orange-600 text-white text-sm font-mono">
+                {n}
+              </span>
+            ) : (
+              <Link key={n} href={pageHref(path, n)} className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 text-sm font-mono text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
+                {n}
+              </Link>
+            )
+          )}
+        </nav>
+      )}
+    </section>
+  );
+}
+
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { province } = await params;
   const provinceData = PRICE_PROVINCE_SLUGS[province];
 
   if (!provinceData) {
     return { title: "Provincia no encontrada" };
+  }
+
+  const { page: rawPage } = await searchParams;
+  if (rawPage !== undefined) {
+    const total = await prisma.gasStation.count({ where: { province: provinceData.code } });
+    const r = resolvePage(rawPage, total);
+    if (r.kind !== "ok") return { title: "Página no encontrada" };
+    const url = `${BASE_URL}${pageHref(`/gasolineras/precios/${province}`, r.page)}`;
+    const title = `Gasolineras de ${provinceData.name}: página ${r.page} de ${r.pages}`;
+    return {
+      title,
+      description: `Listado de las gasolineras de ${provinceData.name} por municipio, página ${r.page} de ${r.pages}, con enlace a la ficha y los precios de cada una.`,
+      alternates: { canonical: url },
+      openGraph: { title, url },
+    };
   }
 
   return {
@@ -43,12 +132,46 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // generateStaticParams removed: Coolify builds with DATABASE_URL='' causing empty pre-renders.
 // Pages render on-demand via ISR instead.
 
-export default async function ProvincePricesPage({ params }: Props) {
+export default async function ProvincePricesPage({ params, searchParams }: Props) {
   const { province } = await params;
   const provinceData = PRICE_PROVINCE_SLUGS[province];
 
   if (!provinceData) {
     notFound();
+  }
+
+  const path = `/gasolineras/precios/${province}`;
+  const total = await prisma.gasStation.count({ where: { province: provinceData.code } });
+  const resolved = resolvePage((await searchParams).page, total);
+  if (resolved.kind === "redirect-to-first") permanentRedirect(path);
+  if (resolved.kind === "not-found") notFound();
+  const { page, pages } = resolved;
+  const directory = await directoryPage(provinceData.code, page);
+
+  // ?page=N: only the list, with its own title, so it is not a copy of page 1.
+  if (page > 1) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <Breadcrumbs items={[
+          { name: "Inicio", href: "/" },
+          { name: "Gasolineras", href: "/gasolineras" },
+          { name: "Precios", href: "/gasolineras/precios" },
+          { name: provinceData.name, href: path },
+        ]} />
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          Gasolineras de {provinceData.name}: página {page} de {pages}
+        </h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Todas las estaciones de servicio de {provinceData.name}, ordenadas por municipio. Los precios de hoy y las más
+          baratas están en{" "}
+          <Link href={path} className="text-orange-700 dark:text-orange-300 underline">
+            precios de combustible en {provinceData.name}
+          </Link>
+          . Fuente: Ministerio para la Transición Ecológica y el Reto Demográfico (MITERD).
+        </p>
+        <StationDirectory provinceName={provinceData.name} path={path} page={page} pages={pages} total={total} items={directory} />
+      </div>
+    );
   }
 
   const stations = await prisma.gasStation.findMany({
@@ -220,6 +343,10 @@ export default async function ProvincePricesPage({ params }: Props) {
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
           No se encontraron gasolineras en {provinceData.name}
         </div>
+      )}
+
+      {total > 0 && (
+        <StationDirectory provinceName={provinceData.name} path={path} page={1} pages={pages} total={total} items={directory} />
       )}
 
       <RelatedLinks
