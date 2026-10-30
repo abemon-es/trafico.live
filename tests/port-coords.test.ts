@@ -8,7 +8,7 @@
  */
 
 import assert from "node:assert/strict";
-import { loadWpiCoords, namesAgree, parseWpiCsv, planPortCoords } from "../services/collector/tasks/voyage-detector/port-coords";
+import { loadWpiCoords, namesAgree, parseWpiCsv, planPortCoords, portResolver } from "../services/collector/tasks/voyage-detector/port-coords";
 
 const wpi = loadWpiCoords();
 assert.ok(wpi.size > 3000, `vendored file has ${wpi.size} entries`);
@@ -53,5 +53,25 @@ assert.throws(() => parseWpiCsv("locode,latitude,longitude,wpi_name,wpi_number\n
 assert.throws(() => parseWpiCsv("locode,latitude,longitude,wpi_name,wpi_number\nESXXX,91,1,X,1\n"));
 assert.throws(() => parseWpiCsv("locode,latitude,longitude,wpi_name,wpi_number\nesxxx,1,1,X,1\n"));
 assert.equal(parseWpiCsv("locode,latitude,longitude,wpi_name,wpi_number\nESXXX,-1.5,2.25,X Port,7\n").get("ESXXX")?.longitude, 2.25);
+
+// Retag: the port resolvePort() would pick now.
+const resolve = portResolver([
+  { id: "ESTAR", name: "Tarragona", latitude: 41.1, longitude: 1.233333 },
+  { id: "ESBCN", name: "Barcelona", latitude: 41.35, longitude: 2.166667 },
+  { id: "ESXXA", name: "Near A", latitude: 40.0, longitude: 0.0 },
+  { id: "ESXXB", name: "Near B", latitude: 40.0, longitude: 0.1 },
+]);
+assert.equal(resolve(41.11, 1.24)?.portCode, "ESTAR");
+assert.equal(resolve(41.34, 2.17)?.portCode, "ESBCN");
+// A newly filled port doesn't take a call that sits nearer another one.
+assert.equal(resolve(40.0, 0.06)?.portCode, "ESXXB");
+assert.equal(resolve(40.0, 0.04)?.portCode, "ESXXA");
+// Same cut as resolvePort: planar degrees × 60 under 10.
+assert.equal(resolve(41.1, 1.233333 + 9.9 / 60)?.portCode, "ESTAR");
+assert.equal(resolve(41.1, 1.233333 + 10.1 / 60), null);
+// Ferry terminals first, even with a table port nearer.
+assert.equal(portResolver([{ id: "ESZZZ", name: "Z", latitude: 36.0081, longitude: -5.6031 }])(36.008, -5.603)?.portCode, "ESTRF");
+// Open sea far from any port.
+assert.equal(resolve(38.5, 4.5), null);
 
 console.log("port-coords: all good");
