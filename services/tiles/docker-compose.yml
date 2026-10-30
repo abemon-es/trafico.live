@@ -22,7 +22,7 @@ services:
       interval: 30s
       timeout: 3s
       retries: 3
-    # Traefik routing handled via file provider at /data/coolify/proxy/dynamic/tiles.yaml
+    # Traefik routing handled by its file provider on the host
     # (routes to host port 8088, avoids Docker network cross-network issues with Martin)
     labels:
       - "traefik.enable=false"
@@ -36,8 +36,12 @@ services:
       - DATABASE_URL=${DATABASE_URL}
     expose:
       - "3000"
+    # Martin and the exporter are reachable only on the private network:
+    # PRIVATE_BIND_IP (in .env next to this file) is this host's private
+    # address. Compose refuses to start without it rather than bind them
+    # anywhere else.
     ports:
-      - "10.100.0.2:3089:3000"
+      - "${PRIVATE_BIND_IP:?set PRIVATE_BIND_IP in .env}:3089:3000"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/health"]
       interval: 30s
@@ -50,7 +54,7 @@ services:
     container_name: tiles-nginx-exporter
     command: ["--nginx.scrape-uri=http://tiles/nginx_status"]
     ports:
-      - "10.100.0.2:9113:9113"
+      - "${PRIVATE_BIND_IP:?set PRIVATE_BIND_IP in .env}:9113:9113"
     depends_on:
       - tiles
     restart: unless-stopped
