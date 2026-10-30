@@ -32,6 +32,7 @@
     "test:safe-unzip": "tsx tests/safe-unzip.test.ts",
     "test:ferry-terminals": "tsx tests/ferry-terminals.test.ts",
     "test:ferry-dates": "tsx tests/ferry-service-dates.test.ts",
+    "test:home-explora": "tsx tests/home-explora.test.ts",
     "test:feed-link": "tsx tests/transit-feed-link.test.ts",
     "test:euskadi": "tsx tests/euskadi-active.test.ts",
     "test:incident-status": "tsx tests/incident-run-status.test.ts",

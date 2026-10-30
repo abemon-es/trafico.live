@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CERCANIAS_NETWORKS } from "@/lib/trenes/cercanias-networks";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import prisma, { isBuildWithoutDb } from "@/lib/db";
@@ -18,20 +19,7 @@ export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-const NETWORK_MAP: Record<string, string> = {
-  madrid: "Madrid",
-  barcelona: "Barcelona",
-  valencia: "Valencia",
-  sevilla: "Sevilla",
-  malaga: "Málaga",
-  bilbao: "Bilbao",
-  asturias: "Asturias",
-  santander: "Santander",
-  cadiz: "Cádiz",
-  "murcia-alicante": "Murcia/Alicante",
-  zaragoza: "Zaragoza",
-  "san-sebastian": "San Sebastián",
-};
+const NETWORK_MAP = CERCANIAS_NETWORKS;
 
 const EFFECT_LABELS: Record<string, string> = {
   NO_SERVICE: "Sin servicio",
