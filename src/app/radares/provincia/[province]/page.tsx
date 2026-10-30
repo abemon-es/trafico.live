@@ -351,7 +351,9 @@ export default async function RadaresProvinciaPage({ params }: Props) {
                                 </Link>
                               </td>
                               <td className="px-4 py-3 font-mono text-gray-700 dark:text-gray-300 font-data">
-                                {r.kmPoint != null ? Number(r.kmPoint).toFixed(1) : "—"}
+                                <Link href={`/radares/radar/${r.id}`} className="text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:hover:text-tl-200 hover:underline">
+                                  {r.kmPoint != null ? Number(r.kmPoint).toFixed(1) : "—"}
+                                </Link>
                               </td>
                               <td className="px-4 py-3">
                                 <span
