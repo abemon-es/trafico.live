@@ -136,7 +136,7 @@ export async function EVChargersSection({
       </div>
 
       {/* CTA */}
-      {spokeHref && total > limit && (
+      {spokeHref && total > 0 && (
         <a
           href={spokeHref}
           className="mt-4 inline-flex items-center gap-1 text-sm text-tl-600 dark:text-tl-400 hover:text-tl-700 dark:hover:text-tl-300 font-medium"

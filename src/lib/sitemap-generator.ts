@@ -8,6 +8,7 @@ import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug, slugify } from "@/lib/geo/slugify";
 import { PROVINCE_SLUG_TO_COMMUNITY_SLUG } from "@/lib/geo/province-slugs";
 import { priorityEntries } from "@/lib/sitemap-priority";
+import { evProvincePath } from "@/lib/geo/ev-province";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -1553,11 +1554,33 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
   // /maritimo/buques. Re-add behind a shard of their own once the domain has
   // crawl trust.
 
+  // /carga-ev/provincia/<slug>: every public charging point of the province,
+  // paginated. Page 1 only. No lastmod yet: EVCharger.lastUpdated is the time of
+  // the last collector run (every row, every run), not a content change.
+  const evProvincePages: SitemapEntry[] = await prisma.eVCharger
+    .groupBy({ by: ["province"], where: { isPublic: true, province: { not: null } }, _count: true })
+    .then((rows) => {
+      const pages: SitemapEntry[] = rows.flatMap((r) => {
+        const path = r.province ? evProvincePath(r.province) : null;
+        return path
+          ? [{ url: `${BASE_URL}${path}`, changeFrequency: "daily" as const, priority: 0.7 }]
+          : [];
+      });
+      return pages.length > 0
+        ? [{ url: `${BASE_URL}/carga-ev/provincia`, changeFrequency: "weekly" as const, priority: 0.6 }, ...pages]
+        : [];
+    })
+    .catch((err) => {
+      reportApiError(err, "sitemap EV province hubs");
+      return [] as SitemapEntry[];
+    });
+
   return [
     ...staticPages,
     ...cityPages,
     ...roadPages,
     ...cameraRoadPages,
+    ...evProvincePages,
     ...provincePages,
     ...communityPages,
     ...maritimePortPages,
