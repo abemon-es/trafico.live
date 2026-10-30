@@ -94,12 +94,32 @@ function nowTimeString(): string {
   });
 }
 
-/** Today's day-of-week keys that GTFS serviceDay might match */
+/** A Spanish calendar date as YYYYMMDD (GTFS service day format). */
+function madridDay(d: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  })
+    .format(d)
+    .replace(/-/g, "");
+}
+
+/** The calendar day after a YYYYMMDD date. */
+function nextDay(day: string): string {
+  const d = new Date(Date.UTC(+day.slice(0, 4), +day.slice(4, 6) - 1, +day.slice(6, 8) + 1));
+  return d.toISOString().slice(0, 10).replace(/-/g, "");
+}
+
+const DATED_SERVICE = /^\d{8}$/;
+
+/** Weekday keys a non-dated serviceDay might match */
 function todayServiceDayKeys(): string[] {
-  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  const d = new Date();
-  const key = days[d.getDay()];
-  return [key, "daily", "weekdays", "weekends", d.toISOString().slice(0, 10).replace(/-/g, "")];
+  const weekday = new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Madrid", weekday: "long" })
+    .format(new Date())
+    .toLowerCase();
+  return [weekday, "daily", "weekdays", "weekends"];
 }
 
 async function getUpcomingDepartures(): Promise<DepartureRow[]> {
@@ -130,6 +150,8 @@ async function getUpcomingDepartures(): Promise<DepartureRow[]> {
 
   const currentMinutes = timeToMinutes(nowTimeString());
   const validDays = todayServiceDayKeys();
+  const today = madridDay(new Date());
+  const tomorrow = nextDay(today);
   const rows: DepartureRow[] = [];
 
   for (const route of routes) {
@@ -141,17 +163,22 @@ async function getUpcomingDepartures(): Promise<DepartureRow[]> {
     for (const trip of route.trips) {
       if (!trip.departsAt) continue;
 
-      // Filter to today or no serviceDay restriction
-      if (
-        trip.serviceDay &&
-        !validDays.some((d) => trip.serviceDay!.toLowerCase().includes(d))
-      ) {
-        continue;
-      }
-
       const tripMinutes = timeToMinutes(trip.departsAt);
       // Only future departures within the next 24h window
       const rawDiff = tripMinutes - currentMinutes;
+
+      if (trip.serviceDay && DATED_SERVICE.test(trip.serviceDay)) {
+        // Dated departure: today's from an hour ago on, then tomorrow's that
+        // fall within the next 24 h.
+        const isNext = rawDiff >= -60 ? trip.serviceDay === today : trip.serviceDay === tomorrow;
+        if (!isNext) continue;
+      } else if (
+        trip.serviceDay &&
+        !validDays.some((d) => trip.serviceDay!.toLowerCase().includes(d))
+      ) {
+        // Filter to today or no serviceDay restriction
+        continue;
+      }
       const adjustedMinutes = rawDiff < -60 ? rawDiff + 24 * 60 : rawDiff;
       if (adjustedMinutes < -60 || adjustedMinutes > 24 * 60) continue;
 

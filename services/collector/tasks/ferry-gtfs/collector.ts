@@ -8,6 +8,11 @@
  *   Baleària (Ibiza/Mallorca): mdb-2814
  *   Transbordador de Vizcaya: mdb-2789
  *
+ * Each trip is stored once per day it runs (calendar.txt + calendar_dates.txt)
+ * for the next DAYS_AHEAD days, with serviceDay = that date (YYYYMMDD). A
+ * route with no upcoming day keeps only its last published day, so pages can
+ * say when the operator's timetable ended.
+ *
  * Runs weekly (ferry schedules change infrequently).
  * Source: MobilityData CDN (no auth required)
  *
@@ -23,8 +28,15 @@ import { tmpdir } from "os";
 import { log, logError } from "../../shared/utils.js";
 import { triggerPmtilesRegen, layersForTask } from "../transit-gtfs/post-hook.js";
 import { heartbeat } from "../../shared/heartbeat.js";
+import { extractionLimits, safeExtract } from "../../shared/safe-unzip.js";
+import { addDays, madridToday, routeDepartures, serviceDates } from "./service-dates.js";
 
 const TASK = "ferry-gtfs";
+
+/** Days of departures stored per run, today included. The task runs weekly. */
+const DAYS_AHEAD = 14;
+/** How far back to look for the last published day of a route with no upcoming one. */
+const DAYS_BACK = 3 * 365;
 
 const FERRY_FEEDS = [
   {
@@ -111,8 +123,7 @@ async function downloadAndExtract(url: string, operatorName: string): Promise<st
   const zipPath = join(tmpDir, "gtfs.zip");
   await writeFile(zipPath, buffer);
 
-  const { execFileSync } = await import("child_process");
-  execFileSync("unzip", ["-o", "-q", zipPath, "-d", tmpDir], { timeout: 30000 });
+  await safeExtract(zipPath, tmpDir, extractionLimits(buffer.length));
 
   return tmpDir;
 }
@@ -138,6 +149,9 @@ export async function run(prisma: PrismaClient): Promise<void> {
   let totalStops = 0;
   let totalTrips = 0;
 
+  const today = madridToday();
+  const lastDay = addDays(today, DAYS_AHEAD - 1);
+
   for (const feed of FERRY_FEEDS) {
     let tmpDir: string | null = null;
 
@@ -157,6 +171,12 @@ export async function run(prisma: PrismaClient): Promise<void> {
         log(TASK, `${feed.operator}: no stop_times.txt — stop/trip linkage will be empty`);
       }
 
+      // Service calendars (both optional in GTFS, but one of them must exist)
+      const calendar = await parseCSV(join(tmpDir, "calendar.txt")).catch(() => []);
+      const calendarDates = await parseCSV(join(tmpDir, "calendar_dates.txt")).catch(() => []);
+      const upcomingDates = serviceDates(calendar, calendarDates, today, lastDay);
+      const pastDates = serviceDates(calendar, calendarDates, addDays(today, -DAYS_BACK), addDays(today, -1));
+
       // Parse shapes if present
       const shapesMap = new Map<string, Record<string, string>[]>();
       try {
@@ -174,16 +194,14 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
       log(
         TASK,
-        `${feed.operator}: ${routes.length} routes, ${stops.length} stops, ${trips.length} trips, ${stopTimes.length} stop_times`
+        `${feed.operator}: ${routes.length} routes, ${stops.length} stops, ${trips.length} trips, ${stopTimes.length} stop_times, ${upcomingDates.size} services running ${today}..${lastDay}`
       );
 
       // ── Build lookup maps ──
       // route_id → shape_id (from first trip with a shape)
       const routeShapeMap = new Map<string, string>();
-      // route_id → trip_ids
-      const routeTripsMap = new Map<string, string[]>();
-      // trip_id → service_id
-      const tripServiceMap = new Map<string, string>();
+      // route_id → trips
+      const routeTripsMap = new Map<string, Record<string, string>[]>();
 
       for (const trip of trips) {
         const routeId = trip.route_id;
@@ -194,10 +212,8 @@ export async function run(prisma: PrismaClient): Promise<void> {
         }
 
         const existing = routeTripsMap.get(routeId) || [];
-        existing.push(trip.trip_id);
+        existing.push(trip);
         routeTripsMap.set(routeId, existing);
-
-        tripServiceMap.set(trip.trip_id, trip.service_id || "");
       }
 
       // stop_times: trip_id → sorted stop sequence
@@ -252,11 +268,11 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
         // ── Import stops for this route ──
         // Collect unique stop_ids from all trips on this route
-        const tripIds = routeTripsMap.get(route.route_id) || [];
+        const routeTrips = routeTripsMap.get(route.route_id) || [];
         const routeStopIds = new Set<string>();
 
-        for (const tripId of tripIds) {
-          const times = tripStopTimesMap.get(tripId) || [];
+        for (const trip of routeTrips) {
+          const times = tripStopTimesMap.get(trip.trip_id) || [];
           for (const t of times) {
             routeStopIds.add(t.stop_id);
           }
@@ -289,35 +305,23 @@ export async function run(prisma: PrismaClient): Promise<void> {
           }
         }
 
-        // ── Import trips (one per unique service_id to keep data lean) ──
-        const seenServices = new Set<string>();
-        for (const tripId of tripIds) {
-          const trip = trips.find((t) => t.trip_id === tripId);
-          if (!trip) continue;
+        // ── Import departures: one row per trip and day it runs ──
+        const departures = routeDepartures(routeTrips, upcomingDates, pastDates).map(({ trip, day }) => {
+          const times = (tripStopTimesMap.get(trip.trip_id) || []).sort((a, b) => a.seq - b.seq);
+          return {
+            // A GTFS trip runs on many days; the row is that trip on one of them.
+            tripId: `${trip.trip_id}@${day}`,
+            routeId: createdRoute.id,
+            headsign: trip.trip_headsign?.trim() || null,
+            departsAt: times[0]?.departure || null,
+            arrivesAt: times[times.length - 1]?.arrival || null,
+            serviceDay: day,
+          };
+        });
 
-          const serviceId = trip.service_id || tripId;
-          if (seenServices.has(serviceId)) continue;
-          seenServices.add(serviceId);
-
-          const times = (tripStopTimesMap.get(tripId) || []).sort((a, b) => a.seq - b.seq);
-          const departsAt = times[0]?.departure || null;
-          const arrivesAt = times[times.length - 1]?.arrival || null;
-
-          try {
-            await prisma.ferryTrip.create({
-              data: {
-                tripId: trip.trip_id,
-                routeId: createdRoute.id,
-                headsign: trip.trip_headsign?.trim() || null,
-                departsAt,
-                arrivesAt,
-                serviceDay: serviceId,
-              },
-            });
-            totalTrips++;
-          } catch {
-            // Skip duplicates
-          }
+        if (departures.length > 0) {
+          const { count } = await prisma.ferryTrip.createMany({ data: departures, skipDuplicates: true });
+          totalTrips += count;
         }
 
         totalRoutes++;
