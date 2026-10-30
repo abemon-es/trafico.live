@@ -39,6 +39,7 @@
     "test:cyl": "tsx tests/cyl-incidents.test.ts",
     "test:accident-links": "tsx tests/accident-province-links.test.ts",
     "test:home-figures": "tsx tests/home-no-invented-figures.test.ts",
+    "test:home-explora": "tsx tests/home-explora.test.ts",
     "test:no-pii-logs": "tsx tests/no-pii-in-api-logs.test.ts",
     "test:insights-fuel": "tsx tests/insights-fuel-same-average.test.ts",
     "test:incident-reports": "tsx tests/incident-reports-history.test.ts",
