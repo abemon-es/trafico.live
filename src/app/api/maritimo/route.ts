@@ -21,17 +21,9 @@ import { reportApiError } from "@/lib/api-error";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { applyRateLimit } from "@/lib/api-utils";
-import { Prisma } from "@prisma/client";
+import { latestVesselsQuery, parseBounds, type VesselRow } from "@/lib/maritime/vessel-query";
 
 export const revalidate = 30;
-
-// ITU-R M.1371 ship type code ranges
-const TYPE_RANGES: Record<string, { min: number; max: number }> = {
-  fishing: { min: 30, max: 30 },
-  passenger: { min: 60, max: 69 },
-  cargo: { min: 70, max: 79 },
-  tanker: { min: 80, max: 89 },
-};
 
 export async function GET(request: NextRequest) {
   const rateLimitResponse = await applyRateLimit(request);
@@ -40,57 +32,16 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
 
-    const type = searchParams.get("type") || "all";
+    const type = (searchParams.get("type") || "all").toLowerCase();
     const flag = searchParams.get("flag");
-    const bounds = searchParams.get("bounds");
-    const limit = Math.min(parseInt(searchParams.get("limit") || "500", 10), 2000);
+    const bounds = parseBounds(searchParams.get("bounds"));
+    const requested = parseInt(searchParams.get("limit") || "500", 10);
+    const limit = Number.isFinite(requested) ? Math.min(Math.max(requested, 1), 2000) : 500;
 
     // Rolling 1-hour window (AIS data is transient)
     const since = new Date(Date.now() - 60 * 60 * 1000);
 
-    // Build vessel filter (ship type + flag)
-    const vesselWhere: Prisma.VesselWhereInput = {};
-    if (type !== "all" && TYPE_RANGES[type]) {
-      const { min, max } = TYPE_RANGES[type];
-      vesselWhere.shipType = min === max ? min : { gte: min, lte: max };
-    }
-    if (flag) {
-      vesselWhere.flag = flag.toUpperCase().slice(0, 2);
-    }
-
-    // Fetch latest position per vessel via raw SQL (no FK relation)
-    const positions = await prisma.$queryRaw<Array<{
-      mmsi: number; latitude: number; longitude: number;
-      sog: number | null; cog: number | null; heading: number | null; navStatus: number | null;
-      createdAt: Date; name: string | null; shipType: number | null; flag: string | null;
-      destination: string | null; length: number | null;
-      category: string | null; owner: string | null; gt: number | null;
-    }>>`
-      SELECT DISTINCT ON (vp.mmsi)
-        vp.mmsi, vp.latitude::float, vp.longitude::float,
-        vp.sog, vp.cog, vp.heading, vp."navStatus", vp."createdAt",
-        v.name, v."shipType", v.flag, v.destination, v.length,
-        v."shipCategory" as category, v."registeredOwner" as owner, v."grossTonnage" as gt
-      FROM "VesselPosition" vp
-      LEFT JOIN "Vessel" v ON v.mmsi = vp.mmsi
-      WHERE vp."createdAt" > ${since}
-      ORDER BY vp.mmsi, vp."createdAt" DESC
-      LIMIT ${limit}
-    `;
-
-    // Apply geographic bounds filter (post-query — bounding box is client-driven)
-    let filtered = positions;
-    if (bounds) {
-      const parts = bounds.split(",").map(Number);
-      if (parts.length === 4 && parts.every((n) => !isNaN(n))) {
-        const [swLat, swLng, neLat, neLng] = parts;
-        filtered = filtered.filter((p) => {
-          const lat = Number(p.latitude);
-          const lon = Number(p.longitude);
-          return lat >= swLat && lat <= neLat && lon >= swLng && lon <= neLng;
-        });
-      }
-    }
+    const filtered = await prisma.$queryRaw<VesselRow[]>(latestVesselsQuery({ since, type, flag, bounds, limit }));
 
     // Build GeoJSON FeatureCollection
     const geojson = {

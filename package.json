@@ -17,6 +17,7 @@
     "test:maritime": "tsx tests/maritime-forecast-zones.test.ts",
     "test:aemet-shared": "tsx tests/aemet-shared.test.ts",
     "test:vessel-latest": "tsx tests/refresh-vessel-latest.test.ts",
+    "test:vessel-query": "tsx tests/maritimo-vessel-query.test.ts",
     "test:indexability": "tsx tests/seo-indexability.test.ts",
     "test:pagination": "tsx tests/seo-pagination.test.ts",
     "test:alert-urls": "tsx tests/alert-urls.test.ts",
