@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import {
   Radar,
@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Info,
 } from "lucide-react";
+import { canonicalRoadNumber, decodeRoadParam } from "@/lib/geo/road-param";
 import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { AdSlot } from "@/components/ads/AdSlot";
@@ -116,7 +117,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { road: roadParam } = await params;
-  const roadId = decodeURIComponent(roadParam).toUpperCase();
+  const roadId = await canonicalRoadNumber("radar", roadParam);
 
   // Try to get radar count for the description
   let count = 0;
@@ -143,7 +144,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function RadaresRoadPage({ params }: PageProps) {
   const { road: roadParam } = await params;
-  const roadId = decodeURIComponent(roadParam).toUpperCase();
+  const roadId = await canonicalRoadNumber("radar", roadParam);
+  if (decodeRoadParam(roadParam) !== roadId) permanentRedirect(`/radares/${encodeURIComponent(roadId)}`);
 
   const [radars, cameraCount, speedLimits, roadRecord] = await Promise.all([
     prisma.radar.findMany({
