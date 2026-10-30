@@ -15,16 +15,37 @@ export function decodeRoadParam(param: string): string {
   }
 }
 
-export async function canonicalRoadNumber(table: "camera" | "radar", param: string): Promise<string> {
+export interface RoadNumber {
+  /** The spelling to query with. */
+  roadNumber: string;
+  /** True only when the spelling came from a stored row. */
+  resolved: boolean;
+}
+
+/**
+ * The stored spelling of the road in the URL. An exact match wins; otherwise
+ * a case-insensitive one, in a fixed order. When nothing is found, or the
+ * database fails, the upper-cased URL is used to query but `resolved` is
+ * false, so callers never redirect on a guess (a cached 308 to a spelling
+ * that 404s would outlive the outage).
+ */
+export async function canonicalRoadNumber(table: "camera" | "radar", param: string): Promise<RoadNumber> {
   const raw = decodeRoadParam(param);
-  const where = { roadNumber: { equals: raw, mode: "insensitive" as const } };
+  const find = (roadNumber: { equals: string; mode?: "insensitive" }) =>
+    table === "camera"
+      ? prisma.camera.findFirst({ where: { roadNumber }, select: { roadNumber: true }, orderBy: { roadNumber: "asc" } })
+      : prisma.radar.findFirst({ where: { roadNumber }, select: { roadNumber: true }, orderBy: { roadNumber: "asc" } });
   try {
-    const row =
-      table === "camera"
-        ? await prisma.camera.findFirst({ where, select: { roadNumber: true } })
-        : await prisma.radar.findFirst({ where, select: { roadNumber: true } });
-    return row?.roadNumber ?? raw.toUpperCase();
+    const row = (await find({ equals: raw })) ?? (await find({ equals: raw, mode: "insensitive" }));
+    if (row?.roadNumber) return { roadNumber: row.roadNumber, resolved: true };
   } catch {
-    return raw.toUpperCase();
+    // fall through: query with the guess, never redirect to it
   }
+  return { roadNumber: raw.toUpperCase(), resolved: false };
+}
+
+/** Where a road hub should 308 to, or null to render in place. */
+export function roadRedirectTarget(param: string, road: RoadNumber): string | null {
+  if (!road.resolved) return null;
+  return decodeRoadParam(param) === road.roadNumber ? null : road.roadNumber;
 }

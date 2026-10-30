@@ -13,7 +13,7 @@ import {
   ArrowRight,
   Info,
 } from "lucide-react";
-import { canonicalRoadNumber, decodeRoadParam } from "@/lib/geo/road-param";
+import { canonicalRoadNumber, roadRedirectTarget } from "@/lib/geo/road-param";
 import prisma from "@/lib/db";
 import { cameraImage } from "@/lib/cameras/snapshot";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
@@ -30,7 +30,7 @@ type Props = { params: Promise<{ road: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { road: roadParam } = await params;
-  const roadId = await canonicalRoadNumber("camera", roadParam);
+  const roadId = (await canonicalRoadNumber("camera", roadParam)).roadNumber;
 
   const count = await prisma.camera.count({
     where: { roadNumber: roadId, isActive: true },
@@ -57,8 +57,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CamarasCarreteraPage({ params }: Props) {
   const { road: roadParam } = await params;
-  const roadId = await canonicalRoadNumber("camera", roadParam);
-  if (decodeRoadParam(roadParam) !== roadId) permanentRedirect(`/camaras/carretera/${encodeURIComponent(roadId)}`);
+  const road = await canonicalRoadNumber("camera", roadParam);
+  const target = roadRedirectTarget(roadParam, road);
+  if (target) permanentRedirect(`/camaras/carretera/${encodeURIComponent(target)}`);
+  const roadId = road.roadNumber;
 
   const [cameras, radarCount, roadRecord, otherRoadsRaw] = await Promise.all([
     prisma.camera.findMany({
