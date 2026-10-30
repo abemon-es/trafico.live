@@ -20,7 +20,7 @@
  */
 
 import { readFileSync } from "fs";
-import { FERRY_TERMINALS } from "./ferry-terminals.js";
+import { FERRY_TERMINALS, ferryTerminalAt } from "./ferry-terminals.js";
 
 export interface WpiEntry {
   latitude: number;
@@ -117,4 +117,40 @@ export function planPortCoords(
     plan.fill.push({ id: port.id, latitude: entry.latitude, longitude: entry.longitude, source: "wpi", sourceName: entry.name });
   }
   return plan;
+}
+
+export interface PositionedPort {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
+/**
+ * The port resolvePort() (collector.ts) would give a stop today, in memory:
+ * a ferry terminal if one covers it, else the nearest fnPort row with a
+ * position inside the ±1° box, by the same planar distance in degrees × 60,
+ * if under 10. Used to retag the calls stored without a port before their
+ * port had a position, so a call goes to the port the detector would pick
+ * now and a newly filled port takes none that sits nearer another one.
+ */
+export function portResolver(ports: PositionedPort[]): (lat: number, lng: number) => { portName: string; portCode: string } | null {
+  const cells = new Map<string, PositionedPort[]>();
+  for (const p of ports) {
+    const k = `${Math.floor(p.latitude)}:${Math.floor(p.longitude)}`;
+    (cells.get(k) ?? cells.set(k, []).get(k)!).push(p);
+  }
+  return (lat, lng) => {
+    const terminal = ferryTerminalAt(lat, lng);
+    if (terminal) return terminal;
+    let best: { port: PositionedPort; d: number } | null = null;
+    for (let dy = -1; dy <= 1; dy++)
+      for (let dx = -1; dx <= 1; dx++)
+        for (const p of cells.get(`${Math.floor(lat) + dy}:${Math.floor(lng) + dx}`) ?? []) {
+          if (Math.abs(p.latitude - lat) > 1 || Math.abs(p.longitude - lng) > 1) continue;
+          const d = Math.hypot(p.longitude - lng, p.latitude - lat);
+          if (!best || d < best.d || (d === best.d && p.id < best.port.id)) best = { port: p, d };
+        }
+    return best && best.d * 60 < 10 ? { portName: best.port.name, portCode: best.port.id } : null;
+  };
 }

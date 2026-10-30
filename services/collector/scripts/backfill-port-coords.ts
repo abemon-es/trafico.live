@@ -11,13 +11,25 @@
  * apply is one transaction that only writes rows still without a latitude
  * and longitude, and rolls back unless exactly --expect rows changed.
  *
- * Calls already stored without a port keep it empty: the detector only gives
- * a second look to recent calls at the ferry terminals.
+ * Then --retag, once the positions are in: the calls stored without a port
+ * get the one resolvePort() would give them now (portResolver(): ferry
+ * terminal, else the nearest positioned fnPort row under 10 nm), so the port
+ * pages and movements cover the history and not only stops from the deploy on.
+ * Calls whose nearest port already had a position were tagged when stored, so
+ * in practice only those near the ports just filled change.
+ *
+ *   npx tsx scripts/backfill-port-coords.ts --retag [--codes ESALG,…] [--days 30]                # dry run
+ *   npx tsx scripts/backfill-port-coords.ts --retag [--codes …] [--days 30] --apply --expect <N>
+ *
+ * --codes keeps only the calls that resolve to those ports; --days only those
+ * that arrived in the last N days. Same transaction and --expect rule; only
+ * calls still without a port are written. Voyage.departurePort/arrivalPort,
+ * copied from the call when the voyage was made, are left as they are.
  */
 
 import pg from "pg";
 import { haversineNm } from "../tasks/voyage-detector/ferry-terminals.js";
-import { loadWpiCoords, planPortCoords, type PortWithoutCoords } from "../tasks/voyage-detector/port-coords.js";
+import { loadWpiCoords, planPortCoords, portResolver, type PortWithoutCoords } from "../tasks/voyage-detector/port-coords.js";
 
 const RADIUS_NM = 10;
 
@@ -32,9 +44,16 @@ async function main() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL is not set");
 
+  const days = args.includes("--days") ? Number(args[args.indexOf("--days") + 1]) : null;
+  if (days != null && !(Number.isInteger(days) && days > 0)) throw new Error("--days needs a whole number of days");
+
   const pool = new pg.Pool({ connectionString: url, max: 1 });
   const client = await pool.connect();
   try {
+    if (args.includes("--retag")) {
+      await retag(client, { apply, expect, codes, days });
+      return;
+    }
     const ports = (
       await client.query(
         `SELECT id, name, "nameLocal" FROM "Port" WHERE "fnPort" = true AND latitude IS NULL AND longitude IS NULL ORDER BY id`
@@ -107,6 +126,66 @@ async function main() {
     client.release();
     await pool.end();
   }
+}
+
+async function retag(
+  client: pg.PoolClient,
+  { apply, expect, codes, days }: { apply: boolean; expect: number; codes: Set<string> | null; days: number | null }
+) {
+  const ports = (
+    await client.query(
+      `SELECT id, name, latitude::float AS latitude, longitude::float AS longitude FROM "Port" WHERE "fnPort" = true AND latitude IS NOT NULL AND longitude IS NOT NULL`
+    )
+  ).rows as { id: string; name: string; latitude: number; longitude: number }[];
+  const resolve = portResolver(ports);
+  const calls = (
+    await client.query(
+      `SELECT id, latitude::float AS lat, longitude::float AS lng FROM "PortCall"
+       WHERE "portCode" IS NULL AND ($1::int IS NULL OR "arrivedAt" >= now() - make_interval(days => $1::int))`,
+      [days]
+    )
+  ).rows as { id: string; lat: number; lng: number }[];
+
+  const changes: { id: string; portCode: string; portName: string }[] = [];
+  const perPort = new Map<string, number>();
+  for (const c of calls) {
+    const port = resolve(c.lat, c.lng);
+    if (!port || (codes && !codes.has(port.portCode))) continue;
+    changes.push({ id: c.id, ...port });
+    perPort.set(port.portCode, (perPort.get(port.portCode) ?? 0) + 1);
+  }
+  console.log(
+    `retag: ${calls.length} calls without a port${days ? ` in the last ${days} days` : ""}; ` +
+      `${changes.length} get one${codes ? ` (only ${[...codes].join(",")})` : ""}, across ${perPort.size} ports`
+  );
+  for (const [code, n] of [...perPort].sort((a, b) => b[1] - a[1]).slice(0, 40)) console.log(`  ${code}  ${n}`);
+  if (perPort.size > 40) console.log(`  … ${perPort.size - 40} more ports`);
+
+  if (!apply) {
+    console.log("dry run: nothing written");
+    return;
+  }
+  await client.query("BEGIN");
+  await client.query(`CREATE TEMP TABLE port_call_retag (id text PRIMARY KEY, code text, name text) ON COMMIT DROP`);
+  for (let i = 0; i < changes.length; i += 1000) {
+    const chunk = changes.slice(i, i + 1000);
+    const params: unknown[] = [];
+    const tuples = chunk.map((c, j) => {
+      params.push(c.id, c.portCode, c.portName);
+      return `($${3 * j + 1}, $${3 * j + 2}, $${3 * j + 3})`;
+    });
+    await client.query(`INSERT INTO port_call_retag (id, code, name) VALUES ${tuples.join(", ")}`, params);
+  }
+  const r = await client.query(
+    `UPDATE "PortCall" pc SET "portCode" = t.code, "portName" = t.name
+     FROM port_call_retag t WHERE pc.id = t.id AND pc."portCode" IS NULL`
+  );
+  if ((r.rowCount ?? 0) !== expect) {
+    await client.query("ROLLBACK");
+    throw new Error(`would change ${r.rowCount}, expected ${expect}: rolled back`);
+  }
+  await client.query("COMMIT");
+  console.log(`retagged ${r.rowCount} calls (committed ${new Date().toISOString()})`);
 }
 
 main().catch((err) => {
