@@ -89,7 +89,61 @@ export function forecastsLevante(passages: ForecastPassage[]): boolean {
   return passages.some((p) => /\blevante\b/i.test(p.text));
 }
 
-/** AIS ship types 60–69 are passenger ships, which include the ro-pax ferries of the crossing. */
-export function isPassengerShip(shipType: number | null | undefined): boolean {
-  return typeof shipType === "number" && shipType >= 60 && shipType <= 69;
+/** AIS types 40–49: high-speed craft, the fast ferries of the crossing. */
+export function isFastFerry(shipType: number | null | undefined): boolean {
+  return typeof shipType === "number" && shipType >= 40 && shipType <= 49;
+}
+
+/** Ships that carry passengers across: passenger ships and ro-pax (60–69) and fast ferries (40–49). */
+export function isFerryShip(shipType: number | null | undefined): boolean {
+  return isFastFerry(shipType) || (typeof shipType === "number" && shipType >= 60 && shipType <= 69);
+}
+
+/** A crossing takes about an hour; a gap longer than this is not one crossing. */
+export const MAX_CROSSING_HOURS = 3;
+
+export interface StraitCall {
+  mmsi: number;
+  portCode: string | null;
+  arrivedAt: Date;
+  departedAt: Date | null;
+}
+
+export interface Crossing {
+  mmsi: number;
+  from: string;
+  to: string;
+  departedAt: Date;
+  arrivedAt: Date;
+}
+
+/**
+ * Crossings from port calls: a ship leaves one port and its next call is at
+ * another port within MAX_CROSSING_HOURS. Calls without a port break the chain.
+ */
+export function pairCrossings(calls: StraitCall[]): Crossing[] {
+  const byShip = new Map<number, StraitCall[]>();
+  for (const c of calls) {
+    const list = byShip.get(c.mmsi);
+    if (list) list.push(c);
+    else byShip.set(c.mmsi, [c]);
+  }
+  const crossings: Crossing[] = [];
+  for (const list of byShip.values()) {
+    list.sort((a, b) => a.arrivedAt.getTime() - b.arrivedAt.getTime());
+    for (let i = 0; i + 1 < list.length; i++) {
+      const a = list[i];
+      const b = list[i + 1];
+      if (!a.portCode || !b.portCode || !a.departedAt || a.portCode === b.portCode) continue;
+      const gap = b.arrivedAt.getTime() - a.departedAt.getTime();
+      if (gap <= 0 || gap > MAX_CROSSING_HOURS * 3_600_000) continue;
+      crossings.push({ mmsi: a.mmsi, from: a.portCode, to: b.portCode, departedAt: a.departedAt, arrivedAt: b.arrivedAt });
+    }
+  }
+  return crossings.sort((x, y) => x.departedAt.getTime() - y.departedAt.getTime());
+}
+
+/** Calendar day in Madrid, YYYY-MM-DD. */
+export function madridDate(d: Date): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
 }

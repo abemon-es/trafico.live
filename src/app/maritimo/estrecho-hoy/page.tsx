@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AlertTriangle, Anchor, Clock, ExternalLink, Ship, Waves, Wind } from "lucide-react";
+import { AlertTriangle, Anchor, ArrowLeftRight, Clock, ExternalLink, Ship, Waves, Wind, Zap } from "lucide-react";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { vesselSlug } from "@/lib/vessel-utils";
 import {
@@ -8,10 +9,16 @@ import {
   STRAIT_BOX,
   STRAIT_FORECAST_ZONE,
   STRAIT_PORTS,
+  MAX_CROSSING_HOURS,
   forecastsLevante,
-  isPassengerShip,
+  isFastFerry,
+  isFerryShip,
+  madridDate,
+  pairCrossings,
   straitForecastPassages,
+  type Crossing,
   type ForecastPassage,
+  type StraitCall,
 } from "@/lib/maritime/estrecho";
 
 export const revalidate = 300; // 5 min
@@ -20,7 +27,7 @@ export const revalidate = 300; // 5 min
 export const metadata: Metadata = {
   title: "Estrecho hoy — Algeciras, Tarifa, Ceuta y Tánger",
   description:
-    "Ferris en el Estrecho en este momento, salidas detectadas en las últimas 24 horas y previsión costera y avisos de AEMET.",
+    "Ferris y rápidos en el Estrecho en este momento, salidas y cruces Algeciras–Ceuta detectados por AIS, y previsión costera y avisos de AEMET.",
   robots: { index: false, follow: false },
 };
 
@@ -28,6 +35,10 @@ const BALEARIA_TIMETABLE_URL = "https://www.balearia.com/";
 
 const VESSEL_WINDOW_MIN = 20;
 const DEPARTURES_WINDOW_H = 24;
+const CROSSINGS_WINDOW_DAYS = 7;
+
+/** The line LE asks about most: Algeciras ⇄ Ceuta. */
+const LINE = { a: "ESALG", b: "ESCEU" } as const;
 
 // ---------------------------------------------------------------------------
 // Data
@@ -66,31 +77,59 @@ interface Departure {
   portCode: string;
   departedAt: Date;
   name: string | null;
+  shipType: number | null;
   destination: string | null;
 }
+
+// Ferries and fast ferries only (see isFerryShip), filtered in SQL so the LIMIT
+// counts ferries and not the tugs and cargo ships calling at the same ports.
+const FERRY_TYPES_SQL = Prisma.sql`(v."shipType" BETWEEN 40 AND 49 OR v."shipType" BETWEEN 60 AND 69)`;
+const STRAIT_CODES_SQL = Prisma.join(STRAIT_PORTS.map((p) => p.code));
 
 async function getDepartures(): Promise<Departure[] | null> {
   try {
     const since = new Date(Date.now() - DEPARTURES_WINDOW_H * 60 * 60 * 1000);
-    const calls = await prisma.portCall.findMany({
-      where: { portCode: { in: STRAIT_PORTS.map((p) => p.code) }, departedAt: { gte: since } },
-      orderBy: { departedAt: "desc" },
-      take: 300,
-      select: { mmsi: true, portCode: true, departedAt: true },
-    });
-    const vessels = await prisma.vessel.findMany({
-      where: { mmsi: { in: [...new Set(calls.map((c) => c.mmsi))] } },
-      select: { mmsi: true, name: true, shipType: true, destination: true },
-    });
-    const byMmsi = new Map(vessels.map((v) => [v.mmsi, v]));
-    return calls
-      .filter((c) => isPassengerShip(byMmsi.get(c.mmsi)?.shipType))
-      .map((c) => ({
-        mmsi: c.mmsi,
-        portCode: c.portCode!,
-        departedAt: c.departedAt!,
-        name: byMmsi.get(c.mmsi)?.name ?? null,
-        destination: byMmsi.get(c.mmsi)?.destination ?? null,
+    return await prisma.$queryRaw<Departure[]>`
+      SELECT pc.mmsi, pc."portCode", pc."departedAt", v.name, v."shipType", v.destination
+      FROM "PortCall" pc
+      JOIN "Vessel" v ON v.mmsi = pc.mmsi
+      WHERE pc."portCode" IN (${STRAIT_CODES_SQL})
+        AND pc."departedAt" >= ${since}
+        AND ${FERRY_TYPES_SQL}
+      ORDER BY pc."departedAt" DESC
+      LIMIT 500
+    `;
+  } catch {
+    return null;
+  }
+}
+
+interface LineCrossing extends Crossing {
+  name: string | null;
+  fast: boolean;
+}
+
+/** Algeciras ⇄ Ceuta crossings of the last days, paired from port calls. */
+async function getLineCrossings(): Promise<LineCrossing[] | null> {
+  try {
+    const since = new Date(Date.now() - (CROSSINGS_WINDOW_DAYS * 24 + MAX_CROSSING_HOURS) * 60 * 60 * 1000);
+    const calls = await prisma.$queryRaw<(StraitCall & { name: string | null; shipType: number | null })[]>`
+      SELECT pc.mmsi, pc."portCode", pc."arrivedAt", pc."departedAt", v.name, v."shipType"
+      FROM "PortCall" pc
+      JOIN "Vessel" v ON v.mmsi = pc.mmsi
+      WHERE pc."portCode" IN (${STRAIT_CODES_SQL})
+        AND pc."arrivedAt" >= ${since}
+        AND ${FERRY_TYPES_SQL}
+      ORDER BY pc."arrivedAt"
+      LIMIT 5000
+    `;
+    const byMmsi = new Map(calls.map((c) => [c.mmsi, c]));
+    return pairCrossings(calls)
+      .filter((x) => (x.from === LINE.a && x.to === LINE.b) || (x.from === LINE.b && x.to === LINE.a))
+      .map((x) => ({
+        ...x,
+        name: byMmsi.get(x.mmsi)?.name ?? null,
+        fast: isFastFerry(byMmsi.get(x.mmsi)?.shipType),
       }));
   } catch {
     return null;
@@ -156,6 +195,18 @@ const madridDateTime = (d: Date) =>
 
 const portName = (code: string) => STRAIT_PORTS.find((p) => p.code === code)?.name ?? code;
 
+const madridDayLabel = (d: Date) =>
+  d.toLocaleDateString("es-ES", { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "short" });
+
+function FastTag() {
+  return (
+    <span className="inline-flex items-center gap-0.5 rounded bg-tl-amber-100 dark:bg-tl-amber-900/40 px-1.5 py-0.5 text-xs font-semibold text-tl-amber-800 dark:text-tl-amber-200">
+      <Zap className="w-3 h-3" />
+      Rápido
+    </span>
+  );
+}
+
 function Unavailable() {
   return <p className="text-sm text-gray-500 dark:text-gray-400">Dato no disponible ahora mismo.</p>;
 }
@@ -165,16 +216,34 @@ function Unavailable() {
 // ---------------------------------------------------------------------------
 
 export default async function EstrechoHoyPage() {
-  const [vessels, departures, forecast, alerts] = await Promise.all([
+  const [vessels, departures, forecast, alerts, crossings] = await Promise.all([
     getVesselsNow(),
     getDepartures(),
     getForecast(),
     getAlerts(),
+    getLineCrossings(),
   ]);
 
   const ferries = (vessels ?? [])
-    .filter((v) => isPassengerShip(v.shipType))
+    .filter((v) => isFerryShip(v.shipType))
     .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "", "es"));
+
+  // «¿Sale hoy el rápido?»: fast-ferry departures detected today, and fast ferries moving now.
+  const today = madridDate(new Date());
+  const fastDepartures = (departures ?? []).filter((d) => isFastFerry(d.shipType));
+  const fastToday = fastDepartures.filter((d) => madridDate(d.departedAt) === today);
+  const lastFast = fastDepartures[0] ?? null; // departures are newest first
+  const fastMoving = ferries.filter((v) => isFastFerry(v.shipType) && v.sog != null && v.sog >= 0.5);
+
+  // Algeciras ⇄ Ceuta crossings grouped by Madrid day, newest day first.
+  const crossingDays = new Map<string, { label: string; ab: LineCrossing[]; ba: LineCrossing[] }>();
+  for (const x of crossings ?? []) {
+    const key = madridDate(x.departedAt);
+    const day = crossingDays.get(key) ?? { label: madridDayLabel(x.departedAt), ab: [], ba: [] };
+    (x.from === LINE.a ? day.ab : day.ba).push(x);
+    crossingDays.set(key, day);
+  }
+  const days = [...crossingDays.entries()].sort(([a], [b]) => b.localeCompare(a)).map(([, d]) => d);
   const levante = forecast ? forecastsLevante(forecast.passages) : false;
   const departuresByPort = STRAIT_PORTS.map((p) => ({
     ...p,
@@ -214,7 +283,7 @@ export default async function EstrechoHoyPage() {
 
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Esta página no da horarios. Las salidas se detectan por AIS cuando un buque de pasaje deja el puerto, y puede
+          Esta página no da horarios. Las salidas se detectan por AIS cuando un ferri o un rápido deja el puerto, y puede
           faltar alguna. Para saber si un barco sale y a qué hora, consulta siempre a la naviera:{" "}
           <a
             href={BALEARIA_TIMETABLE_URL}
@@ -252,6 +321,47 @@ export default async function EstrechoHoyPage() {
                 </li>
               ))}
             </ul>
+          )}
+        </section>
+
+        {/* Fast ferries today --------------------------------------------- */}
+        <section>
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+            <Zap className="w-5 h-5 text-tl-amber-500" />
+            ¿Salen hoy los rápidos?
+          </h2>
+          {departures === null ? (
+            <Unavailable />
+          ) : (
+            <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 space-y-2 text-sm">
+              {fastToday.length > 0 ? (
+                <p className="text-gray-900 dark:text-gray-100">
+                  <span className="font-semibold">Sí: {fastToday.length} salidas de rápidos detectadas hoy.</span> La
+                  última, {fastToday[0].name ?? `MMSI ${fastToday[0].mmsi}`} desde {portName(fastToday[0].portCode)} a
+                  las <span className="font-mono tabular-nums">{madridTime(fastToday[0].departedAt)}</span>.
+                </p>
+              ) : (
+                <p className="text-gray-900 dark:text-gray-100">
+                  <span className="font-semibold">Ninguna salida de rápido detectada hoy todavía.</span>
+                  {lastFast
+                    ? ` La última fue ${lastFast.name ?? `MMSI ${lastFast.mmsi}`} desde ${portName(lastFast.portCode)}, ${madridDateTime(lastFast.departedAt)}.`
+                    : " Tampoco en las últimas 24 horas."}
+                </p>
+              )}
+              {vessels !== null && (
+                <p className="text-gray-600 dark:text-gray-400">
+                  {fastMoving.length > 0
+                    ? `Navegando ahora: ${fastMoving.map((v) => v.name ?? `MMSI ${v.mmsi}`).join(", ")}.`
+                    : "Ningún rápido navegando en el Estrecho ahora mismo."}
+                </p>
+              )}
+              {levante && (
+                <p className="text-tl-amber-800 dark:text-tl-amber-200 font-semibold">
+                  Hay levante en la previsión: con levante fuerte los rápidos suelen quedarse en puerto. Confírmalo con la
+                  naviera antes de mandar a nadie al puerto.
+                </p>
+              )}
+            </div>
           )}
         </section>
 
@@ -293,6 +403,54 @@ export default async function EstrechoHoyPage() {
           )}
         </section>
 
+        {/* Algeciras ⇄ Ceuta ---------------------------------------------- */}
+        <section>
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-1 flex items-center gap-2">
+            <ArrowLeftRight className="w-5 h-5 text-tl-sea-500" />
+            Algeciras ⇄ Ceuta: cruces de los últimos {CROSSINGS_WINDOW_DAYS} días
+          </h2>
+          <p className="text-xs text-gray-500 mb-3">
+            Hora a la que el barco salió, detectada por AIS. Sirve para ver qué barcos hacen la línea y a qué horas suelen
+            salir; no es un horario y no garantiza ninguna salida.
+          </p>
+          {crossings === null ? (
+            <Unavailable />
+          ) : days.length === 0 ? (
+            <p className="text-sm text-gray-600 dark:text-gray-400">Aún no hay cruces Algeciras ⇄ Ceuta detectados.</p>
+          ) : (
+            <div className="space-y-3">
+              {days.map((d) => (
+                <div key={d.label} className="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+                  <div className="text-sm font-semibold capitalize text-gray-900 dark:text-gray-100 mb-2">{d.label}</div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {[
+                      { title: "Algeciras → Ceuta", list: d.ab },
+                      { title: "Ceuta → Algeciras", list: d.ba },
+                    ].map((dir) => (
+                      <div key={dir.title}>
+                        <div className="text-xs text-gray-500 mb-1">{dir.title}</div>
+                        {dir.list.length === 0 ? (
+                          <p className="text-sm text-gray-500">—</p>
+                        ) : (
+                          <ul className="space-y-1">
+                            {dir.list.map((x) => (
+                              <li key={`${x.mmsi}-${x.departedAt.toISOString()}`} className="flex flex-wrap items-center gap-2 text-sm">
+                                <span className="font-mono tabular-nums">{madridTime(x.departedAt)}</span>
+                                <span className="text-gray-800 dark:text-gray-200">{x.name ?? `MMSI ${x.mmsi}`}</span>
+                                {x.fast && <FastTag />}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
         {/* Departures ----------------------------------------------------- */}
         <section>
           <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
@@ -313,7 +471,7 @@ export default async function EstrechoHoyPage() {
               </div>
               {departures.length === 0 ? (
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Sin salidas de buques de pasaje detectadas en las últimas 24 horas.
+                  Sin salidas de ferris ni rápidos detectadas en las últimas 24 horas.
                 </p>
               ) : (
                 <div className="overflow-x-auto">
@@ -335,6 +493,12 @@ export default async function EstrechoHoyPage() {
                             <Link href={`/maritimo/buques/${vesselSlug(d.mmsi, d.name)}`} className="text-tl-sea-700 dark:text-tl-sea-300 hover:underline">
                               {d.name ?? `MMSI ${d.mmsi}`}
                             </Link>
+                            {isFastFerry(d.shipType) && (
+                              <>
+                                {" "}
+                                <FastTag />
+                              </>
+                            )}
                           </td>
                           <td className="py-2 text-gray-600 dark:text-gray-400">{d.destination ?? "—"}</td>
                         </tr>
@@ -357,7 +521,7 @@ export default async function EstrechoHoyPage() {
             <Unavailable />
           ) : ferries.length === 0 ? (
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Ningún buque de pasaje con posición AIS en los últimos {VESSEL_WINDOW_MIN} minutos.
+              Ningún ferri ni rápido con posición AIS en los últimos {VESSEL_WINDOW_MIN} minutos.
             </p>
           ) : (
             <ul className="divide-y divide-gray-100 dark:divide-gray-800 rounded-xl border border-gray-200 dark:border-gray-800">
@@ -366,6 +530,7 @@ export default async function EstrechoHoyPage() {
                   <Link href={`/maritimo/buques/${vesselSlug(v.mmsi, v.name)}`} className="font-semibold text-tl-sea-700 dark:text-tl-sea-300 hover:underline">
                     {v.name ?? `MMSI ${v.mmsi}`}
                   </Link>
+                  {isFastFerry(v.shipType) && <FastTag />}
                   <span className="text-gray-600 dark:text-gray-400">
                     {v.sog != null && v.sog >= 0.5 ? `Navegando · ${v.sog.toFixed(1)} nudos` : "Parado"}
                   </span>
