@@ -151,10 +151,12 @@ async function main() {
   assert.throws(() => parseZipinfo([header, line("-rw-r--r--", 10, "stops.txt")].join("\n")), /no summary line/);
   assert.equal(parseZipinfo([header, line("-rw-r--r--", 10, "stops.txt"), "1 file, 10 bytes uncompressed, 10 bytes compressed:  0.0%"].join("\n")).length, 1);
 
-  // 11. The limits: a 50 MB floor, 50× the archive, never past 4 GB.
+  // 11. The limits: a 256 MB floor, 50× the archive, never past 4 GB.
   const MB = 1024 * 1024;
-  assert.equal(extractionLimits(10 * 1024).maxTotalBytes, 50 * MB);
-  assert.equal(extractionLimits(2 * MB).maxTotalBytes, 100 * MB);
+  assert.equal(extractionLimits(10 * 1024).maxTotalBytes, 256 * MB);
+  assert.ok(extractionLimits(1_067_440).maxTotalBytes > 56_830_885, "Renfe LD expands 53×, under the floor");
+  assert.ok(extractionLimits(1 * MB).maxTotalBytes < 1000 * MB, "a 1 MB bomb is still refused");
+  assert.equal(extractionLimits(8 * MB).maxTotalBytes, 400 * MB);
   assert.equal(extractionLimits(106 * MB).maxTotalBytes, 4 * 1024 * MB, "Lisboa TML expands to 1.26 GB, under the cap");
   assert.equal(extractionLimits(1).maxEntries, 100);
 
