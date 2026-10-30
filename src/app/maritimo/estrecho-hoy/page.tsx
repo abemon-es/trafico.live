@@ -1,0 +1,551 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { AlertTriangle, Anchor, ArrowLeftRight, Clock, ExternalLink, Ship, Waves, Wind, Zap } from "lucide-react";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/db";
+import { vesselSlug } from "@/lib/vessel-utils";
+import {
+  STRAIT_ALERT_PROVINCES,
+  STRAIT_BOX,
+  STRAIT_FORECAST_ZONE,
+  STRAIT_PORTS,
+  MAX_CROSSING_HOURS,
+  forecastsLevante,
+  isFastFerry,
+  isFerryShip,
+  madridDate,
+  pairCrossings,
+  straitForecastPassages,
+  type Crossing,
+  type ForecastPassage,
+  type StraitCall,
+} from "@/lib/maritime/estrecho";
+
+export const revalidate = 300; // 5 min
+
+// Internal page in trial: out of search engines and out of every sitemap.
+export const metadata: Metadata = {
+  title: "Estrecho hoy — Algeciras, Tarifa, Ceuta y Tánger",
+  description:
+    "Ferris y rápidos en el Estrecho en este momento, salidas y cruces Algeciras–Ceuta detectados por AIS, y previsión costera y avisos de AEMET.",
+  robots: { index: false, follow: false },
+};
+
+const BALEARIA_TIMETABLE_URL = "https://www.balearia.com/";
+
+const VESSEL_WINDOW_MIN = 20;
+const DEPARTURES_WINDOW_H = 24;
+const CROSSINGS_WINDOW_DAYS = 7;
+
+/** The line LE asks about most: Algeciras ⇄ Ceuta. */
+const LINE = { a: "ESALG", b: "ESCEU" } as const;
+
+// ---------------------------------------------------------------------------
+// Data
+// ---------------------------------------------------------------------------
+
+interface VesselNow {
+  mmsi: number;
+  name: string | null;
+  shipType: number | null;
+  destination: string | null;
+  sog: number | null;
+  createdAt: Date;
+}
+
+async function getVesselsNow(): Promise<VesselNow[] | null> {
+  try {
+    const since = new Date(Date.now() - VESSEL_WINDOW_MIN * 60 * 1000);
+    const b = STRAIT_BOX;
+    return await prisma.$queryRaw<VesselNow[]>`
+      SELECT DISTINCT ON (vp.mmsi)
+        vp.mmsi, v.name, v."shipType", v.destination, vp.sog, vp."createdAt"
+      FROM "VesselPosition" vp
+      JOIN "Vessel" v ON v.mmsi = vp.mmsi
+      WHERE vp."createdAt" > ${since}
+        AND vp.latitude BETWEEN ${b.minLat} AND ${b.maxLat}
+        AND vp.longitude BETWEEN ${b.minLng} AND ${b.maxLng}
+      ORDER BY vp.mmsi, vp."createdAt" DESC
+    `;
+  } catch {
+    return null;
+  }
+}
+
+interface Departure {
+  mmsi: number;
+  portCode: string;
+  departedAt: Date;
+  name: string | null;
+  shipType: number | null;
+  destination: string | null;
+}
+
+// Ferries and fast ferries only (see isFerryShip), filtered in SQL so the LIMIT
+// counts ferries and not the tugs and cargo ships calling at the same ports.
+const FERRY_TYPES_SQL = Prisma.sql`(v."shipType" BETWEEN 40 AND 49 OR v."shipType" BETWEEN 60 AND 69)`;
+const STRAIT_CODES_SQL = Prisma.join(STRAIT_PORTS.map((p) => p.code));
+
+async function getDepartures(): Promise<Departure[] | null> {
+  try {
+    const since = new Date(Date.now() - DEPARTURES_WINDOW_H * 60 * 60 * 1000);
+    return await prisma.$queryRaw<Departure[]>`
+      SELECT pc.mmsi, pc."portCode", pc."departedAt", v.name, v."shipType", v.destination
+      FROM "PortCall" pc
+      JOIN "Vessel" v ON v.mmsi = pc.mmsi
+      WHERE pc."portCode" IN (${STRAIT_CODES_SQL})
+        AND pc."departedAt" >= ${since}
+        AND ${FERRY_TYPES_SQL}
+      ORDER BY pc."departedAt" DESC
+      LIMIT 500
+    `;
+  } catch {
+    return null;
+  }
+}
+
+interface LineCrossing extends Crossing {
+  name: string | null;
+  fast: boolean;
+}
+
+/** Algeciras ⇄ Ceuta crossings of the last days, paired from port calls. */
+async function getLineCrossings(): Promise<LineCrossing[] | null> {
+  try {
+    const since = new Date(Date.now() - (CROSSINGS_WINDOW_DAYS * 24 + MAX_CROSSING_HOURS) * 60 * 60 * 1000);
+    const calls = await prisma.$queryRaw<(StraitCall & { name: string | null; shipType: number | null })[]>`
+      SELECT pc.mmsi, pc."portCode", pc."arrivedAt", pc."departedAt", v.name, v."shipType"
+      FROM "PortCall" pc
+      JOIN "Vessel" v ON v.mmsi = pc.mmsi
+      WHERE pc."portCode" IN (${STRAIT_CODES_SQL})
+        AND pc."arrivedAt" >= ${since}
+        AND ${FERRY_TYPES_SQL}
+      ORDER BY pc."arrivedAt"
+      LIMIT 5000
+    `;
+    const byMmsi = new Map(calls.map((c) => [c.mmsi, c]));
+    return pairCrossings(calls)
+      .filter((x) => (x.from === LINE.a && x.to === LINE.b) || (x.from === LINE.b && x.to === LINE.a))
+      .map((x) => ({
+        ...x,
+        name: byMmsi.get(x.mmsi)?.name ?? null,
+        fast: isFastFerry(byMmsi.get(x.mmsi)?.shipType),
+      }));
+  } catch {
+    return null;
+  }
+}
+
+interface StraitForecast {
+  issuedAt: Date;
+  waveHeightMax: number | null;
+  windForceMax: number | null;
+  seaState: string | null;
+  passages: ForecastPassage[];
+}
+
+async function getForecast(): Promise<StraitForecast | null> {
+  try {
+    const f = await prisma.maritimeWeatherForecast.findFirst({
+      where: { zoneId: STRAIT_FORECAST_ZONE },
+      orderBy: { issuedAt: "desc" },
+      select: { issuedAt: true, waveHeightMax: true, windForceMax: true, seaState: true, forecast: true },
+    });
+    if (!f) return null;
+    return {
+      issuedAt: f.issuedAt,
+      waveHeightMax: f.waveHeightMax != null ? Number(f.waveHeightMax) : null,
+      windForceMax: f.windForceMax,
+      seaState: f.seaState,
+      passages: straitForecastPassages(f.forecast),
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function getAlerts() {
+  try {
+    return await prisma.weatherAlert.findMany({
+      where: { type: "COASTAL", isActive: true, province: { in: STRAIT_ALERT_PROVINCES } },
+      orderBy: [{ severity: "desc" }, { startedAt: "desc" }],
+      select: { id: true, severity: true, provinceName: true, description: true, startedAt: true, endedAt: true },
+    });
+  } catch {
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const madridTime = (d: Date) =>
+  d.toLocaleTimeString("es-ES", { timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit", hour12: false });
+
+const madridDateTime = (d: Date) =>
+  d.toLocaleString("es-ES", {
+    timeZone: "Europe/Madrid",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+const portName = (code: string) => STRAIT_PORTS.find((p) => p.code === code)?.name ?? code;
+
+const madridDayLabel = (d: Date) =>
+  d.toLocaleDateString("es-ES", { timeZone: "Europe/Madrid", weekday: "long", day: "numeric", month: "short" });
+
+function FastTag() {
+  return (
+    <span className="inline-flex items-center gap-0.5 rounded bg-tl-amber-100 dark:bg-tl-amber-900/40 px-1.5 py-0.5 text-xs font-semibold text-tl-amber-800 dark:text-tl-amber-200">
+      <Zap className="w-3 h-3" />
+      Rápido
+    </span>
+  );
+}
+
+function Unavailable() {
+  return <p className="text-sm text-gray-500 dark:text-gray-400">Dato no disponible ahora mismo.</p>;
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
+export default async function EstrechoHoyPage() {
+  const [vessels, departures, forecast, alerts, crossings] = await Promise.all([
+    getVesselsNow(),
+    getDepartures(),
+    getForecast(),
+    getAlerts(),
+    getLineCrossings(),
+  ]);
+
+  const ferries = (vessels ?? [])
+    .filter((v) => isFerryShip(v.shipType))
+    .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "", "es"));
+
+  // «¿Sale hoy el rápido?»: fast-ferry departures detected today, and fast ferries moving now.
+  const today = madridDate(new Date());
+  const fastDepartures = (departures ?? []).filter((d) => isFastFerry(d.shipType));
+  const fastToday = fastDepartures.filter((d) => madridDate(d.departedAt) === today);
+  const lastFast = fastDepartures[0] ?? null; // departures are newest first
+  const fastMoving = ferries.filter((v) => isFastFerry(v.shipType) && v.sog != null && v.sog >= 0.5);
+
+  // Algeciras ⇄ Ceuta crossings grouped by Madrid day, newest day first.
+  const crossingDays = new Map<string, { label: string; ab: LineCrossing[]; ba: LineCrossing[] }>();
+  for (const x of crossings ?? []) {
+    const key = madridDate(x.departedAt);
+    const day = crossingDays.get(key) ?? { label: madridDayLabel(x.departedAt), ab: [], ba: [] };
+    (x.from === LINE.a ? day.ab : day.ba).push(x);
+    crossingDays.set(key, day);
+  }
+  const days = [...crossingDays.entries()].sort(([a], [b]) => b.localeCompare(a)).map(([, d]) => d);
+  const levante = forecast ? forecastsLevante(forecast.passages) : false;
+  const departuresByPort = STRAIT_PORTS.map((p) => ({
+    ...p,
+    count: (departures ?? []).filter((d) => d.portCode === p.code).length,
+  }));
+
+  return (
+    <>
+      <div className="bg-gradient-to-br from-tl-sea-700 via-tl-sea-600 to-tl-sea-500 text-white">
+        <div className="max-w-5xl mx-auto px-4 py-8 sm:py-10">
+          <p className="text-xs uppercase tracking-wide text-tl-sea-100">Uso interno · página en pruebas</p>
+          <h1 className="mt-1 text-2xl sm:text-3xl font-heading font-bold leading-tight">Estrecho hoy</h1>
+          <p className="text-tl-sea-100 text-sm mt-1">Algeciras · Tarifa · Ceuta · Tánger Med · Tánger Ciudad</p>
+
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-white/10 rounded-xl p-3.5">
+              <div className="text-xs text-tl-sea-100">Ferris en el Estrecho ahora</div>
+              <div className="font-mono font-bold text-lg tabular-nums mt-0.5">{vessels ? ferries.length : "—"}</div>
+            </div>
+            <div className="bg-white/10 rounded-xl p-3.5">
+              <div className="text-xs text-tl-sea-100">Salidas detectadas (24 h)</div>
+              <div className="font-mono font-bold text-lg tabular-nums mt-0.5">
+                {departures ? departures.length : "—"}
+              </div>
+            </div>
+            <div className="bg-white/10 rounded-xl p-3.5">
+              <div className="text-xs text-tl-sea-100">Avisos costeros activos</div>
+              <div className="font-mono font-bold text-lg tabular-nums mt-0.5">{alerts ? alerts.length : "—"}</div>
+            </div>
+            <div className="bg-white/10 rounded-xl p-3.5">
+              <div className="text-xs text-tl-sea-100">Levante en la previsión</div>
+              <div className="font-mono font-bold text-lg mt-0.5">{forecast ? (levante ? "Sí" : "No") : "—"}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Esta página no da horarios. Las salidas se detectan por AIS cuando un ferri o un rápido deja el puerto, y puede
+          faltar alguna. Para saber si un barco sale y a qué hora, consulta siempre a la naviera:{" "}
+          <a
+            href={BALEARIA_TIMETABLE_URL}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="font-semibold text-tl-sea-700 dark:text-tl-sea-300 underline inline-flex items-center gap-1"
+          >
+            horarios oficiales de Baleària <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+          .
+        </p>
+
+        {/* Warnings ------------------------------------------------------- */}
+        <section>
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-tl-amber-500" />
+            Avisos costeros de AEMET (Cádiz y Ceuta)
+          </h2>
+          {alerts === null ? (
+            <Unavailable />
+          ) : alerts.length === 0 ? (
+            <p className="text-sm text-gray-600 dark:text-gray-400">Sin avisos costeros activos.</p>
+          ) : (
+            <ul className="space-y-2">
+              {alerts.map((a) => (
+                <li
+                  key={a.id}
+                  className="rounded-lg border border-tl-amber-300 bg-tl-amber-50 dark:bg-tl-amber-900/20 dark:border-tl-amber-700 p-3 text-sm"
+                >
+                  <div className="font-semibold text-gray-900 dark:text-gray-100">
+                    {a.provinceName ?? "Costa"} · {madridDateTime(a.startedAt)}
+                    {a.endedAt ? ` → ${madridDateTime(a.endedAt)}` : ""}
+                  </div>
+                  {a.description && <p className="mt-1 text-gray-700 dark:text-gray-300">{a.description}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {/* Fast ferries today --------------------------------------------- */}
+        <section>
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+            <Zap className="w-5 h-5 text-tl-amber-500" />
+            ¿Salen hoy los rápidos?
+          </h2>
+          {departures === null ? (
+            <Unavailable />
+          ) : (
+            <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 space-y-2 text-sm">
+              {fastToday.length > 0 ? (
+                <p className="text-gray-900 dark:text-gray-100">
+                  <span className="font-semibold">Sí: {fastToday.length} salidas de rápidos detectadas hoy.</span> La
+                  última, {fastToday[0].name ?? `MMSI ${fastToday[0].mmsi}`} desde {portName(fastToday[0].portCode)} a
+                  las <span className="font-mono tabular-nums">{madridTime(fastToday[0].departedAt)}</span>.
+                </p>
+              ) : (
+                <p className="text-gray-900 dark:text-gray-100">
+                  <span className="font-semibold">Ninguna salida de rápido detectada hoy todavía.</span>
+                  {lastFast
+                    ? ` La última fue ${lastFast.name ?? `MMSI ${lastFast.mmsi}`} desde ${portName(lastFast.portCode)}, ${madridDateTime(lastFast.departedAt)}.`
+                    : " Tampoco en las últimas 24 horas."}
+                </p>
+              )}
+              {vessels !== null && (
+                <p className="text-gray-600 dark:text-gray-400">
+                  {fastMoving.length > 0
+                    ? `Navegando ahora: ${fastMoving.map((v) => v.name ?? `MMSI ${v.mmsi}`).join(", ")}.`
+                    : "Ningún rápido navegando en el Estrecho ahora mismo."}
+                </p>
+              )}
+              {levante && (
+                <p className="text-tl-amber-800 dark:text-tl-amber-200 font-semibold">
+                  Hay levante en la previsión: con levante fuerte los rápidos suelen quedarse en puerto. Confírmalo con la
+                  naviera antes de mandar a nadie al puerto.
+                </p>
+              )}
+            </div>
+          )}
+        </section>
+
+        {/* Forecast ------------------------------------------------------- */}
+        <section>
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+            <Wind className="w-5 h-5 text-tl-sea-500" />
+            Previsión costera
+          </h2>
+          {!forecast ? (
+            <Unavailable />
+          ) : (
+            <div className="rounded-xl border border-tl-sea-200 dark:border-tl-sea-800/50 bg-white dark:bg-gray-900 p-4 space-y-3">
+              {levante && (
+                <p className="rounded-lg bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-300 dark:border-tl-amber-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  La previsión habla de levante en la zona del Estrecho.
+                </p>
+              )}
+              {forecast.passages.length > 0 ? (
+                forecast.passages.map((p) => (
+                  <div key={p.name + p.text}>
+                    <div className="text-xs font-semibold text-tl-sea-700 dark:text-tl-sea-300">{p.name}</div>
+                    <p className="text-sm text-gray-800 dark:text-gray-200">{p.text}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Costa de Andalucía Occidental y Ceuta
+                  {forecast.windForceMax != null ? ` · viento hasta fuerza ${forecast.windForceMax}` : ""}
+                  {forecast.waveHeightMax != null ? ` · olas hasta ${forecast.waveHeightMax} m` : ""}
+                  {forecast.seaState ? ` · ${forecast.seaState}` : ""}
+                </p>
+              )}
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 pt-2 border-t border-gray-100 dark:border-gray-800">
+                <Clock className="w-3 h-3" />
+                Emitida {madridDateTime(forecast.issuedAt)} · Fuente: AEMET
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Algeciras ⇄ Ceuta ---------------------------------------------- */}
+        <section>
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-1 flex items-center gap-2">
+            <ArrowLeftRight className="w-5 h-5 text-tl-sea-500" />
+            Algeciras ⇄ Ceuta: cruces de los últimos {CROSSINGS_WINDOW_DAYS} días
+          </h2>
+          <p className="text-xs text-gray-500 mb-3">
+            Hora a la que el barco salió, detectada por AIS. Sirve para ver qué barcos hacen la línea y a qué horas suelen
+            salir; no es un horario y no garantiza ninguna salida.
+          </p>
+          {crossings === null ? (
+            <Unavailable />
+          ) : days.length === 0 ? (
+            <p className="text-sm text-gray-600 dark:text-gray-400">Aún no hay cruces Algeciras ⇄ Ceuta detectados.</p>
+          ) : (
+            <div className="space-y-3">
+              {days.map((d) => (
+                <div key={d.label} className="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+                  <div className="text-sm font-semibold capitalize text-gray-900 dark:text-gray-100 mb-2">{d.label}</div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {[
+                      { title: "Algeciras → Ceuta", list: d.ab },
+                      { title: "Ceuta → Algeciras", list: d.ba },
+                    ].map((dir) => (
+                      <div key={dir.title}>
+                        <div className="text-xs text-gray-500 mb-1">{dir.title}</div>
+                        {dir.list.length === 0 ? (
+                          <p className="text-sm text-gray-500">—</p>
+                        ) : (
+                          <ul className="space-y-1">
+                            {dir.list.map((x) => (
+                              <li key={`${x.mmsi}-${x.departedAt.toISOString()}`} className="flex flex-wrap items-center gap-2 text-sm">
+                                <span className="font-mono tabular-nums">{madridTime(x.departedAt)}</span>
+                                <span className="text-gray-800 dark:text-gray-200">{x.name ?? `MMSI ${x.mmsi}`}</span>
+                                {x.fast && <FastTag />}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Departures ----------------------------------------------------- */}
+        <section>
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+            <Anchor className="w-5 h-5 text-tl-sea-500" />
+            Salidas detectadas en las últimas 24 horas
+          </h2>
+          {departures === null ? (
+            <Unavailable />
+          ) : (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-4">
+                {departuresByPort.map((p) => (
+                  <div key={p.code} className="rounded-lg bg-tl-sea-50 dark:bg-tl-sea-900/30 px-3 py-2">
+                    <div className="text-xs text-gray-600 dark:text-gray-400">{p.name}</div>
+                    <div className="font-mono font-bold tabular-nums text-gray-900 dark:text-gray-100">{p.count}</div>
+                  </div>
+                ))}
+              </div>
+              {departures.length === 0 ? (
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Sin salidas de ferris ni rápidos detectadas en las últimas 24 horas.
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-xs text-gray-500 border-b border-gray-200 dark:border-gray-800">
+                        <th className="py-2 pr-3 font-medium">Hora</th>
+                        <th className="py-2 pr-3 font-medium">Puerto</th>
+                        <th className="py-2 pr-3 font-medium">Buque</th>
+                        <th className="py-2 font-medium">Destino declarado (AIS)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {departures.map((d) => (
+                        <tr key={`${d.mmsi}-${d.departedAt.toISOString()}`} className="border-b border-gray-100 dark:border-gray-800/60">
+                          <td className="py-2 pr-3 font-mono tabular-nums">{madridDateTime(d.departedAt)}</td>
+                          <td className="py-2 pr-3">{portName(d.portCode)}</td>
+                          <td className="py-2 pr-3">
+                            <Link href={`/maritimo/buques/${vesselSlug(d.mmsi, d.name)}`} className="text-tl-sea-700 dark:text-tl-sea-300 hover:underline">
+                              {d.name ?? `MMSI ${d.mmsi}`}
+                            </Link>
+                            {isFastFerry(d.shipType) && (
+                              <>
+                                {" "}
+                                <FastTag />
+                              </>
+                            )}
+                          </td>
+                          <td className="py-2 text-gray-600 dark:text-gray-400">{d.destination ?? "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+
+        {/* Ferries now ---------------------------------------------------- */}
+        <section>
+          <h2 className="font-heading text-lg font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+            <Ship className="w-5 h-5 text-tl-sea-500" />
+            Ferris en el Estrecho ahora
+          </h2>
+          {vessels === null ? (
+            <Unavailable />
+          ) : ferries.length === 0 ? (
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Ningún ferri ni rápido con posición AIS en los últimos {VESSEL_WINDOW_MIN} minutos.
+            </p>
+          ) : (
+            <ul className="divide-y divide-gray-100 dark:divide-gray-800 rounded-xl border border-gray-200 dark:border-gray-800">
+              {ferries.map((v) => (
+                <li key={v.mmsi} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-sm">
+                  <Link href={`/maritimo/buques/${vesselSlug(v.mmsi, v.name)}`} className="font-semibold text-tl-sea-700 dark:text-tl-sea-300 hover:underline">
+                    {v.name ?? `MMSI ${v.mmsi}`}
+                  </Link>
+                  {isFastFerry(v.shipType) && <FastTag />}
+                  <span className="text-gray-600 dark:text-gray-400">
+                    {v.sog != null && v.sog >= 0.5 ? `Navegando · ${v.sog.toFixed(1)} nudos` : "Parado"}
+                  </span>
+                  {v.destination && <span className="text-gray-500">→ {v.destination}</span>}
+                  <span className="ml-auto font-mono text-xs text-gray-500 tabular-nums">{madridTime(v.createdAt)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="mt-2 text-xs text-gray-500 flex items-center gap-1.5">
+            <Waves className="w-3 h-3" />
+            Posiciones AIS de los últimos {VESSEL_WINDOW_MIN} minutos{vessels ? ` · ${vessels.length} buques de todo tipo en la zona` : ""}.
+          </p>
+        </section>
+      </div>
+    </>
+  );
+}
