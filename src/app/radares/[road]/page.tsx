@@ -403,7 +403,9 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                             }`}
                           >
                             <td className="px-4 py-3 font-mono font-semibold text-gray-900 dark:text-gray-100 font-data">
-                              km {Number(radar.kmPoint).toFixed(1)}
+                              <Link href={`/radares/radar/${radar.id}`} className="text-tl-600 dark:text-tl-400 hover:text-tl-800 dark:hover:text-tl-200 hover:underline">
+                                km {Number(radar.kmPoint).toFixed(1)}
+                              </Link>
                             </td>
                             <td className="px-4 py-3">
                               <span

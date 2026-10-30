@@ -349,7 +349,9 @@ export default async function CamarasCityPage({ params }: Props) {
                           )}
                           <div className="p-3">
                             <p className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">
-                              {cam.name}
+                              <Link href={`/camaras/camara/${cam.id}`} className="hover:text-tl-700 dark:hover:text-tl-300 hover:underline">
+                                {cam.name}
+                              </Link>
                             </p>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-xs font-medium text-tl-600 dark:text-tl-400">

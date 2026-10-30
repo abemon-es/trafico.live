@@ -4,7 +4,7 @@ import { EPHEMERAL_ARTICLE_CATEGORIES, EPHEMERAL_ARTICLE_MAX_AGE_MS, POSTAL_CODE
 import { fingerprintKey, loadChangedAt, type FingerprintFamily } from "@/lib/seo/lastmod";
 import { reportApiError } from "@/lib/api-error";
 import { getAqForecastSource } from "@/lib/aq-forecast-source-server";
-import { PROVINCES } from "@/lib/geo/ine-codes";
+import { PROVINCE_NAMES, PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug, slugify } from "@/lib/geo/slugify";
 import { PROVINCE_SLUG_TO_COMMUNITY_SLUG } from "@/lib/geo/province-slugs";
 import { priorityEntries } from "@/lib/sitemap-priority";
@@ -42,13 +42,10 @@ const FALLBACK_MUNICIPALITY_SHARDS = 3;
 // truncated a third of them. Three shards provide headroom for new rollups.
 const FALLBACK_POSTAL_CODE_SHARDS = 3;
 const FALLBACK_MARITIME_SHARDS = 1;
-const FALLBACK_RADAR_SHARDS = 1;
 const FALLBACK_CAMERA_SHARDS = 1;
 const FALLBACK_CHARGER_SHARDS = 2;
 const FALLBACK_RAILWAY_STATION_SHARDS = 1; // ~1 506 stations
 const FALLBACK_RAILWAY_LINE_SHARDS = 1;    // ~1 251 routes
-const FALLBACK_AIR_QUALITY_SHARDS = 1;     // ~565 stations
-const FALLBACK_CLIMATE_STATION_SHARDS = 1; // ~900 stations
 const FALLBACK_SPANISH_PORT_SHARDS = 1; // 197 Spanish ports
 
 export interface SitemapEntry {
@@ -105,11 +102,6 @@ export async function getActiveShardIds(): Promise<{ id: number }[]> {
       count: () => prisma.maritimeStation.count(),
     },
     {
-      offset: RADAR_OFFSET,
-      fallback: FALLBACK_RADAR_SHARDS,
-      count: () => prisma.radar.count({ where: { isActive: true } }),
-    },
-    {
       offset: CAMERA_OFFSET,
       fallback: FALLBACK_CAMERA_SHARDS,
       count: () => prisma.camera.count({ where: { isActive: true } }),
@@ -129,16 +121,11 @@ export async function getActiveShardIds(): Promise<{ id: number }[]> {
       fallback: FALLBACK_RAILWAY_LINE_SHARDS,
       count: () => prisma.railwayRoute.count({ where: { slug: { not: null } } }),
     },
-    {
-      offset: AIR_QUALITY_OFFSET,
-      fallback: FALLBACK_AIR_QUALITY_SHARDS,
-      count: () => prisma.airQualityStation.count(),
-    },
-    {
-      offset: CLIMATE_STATION_OFFSET,
-      fallback: FALLBACK_CLIMATE_STATION_SHARDS,
-      count: () => prisma.climateStation.count(),
-    },
+    // Radar (500), air quality (1000) and climate station (1100) shards are not
+    // advertised (CMO, 2026-10-30): Google had read none of the child sitemaps
+    // in ten days, and these single-station pages are all linked with plain
+    // <a href> from their province hubs, which are in the core shard. The
+    // shard routes still resolve (isKnownShardId).
     // Aircraft shard (offset 1200) intentionally omitted (2026-06 SEO triage):
     // per-ICAO24 pages rotate with ADS-B traffic and are crawl-budget waste
     // while Google is not even downloading our child sitemaps. The
@@ -194,9 +181,6 @@ export function getSitemapShardIds(): { id: number }[] {
     ...Array.from({ length: FALLBACK_MARITIME_SHARDS }, (_, i) => ({
       id: MARITIME_OFFSET + i,
     })),
-    ...Array.from({ length: FALLBACK_RADAR_SHARDS }, (_, i) => ({
-      id: RADAR_OFFSET + i,
-    })),
     ...Array.from({ length: FALLBACK_CAMERA_SHARDS }, (_, i) => ({
       id: CAMERA_OFFSET + i,
     })),
@@ -208,12 +192,6 @@ export function getSitemapShardIds(): { id: number }[] {
     })),
     ...Array.from({ length: FALLBACK_RAILWAY_LINE_SHARDS }, (_, i) => ({
       id: RAILWAY_LINE_OFFSET + i,
-    })),
-    ...Array.from({ length: FALLBACK_AIR_QUALITY_SHARDS }, (_, i) => ({
-      id: AIR_QUALITY_OFFSET + i,
-    })),
-    ...Array.from({ length: FALLBACK_CLIMATE_STATION_SHARDS }, (_, i) => ({
-      id: CLIMATE_STATION_OFFSET + i,
     })),
     ...Array.from({ length: FALLBACK_SPANISH_PORT_SHARDS }, (_, i) => ({
       id: SPANISH_PORT_OFFSET + i,
@@ -1553,11 +1531,40 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
   // /maritimo/buques. Re-add behind a shard of their own once the domain has
   // crawl trust.
 
+  // Province hubs of the climate and air-quality stations. They link every
+  // station page, which is no longer in a sitemap of its own. Same slugs as
+  // the pages' generateStaticParams.
+  const stationHubPages: SitemapEntry[] = (
+    await Promise.all(
+      (
+        [
+          ["clima", () => prisma.climateStation.groupBy({ by: ["province"], where: { province: { not: null } } })],
+          ["calidad-aire", () => prisma.airQualityStation.groupBy({ by: ["province"], where: { province: { not: null } } })],
+        ] as const
+      ).map(async ([family, groups]) => {
+        try {
+          return (await groups())
+            .map((g) => PROVINCE_NAMES[g.province!])
+            .filter((name): name is string => Boolean(name))
+            .map((name) => ({
+              url: `${BASE_URL}/${family}/provincia/${slugify(name)}`,
+              changeFrequency: "daily" as const,
+              priority: 0.7,
+            }));
+        } catch (err) {
+          reportApiError(err, `sitemap ${family} province hubs`);
+          return [];
+        }
+      })
+    )
+  ).flat();
+
   return [
     ...staticPages,
     ...cityPages,
     ...roadPages,
     ...cameraRoadPages,
+    ...stationHubPages,
     ...provincePages,
     ...communityPages,
     ...maritimePortPages,
