@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import maplibregl, { addProtocol } from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
+import { addProtocol } from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { TILE_SOURCES, addTileSource, LAYER_STYLES, getProtomapsStyle } from "@/lib/map-tiles";

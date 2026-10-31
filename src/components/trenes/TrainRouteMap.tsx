@@ -47,7 +47,7 @@ export default function TrainRouteMap({
         import("@/lib/map-tiles"),
       ]);
       const { getProtomapsStyle } = mapTilesLib;
-      const maplibregl = (await import("maplibre-gl")).default;
+      const maplibregl = await import("maplibre-gl");
 
       if (cancelled || !mapRef.current) return;
 
