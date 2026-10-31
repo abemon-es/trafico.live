@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { setupPMTilesProtocol, TILE_SOURCES } from "@/lib/map-tiles";
 import { MAP_STYLE_DEFAULT } from "@/lib/map-config";
+import { configureMaplibreWorker } from "@/lib/maplibre-worker";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 interface TransitStopMiniMapProps {
@@ -29,6 +30,7 @@ export default function TransitStopMiniMap({
       if (cancelled || !containerRef.current) return;
 
       await setupPMTilesProtocol();
+      configureMaplibreWorker(maplibregl);
 
       const map = new maplibregl.Map({
         container: containerRef.current,

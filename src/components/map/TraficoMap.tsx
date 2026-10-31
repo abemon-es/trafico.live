@@ -19,6 +19,7 @@
 import { useRef, useEffect, useCallback, useState, Suspense } from "react";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { initPMTilesProtocolAsync } from "@/lib/pmtiles-protocol";
+import { configureMaplibreWorker } from "@/lib/maplibre-worker";
 import { forceSpanishLabels } from "@/lib/map-config";
 import { useMapLayers } from "@/lib/map-layers/hooks/useMapLayers";
 import { useMapTheme } from "@/lib/map-layers/hooks/useMapTheme";
@@ -161,6 +162,7 @@ function TraficoMapInner({
       ]);
 
       if (cancelled || !containerRef.current) return;
+      configureMaplibreWorker(maplibregl);
 
       const center: [number, number] = initialView?.center ?? [-4.0, 39.6];
       const zoom = initialView?.zoom ?? 5.2;

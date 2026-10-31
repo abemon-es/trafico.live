@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { escapeHtml } from "@/lib/map-layers/popup";
+import { configureMaplibreWorker } from "@/lib/maplibre-worker";
 import { Bus, RefreshCw } from "lucide-react";
 
 export interface RouteVehicle {
@@ -83,6 +84,7 @@ export default function RouteVehicleMap({
         const maplibregl = await import("maplibre-gl");
         if (cancelled || !mapRef.current) return;
         await pmtilesLib.initPMTilesProtocolAsync();
+        configureMaplibreWorker(maplibregl);
 
         // Compute bounds from geometry or fallback
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -5,6 +5,7 @@ import * as maplibregl from "maplibre-gl";
 import { addProtocol } from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { configureMaplibreWorker } from "@/lib/maplibre-worker";
 import { TILE_SOURCES, addTileSource, LAYER_STYLES, getProtomapsStyle } from "@/lib/map-tiles";
 import { SPAIN_CENTER, SPAIN_ZOOM } from "@/lib/map-config";
 import {
@@ -73,6 +74,7 @@ export default function RutaContent() {
       // Already registered
     }
 
+    configureMaplibreWorker(maplibregl);
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: getProtomapsStyle(),

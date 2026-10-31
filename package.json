@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node bin/copy-maplibre-worker.mjs",
     "dev": "next dev",
+    "prebuild": "node bin/copy-maplibre-worker.mjs",
     "build": "prisma generate && DATABASE_URL='' NODE_OPTIONS='--max-old-space-size=4096' next build --webpack",
     "postinstall": "prisma generate",
     "start": "next start",
