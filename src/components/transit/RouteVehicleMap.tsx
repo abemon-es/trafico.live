@@ -15,6 +15,8 @@
 import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
+import { escapeHtml } from "@/lib/map-layers/popup";
+import { configureMaplibreWorker } from "@/lib/maplibre-worker";
 import { Bus, RefreshCw } from "lucide-react";
 
 export interface RouteVehicle {
@@ -79,9 +81,10 @@ export default function RouteVehicleMap({
           import("@/lib/map-tiles"),
         ]);
         const { getProtomapsStyle } = mapTilesLib;
-        const maplibregl = (await import("maplibre-gl")).default;
+        const maplibregl = await import("maplibre-gl");
         if (cancelled || !mapRef.current) return;
         await pmtilesLib.initPMTilesProtocolAsync();
+        configureMaplibreWorker(maplibregl);
 
         // Compute bounds from geometry or fallback
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -185,7 +188,7 @@ export default function RouteVehicleMap({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let maplibregl: any;
     import("maplibre-gl").then((m) => {
-      maplibregl = m.default;
+      maplibregl = m;
 
       const vehicles = data?.vehicles ?? [];
       const newIds = new Set(vehicles.map((v) => v.vehicleId));
@@ -221,7 +224,7 @@ export default function RouteVehicleMap({
             el.style.transform = `rotate(${v.bearing}deg)`;
           }
           const popup = new maplibregl.Popup({ offset: 14 }).setHTML(
-            `<p style="font-size:12px;font-weight:600;margin:0">Vehículo ${v.vehicleId}</p>
+            `<p style="font-size:12px;font-weight:600;margin:0">Vehículo ${escapeHtml(v.vehicleId)}</p>
              <p style="font-size:11px;color:#6b7280;margin:2px 0 0">${
                v.speed !== null ? `${Math.round(v.speed)} km/h` : "Sin velocidad"
              }</p>`

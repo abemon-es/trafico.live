@@ -194,7 +194,7 @@ const LABEL_ALIASES: Record<string, string> = {
   brand_name:    "Marca",
 };
 
-function escapeHtml(value: unknown): string {
+export function escapeHtml(value: unknown): string {
   return String(value)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")

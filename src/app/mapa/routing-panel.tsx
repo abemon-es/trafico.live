@@ -17,7 +17,7 @@ import {
   routeToGeoJSON,
 } from "@/lib/routing";
 import type { CostingModel, RouteResponse } from "@/lib/routing";
-import type maplibregl from "maplibre-gl";
+import type * as maplibregl from "maplibre-gl";
 import { RouteOverlay } from "./route-overlay";
 
 interface RoutingPanelProps {

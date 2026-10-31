@@ -1,4 +1,4 @@
-import type maplibregl from "maplibre-gl";
+import type * as maplibregl from "maplibre-gl";
 import type { StyleSpecification } from "maplibre-gl";
 import { getProtomapsStyle, getProtomapsDarkStyle } from "@/lib/map-tiles";
 

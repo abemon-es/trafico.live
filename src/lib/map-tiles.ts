@@ -11,8 +11,9 @@
  *   - Basemap        → Protomaps PMTiles (self-hosted) with CartoDB fallback
  */
 
+import type * as maplibregl from "maplibre-gl";
 import type { StyleSpecification, AddLayerObject, DataDrivenPropertyValueSpecification } from "maplibre-gl";
-import { initPMTilesProtocol } from "./pmtiles-protocol";
+import { initPMTilesProtocolAsync } from "./pmtiles-protocol";
 
 // Colors inlined to avoid circular import with map-config.ts
 // (map-config.ts imports getProtomapsStyle from this file)
@@ -48,8 +49,8 @@ const GLYPHS_URL = "https://protomaps.github.io/basemaps-assets/fonts/{fontstack
  * Delegates to the shared pmtiles-protocol.ts singleton.
  * Safe to call multiple times — only registers once.
  */
-export function setupPMTilesProtocol(): void {
-  initPMTilesProtocol();
+export async function setupPMTilesProtocol(): Promise<void> {
+  await initPMTilesProtocolAsync();
 }
 
 // ─── Tile source definitions ─────────────────────────────────────────────────
@@ -1988,8 +1989,8 @@ export type LayerStyleName = keyof typeof LAYER_STYLES;
  * @param options.before - Layer ID to insert before (for z-ordering)
  *
  * @example
- *   map.on("load", () => {
- *     setupPMTilesProtocol();
+ *   map.on("load", async () => {
+ *     await setupPMTilesProtocol();
  *     addTileLayer(map, "stationsCircle");
  *     addTileLayer(map, "railwayRoutesLine", { before: "stations-circle" });
  *   });

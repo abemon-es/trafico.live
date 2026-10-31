@@ -8,6 +8,7 @@
  */
 
 import { useEffect, useRef } from "react";
+import { configureMaplibreWorker } from "@/lib/maplibre-worker";
 
 export interface TrainStop {
   code: string;
@@ -47,11 +48,12 @@ export default function TrainRouteMap({
         import("@/lib/map-tiles"),
       ]);
       const { getProtomapsStyle } = mapTilesLib;
-      const maplibregl = (await import("maplibre-gl")).default;
+      const maplibregl = await import("maplibre-gl");
 
       if (cancelled || !mapRef.current) return;
 
       await pmtilesLib.initPMTilesProtocolAsync();
+      configureMaplibreWorker(maplibregl);
 
       // Build bounds from sequence
       const coords =
