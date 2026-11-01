@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { evProvincePath } from "@/lib/geo/ev-province";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { prisma } from "@/lib/db";
@@ -225,7 +226,7 @@ export default async function ProvincePage({ params }: Props) {
         </Suspense>
 
         <Suspense fallback={<SectionSkeleton title="Carga EV" />}>
-          <EVChargersSection entity={entity} />
+          <EVChargersSection entity={entity} spokeHref={evProvincePath(prov.code) ?? undefined} />
         </Suspense>
 
         <Suspense fallback={<SectionSkeleton title="Carreteras" />}>

@@ -1,9 +1,11 @@
 import { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import CiudadCargaEVContent from "./content";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import LinkDirectory from "@/components/seo/LinkDirectory";
 import prisma, { isBuildWithoutDb } from "@/lib/db";
+import { EV_CITIES as CITIES, evCityProvinceSlug } from "@/lib/geo/ev-cities";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -12,31 +14,6 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 // prerender with no expiry. 300 puts it on the same heal cadence as the rest.
 export const revalidate = 300;
 
-// City data for SEO and matching
-const CITIES: Record<string, { name: string; province: string }> = {
-  madrid: { name: "Madrid", province: "Madrid" },
-  barcelona: { name: "Barcelona", province: "Barcelona" },
-  valencia: { name: "Valencia", province: "Valencia" },
-  sevilla: { name: "Sevilla", province: "Sevilla" },
-  zaragoza: { name: "Zaragoza", province: "Zaragoza" },
-  malaga: { name: "Málaga", province: "Málaga" },
-  murcia: { name: "Murcia", province: "Murcia" },
-  palma: { name: "Palma", province: "Baleares" },
-  bilbao: { name: "Bilbao", province: "Bizkaia" },
-  alicante: { name: "Alicante", province: "Alicante" },
-  cordoba: { name: "Córdoba", province: "Córdoba" },
-  valladolid: { name: "Valladolid", province: "Valladolid" },
-  vigo: { name: "Vigo", province: "Pontevedra" },
-  gijon: { name: "Gijón", province: "Asturias" },
-  hospitalet: { name: "L'Hospitalet", province: "Barcelona" },
-  vitoria: { name: "Vitoria-Gasteiz", province: "Álava" },
-  granada: { name: "Granada", province: "Granada" },
-  elche: { name: "Elche", province: "Alicante" },
-  oviedo: { name: "Oviedo", province: "Asturias" },
-  santander: { name: "Santander", province: "Cantabria" },
-  "san-sebastian": { name: "San Sebastián", province: "Gipuzkoa" },
-  pamplona: { name: "Pamplona", province: "Navarra" },
-};
 
 type Props = {
   params: Promise<{ ciudad: string }>;
@@ -122,6 +99,14 @@ export default async function CiudadCargaEVPage({ params }: Props) {
             group: c.city,
           }))}
         />
+        <p className="mt-6 text-sm">
+          <Link
+            href={`/carga-ev/provincia/${evCityProvinceSlug(cityData)}`}
+            className="font-semibold text-tl-600 dark:text-tl-400 hover:underline"
+          >
+            Todos los puntos de carga de la provincia de {cityData.province}
+          </Link>
+        </p>
       </div>
     </>
   );
