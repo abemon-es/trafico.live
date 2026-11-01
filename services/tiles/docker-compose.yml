@@ -12,8 +12,10 @@ services:
     depends_on:
       martin:
         condition: service_started
+    # Only on the private network, like Martin and the exporter below:
+    # Traefik's file provider reaches it at PRIVATE_BIND_IP:8088.
     ports:
-      - "8088:80"
+      - "${PRIVATE_BIND_IP:?set PRIVATE_BIND_IP in .env}:8088:80"
     volumes:
       - /opt/trafico/tiles/tiles:/data/tiles:ro
       - /opt/trafico/tiles/fonts:/data/fonts:ro
@@ -25,7 +27,7 @@ services:
       timeout: 3s
       retries: 3
     # Traefik routing handled by its file provider on the host
-    # (routes to host port 8088, avoids Docker network cross-network issues with Martin)
+    # (routes to PRIVATE_BIND_IP:8088, avoids Docker network cross-network issues with Martin)
     labels:
       - "traefik.enable=false"
 
