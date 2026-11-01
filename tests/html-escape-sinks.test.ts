@@ -61,6 +61,8 @@ assert.ok(!/href/.test(renderMarkdown('[x](" onmouseover="alert(1))')));
 assert.match(renderMarkdown("[DGT](https://www.dgt.es/)"), /<a href="https:\/\/www\.dgt\.es\/" rel="noopener noreferrer" /);
 assert.match(renderMarkdown("[Madrid](/trafico/madrid)"), /<a href="\/trafico\/madrid" class=/);
 assert.equal(safeHref("//evil.example/x"), null, "protocol-relative is not a site path");
+assert.equal(safeHref("/\\evil.example/x"), null, "/\\host is read as //host by browsers");
+assert.equal(safeHref("/trafico/madrid"), "/trafico/madrid");
 assert.equal(safeHref("#tabla"), "#tabla");
 assert.equal(safeHref("data:text/html,x"), null);
 assert.match(renderMarkdown("| a | b |\n|---|---|\n| <i>1</i> | 2 |"), /&lt;i&gt;1&lt;\/i&gt;/);

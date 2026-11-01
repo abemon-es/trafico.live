@@ -44,5 +44,6 @@ export function highlightParts(snippet: string): { text: string; mark: boolean }
 /** An href for a markdown link: http(s), a site path or an anchor; anything else is refused. */
 export function safeHref(url: string): string | null {
   const u = url.trim();
-  return /^(https?:\/\/|\/(?!\/)|#)/i.test(u) ? u : null;
+  // «//host» and «/\host» (browsers read the backslash as a slash) leave the site.
+  return /^(https?:\/\/|\/(?![\/\\])|#)/i.test(u) ? u : null;
 }
