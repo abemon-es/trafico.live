@@ -6,7 +6,7 @@
  */
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PROVINCES } from "../src/lib/geo/ine-codes";
 import { provincePath } from "../src/lib/geo/geo-paths";
@@ -25,6 +25,16 @@ assert.ok(!/hidden|sr-only|<details/.test(block), "visible at every width, no ac
 assert.ok(!/Tráfico en \{/.test(block), "province anchors are the plain name");
 for (const h of ["Tráfico, trenes y datos de tu provincia", "Tráfico por provincia", "Trenes y cercanías", "Datos por provincia"])
   assert.ok(block.includes(h), h);
+
+// Every per-province data link points at a page that exists.
+// A route group such as camaras/(hub)/page.tsx serves the parent path too.
+const hasPage = (dir: string): boolean =>
+  existsSync(join(dir, "page.tsx")) ||
+  readdirSync(dir, { withFileTypes: true }).some((e) => e.isDirectory() && /^\(.+\)$/.test(e.name) && hasPage(join(dir, e.name)));
+for (const [, href] of block.matchAll(/href: "(\/[^"]+)"/g)) {
+  assert.ok(hasPage(join(__dirname, "..", "src/app", href)), `${href} has a page`);
+}
+assert.ok(block.includes('"/carga-ev/provincia"'), "links the EV province hub");
 assert.match(read("src/app/page.tsx"), /<ExploreBlock \/>/);
 
 // The network page and the block read the same list.
