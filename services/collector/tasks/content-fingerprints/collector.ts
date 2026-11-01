@@ -24,7 +24,7 @@ import { log } from "../../shared/utils.js";
 const TASK = "content-fingerprints";
 
 /** Keys are `<family>:<id>`; src/lib/seo/lastmod.ts reads the same families. */
-export const FAMILIES = ["camera", "camera-road", "camera-province", "radar", "radar-road", "radar-province", "gas-station"] as const;
+export const FAMILIES = ["camera", "camera-road", "camera-province", "radar", "radar-road", "radar-province", "gas-station", "ev-charger"] as const;
 
 /** A key not produced for this long (its page left the sitemap) is forgotten. */
 export const FORGET_AFTER_DAYS = 30;
@@ -102,6 +102,9 @@ ORDER BY family`;
  *                        limits by km, and the year
  * - radar-province:<p>   /radares/provincia/<slug>: its radars, and the year
  * - gas-station:<id>     /gasolineras/terrestres/<id>: see GAS_CTE
+ * - ev-charger:<id>      /carga-ev/punto/<id>: the point, where it is, its power,
+ *                        connector types, operator, network, hours and payment
+ *                        (lastUpdated is stamped on every row each run)
  */
 export const UPSERT_FINGERPRINTS = Prisma.sql`
 WITH
@@ -133,6 +136,17 @@ lim AS (
   WHERE n <= 50
   GROUP BY "roadNumber"
 ),
+ev AS (
+  SELECT id,
+         concat_ws('|', id, name, coalesce(address, ''), coalesce(city, ''), coalesce("postalCode", ''),
+                   coalesce(province, ''), coalesce("provinceName", ''), coalesce("powerKw"::text, ''),
+                   coalesce(connectors::text, ''),
+                   coalesce((SELECT string_agg(t::text, ',' ORDER BY t::text) FROM unnest("chargerTypes") t), ''),
+                   coalesce(operator, ''), coalesce(network, ''), is24h::text,
+                   coalesce((SELECT string_agg(m, ',' ORDER BY m) FROM unnest("paymentMethods") m), '')) AS line,
+         latitude::text || ',' || longitude::text AS at
+  FROM "EVCharger" WHERE "isPublic"
+),
 ${GAS_CTE},
 page (key, hash) AS (
   SELECT 'camera:' || id, md5(line || '|' || at) FROM cam
@@ -153,6 +167,8 @@ page (key, hash) AS (
   FROM rad WHERE province IS NOT NULL GROUP BY province
   UNION ALL
   SELECT 'gas-station:' || id, h FROM gas
+  UNION ALL
+  SELECT 'ev-charger:' || id, md5(line || '|' || at) FROM ev
 ),
 ${UPSERT_TAIL}`;
 
