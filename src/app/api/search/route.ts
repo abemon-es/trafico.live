@@ -19,6 +19,7 @@ import { reportApiError } from "@/lib/api-error";
 import { getOrCompute } from "@/lib/redis";
 import { typesenseClient } from "@/lib/typesense";
 import { parseSearchQuery } from "@/lib/search-filters";
+import { safeHighlight } from "@/lib/html-escape";
 import type { ParsedSearchQuery } from "@/lib/search-filters";
 import type { SearchResponse, DocumentSchema } from "typesense/lib/Typesense/Documents";
 
@@ -818,7 +819,8 @@ async function performSearch(
             (h) => h.field === config.queryBy.split(",")[0]
           );
           if (titleHighlight?.snippet) {
-            result.highlightedTitle = titleHighlight.snippet;
+            // Typesense returns the indexed text unescaped around its <mark> tags.
+            result.highlightedTitle = safeHighlight(titleHighlight.snippet);
           }
           // Extract geo distance when proximity sorting is active
           const geoDistanceM = (hit as unknown as Record<string, unknown>).geo_distance_meters;

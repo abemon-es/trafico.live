@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Search, Loader2, ArrowLeft } from "lucide-react";
 import { useLiveSearch, getRecentSearches } from "@/components/search/useLiveSearch";
 import { SearchIcon } from "@/components/search/SearchIcon";
+import { Highlighted } from "@/components/search/Highlighted";
 
 export function ExplorarContent() {
   const searchParams = useSearchParams();
@@ -127,9 +128,9 @@ export function ExplorarContent() {
                       <div className="flex-1 min-w-0">
                         {result.highlightedTitle ? (
                           <p
-                            className="font-medium text-gray-900 dark:text-gray-100 truncate [&_mark]:bg-tl-amber-200/50 [&_mark]:dark:bg-tl-amber-900/40 [&_mark]:text-inherit [&_mark]:rounded-sm"
-                            dangerouslySetInnerHTML={{ __html: result.highlightedTitle }}
-                          />
+                            className="font-medium text-gray-900 dark:text-gray-100 truncate [&_mark]:bg-tl-amber-200/50 [&_mark]:dark:bg-tl-amber-900/40 [&_mark]:text-inherit [&_mark]:rounded-sm">
+                            <Highlighted snippet={result.highlightedTitle} />
+                          </p>
                         ) : (
                           <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
                             {result.title}
