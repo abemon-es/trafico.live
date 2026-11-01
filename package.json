@@ -24,6 +24,7 @@
     "test:fuel-stats-day": "tsx tests/fuel-stats-day.test.ts",
     "test:theme-pre-paint": "tsx tests/theme-pre-paint.test.ts",
     "test:camera-images": "tsx tests/camera-images.test.ts",
+    "test:road-param": "tsx tests/road-param.test.ts",
     "test:client-timezone": "tsx tests/client-timezone.test.ts",
     "test:no-hidden-links": "tsx tests/no-hidden-links.test.ts",
     "test:camera-snapshots": "tsx tests/camera-snapshots.test.ts",
