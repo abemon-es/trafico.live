@@ -1,22 +1,22 @@
 #!/bin/bash
-# Deploy trafico.live tile server on hetzner-prod
+# Deploy trafico.live tile server on the tiles host
 #
 # Prerequisites:
-# - SSH access to hetzner-prod
+# - SSH access to the tiles host (TILES_HOST = its ssh alias)
 # - spain-iberia.pmtiles extracted locally
-# - Docker running on hetzner-prod
+# - Docker running on the tiles host
 #
 # Usage:
 #   ./services/tiles/deploy.sh
 #
 # This script:
-# 1. Uploads the PMTiles file to hetzner-prod
+# 1. Uploads the PMTiles file to the tiles host
 # 2. Builds and deploys the nginx tile server
 # 3. Sets up tiles.trafico.live domain
 
 set -euo pipefail
 
-REMOTE="hetzner-prod"
+REMOTE="${TILES_HOST:?set TILES_HOST to the ssh alias of the tiles host}"
 REMOTE_DIR="/opt/trafico/tiles"
 PMTILES_FILE="/tmp/spain-iberia.pmtiles"
 
@@ -64,7 +64,7 @@ echo ""
 echo "=== Done ==="
 echo ""
 echo "Next steps:"
-echo "1. Add tiles.trafico.live DNS record pointing to hetzner-prod (168.119.34.248)"
-echo "2. Configure Coolify/Traefik reverse proxy for tiles.trafico.live → localhost:8088"
+echo "1. Add tiles.trafico.live DNS record pointing to the tiles host's public IP"
+echo "2. Configure the Traefik reverse proxy for tiles.trafico.live → localhost:8088"
 echo "3. Verify: curl -I https://tiles.trafico.live/spain.pmtiles"
 echo "4. Update src/lib/map-style.ts TILES_URL if domain is different"
