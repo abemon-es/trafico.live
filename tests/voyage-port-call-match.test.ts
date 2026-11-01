@@ -68,7 +68,8 @@ async function main() {
     const r = await t.run([{ ...docked, departedAt: at("12:30") }], at("00:00"));
     assert.deepEqual(r, { created: 0, closed: 1 });
     assert.equal(t.rows.length, 1);
-    assert.equal(t.rows[0].departedAt?.toISOString(), at("12:30").toISOString());
+    // assert.equal(…, null) above narrowed the type; read it again as stored.
+    assert.equal((t.rows[0].departedAt as Date | null)?.toISOString(), at("12:30").toISOString());
     assert.equal((t.rows[0] as { durationH?: number }).durationH, 2.5);
     assert.deepEqual(await t.run([{ ...docked, departedAt: at("12:30") }], at("00:00")), { created: 0, closed: 0 }, "closed once");
   }
