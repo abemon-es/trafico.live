@@ -76,7 +76,7 @@ function StationDirectory({
         <nav aria-label="Páginas del listado" className="p-4 border-t border-gray-200 dark:border-gray-800 flex flex-wrap gap-2">
           {Array.from({ length: pages }, (_, i) => i + 1).map((n) =>
             n === page ? (
-              <span key={n} aria-current="page" className="px-3 py-1 rounded bg-orange-600 text-white text-sm font-mono">
+              <span key={n} aria-current="page" className="px-3 py-1 rounded bg-orange-700 text-white text-sm font-mono">
                 {n}
               </span>
             ) : (
