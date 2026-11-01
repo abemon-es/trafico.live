@@ -37,7 +37,7 @@ const VESSEL_WINDOW_MIN = 20;
 const DEPARTURES_WINDOW_H = 24;
 const CROSSINGS_WINDOW_DAYS = 7;
 
-/** The line LE asks about most: Algeciras ⇄ Ceuta. */
+/** The busiest passenger line of the crossing: Algeciras ⇄ Ceuta. */
 const LINE = { a: "ESALG", b: "ESCEU" } as const;
 
 // ---------------------------------------------------------------------------
