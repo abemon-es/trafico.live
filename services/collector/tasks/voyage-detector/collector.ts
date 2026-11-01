@@ -16,6 +16,7 @@ import { PrismaClient, VoyageStatus } from "@prisma/client";
 import { log, logError } from "../../shared/utils.js";
 import { heartbeat } from "../../shared/heartbeat.js";
 import { FERRY_TERMINALS_BBOX, ferryTerminalAt, haversineNm } from "./ferry-terminals.js";
+import { applyStops } from "./port-call-match.js";
 
 const TASK = "voyage-detector";
 
@@ -115,6 +116,8 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
   let voyagesCreated = 0;
   let portCallsCreated = 0;
+  let portCallsClosed = 0;
+  const openBefore = await prisma.portCall.count({ where: { departedAt: null } });
 
   for (const { mmsi } of vessels) {
     try {
@@ -178,27 +181,23 @@ export async function run(prisma: PrismaClient): Promise<void> {
 
       if (stops.length === 0) continue;
 
-      // Create port calls (idempotent — skip if exists within 1 min of arrival)
-      for (const stop of stops) {
-        const existing = await prisma.portCall.findFirst({
-          where: {
-            mmsi,
-            arrivedAt: {
-              gte: new Date(stop.arrivedAt.getTime() - 60000),
-              lte: new Date(stop.arrivedAt.getTime() + 60000),
-            },
-          },
-        });
+      // Port calls: new stops are created, and a stored call still open is
+      // closed once its stop has a departure (port-call-match.ts).
+      const known = (
+        await prisma.portCall.findMany({
+          where: { mmsi },
+          select: { id: true, latitude: true, longitude: true, arrivedAt: true, departedAt: true },
+        })
+      ).map((c) => ({ ...c, latitude: Number(c.latitude), longitude: Number(c.longitude) }));
 
-        if (!existing) {
+      const applied = await applyStops(stops, known, positions[0]?.createdAt, {
+        create: async (stop) => {
           const durationH = stop.departedAt
             ? (stop.departedAt.getTime() - stop.arrivedAt.getTime()) / 3600000
             : null;
-
           // Resolve stop location to nearest known port
           const port = await resolvePort(prisma, stop.latitude, stop.longitude);
-
-          await prisma.portCall.create({
+          const created = await prisma.portCall.create({
             data: {
               mmsi,
               latitude: stop.latitude,
@@ -210,10 +209,20 @@ export async function run(prisma: PrismaClient): Promise<void> {
               portName: port?.portName ?? null,
               portCode: port?.portCode ?? null,
             },
+            select: { id: true },
           });
-          portCallsCreated++;
-        }
-      }
+          return created.id;
+        },
+        // Only an open call, and only its departure: arrivedAt, port and position stay.
+        close: async (id, departedAt, durationH) => {
+          await prisma.portCall.updateMany({
+            where: { id, departedAt: null },
+            data: { departedAt, durationH },
+          });
+        },
+      });
+      portCallsCreated += applied.created;
+      portCallsClosed += applied.closed;
 
       // Create voyages between consecutive port calls
       const portCalls = await prisma.portCall.findMany({
@@ -283,7 +292,17 @@ export async function run(prisma: PrismaClient): Promise<void> {
     }
   }
 
-  log(TASK, `Done: ${portCallsCreated} port calls, ${voyagesCreated} voyages created`);
-  await heartbeat(prisma, TASK, "ok", { portCalls: portCallsCreated, voyages: voyagesCreated });
+  const openAfter = await prisma.portCall.count({ where: { departedAt: null } });
+  log(
+    TASK,
+    `Done: ${portCallsCreated} port calls created, ${portCallsClosed} closed, ${voyagesCreated} voyages created; open calls ${openBefore} → ${openAfter}`
+  );
+  await heartbeat(prisma, TASK, "ok", {
+    portCalls: portCallsCreated,
+    portCallsClosed,
+    voyages: voyagesCreated,
+    openCallsBefore: openBefore,
+    openCallsAfter: openAfter,
+  });
 
 }
