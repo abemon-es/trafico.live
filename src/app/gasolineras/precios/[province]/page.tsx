@@ -6,6 +6,7 @@ import { MapPin, ArrowLeft, Clock, Map, Tag, Fuel, BarChart3 } from "lucide-reac
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { PRICE_PROVINCE_SLUGS } from "@/lib/geo/area-routes";
+import { glpAnchor } from "@/lib/fuel/glp-by-province";
 import { DIRECTORY_PAGE_SIZE, pageHref, resolvePage } from "@/lib/seo/pagination";
 
 // force-dynamic: Coolify builds with DATABASE_URL='' which caches empty ISR pages.
@@ -188,6 +189,13 @@ export default async function ProvincePricesPage({ params, searchParams }: Props
     return `${num.toFixed(3)}€`;
   };
 
+  // GLP in the province, for the link to /gasolineras/tipo/glp#glp-<slug>; nothing when there is none.
+  const glp = await prisma.gasStation
+    .aggregate({ where: { province: provinceData.code, priceGLP: { gt: 0 } }, _count: true, _min: { priceGLP: true } })
+    .catch(() => null);
+  const glpCount = glp?._count ?? 0;
+  const glpMin = glp?._min.priceGLP != null ? Number(glp._min.priceGLP) : null;
+
   const cheapestDiesel = stations.find((s) => s.priceGasoleoA != null);
   const cheapestGas95 = [...stations]
     .filter((s) => s.priceGasolina95E5 != null)
@@ -213,6 +221,21 @@ export default async function ProvincePricesPage({ params, searchParams }: Props
       <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
         Precios de Combustible en {provinceData.name}
       </h1>
+
+      {glpCount > 0 && (
+        <p className="-mt-3 mb-6 text-sm text-gray-600 dark:text-gray-400">
+          <Link href={`/gasolineras/tipo/glp#${glpAnchor(province)}`} className="text-orange-700 dark:text-orange-300 underline">
+            GLP en {provinceData.name}
+          </Link>
+          : {glpCount} {glpCount === 1 ? "gasolinera" : "gasolineras"}
+          {glpMin != null ? (
+            <>
+              , desde <span className="font-mono">{glpMin.toFixed(3)} €/L</span>
+            </>
+          ) : null}
+          .
+        </p>
+      )}
 
       {/* Cheapest Highlights */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
