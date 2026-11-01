@@ -18,7 +18,9 @@ services:
       - /opt/trafico/tiles/tiles:/data/tiles:ro
       - /opt/trafico/tiles/fonts:/data/fonts:ro
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost/health"]
+      # 127.0.0.1, not localhost: nginx listens on IPv4 only and newer base
+      # images resolve localhost to ::1 first, which turns the check red.
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/health"]
       interval: 30s
       timeout: 3s
       retries: 3
