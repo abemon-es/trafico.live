@@ -11,6 +11,7 @@ import { useLiveSearch, getRecentSearches } from "@/components/search/useLiveSea
 import { SearchIcon } from "@/components/search/SearchIcon";
 import { RouteIntentRow } from "@/components/search/RouteIntentRow";
 import { useFocusTrap } from "@/lib/a11y/focus-trap";
+import { Highlighted } from "@/components/search/Highlighted";
 
 function isActiveRoute(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -150,8 +151,9 @@ function MobileFullSearch({ onBack }: { onBack: () => void }) {
                     </span>
                     <div className="flex-1 min-w-0">
                       {result.highlightedTitle ? (
-                        <p className="font-medium truncate text-gray-900 dark:text-gray-100 [&_mark]:bg-tl-amber-200/50 [&_mark]:dark:bg-tl-amber-900/40 [&_mark]:text-inherit [&_mark]:rounded-sm"
-                          dangerouslySetInnerHTML={{ __html: result.highlightedTitle }} />
+                        <p className="font-medium truncate text-gray-900 dark:text-gray-100 [&_mark]:bg-tl-amber-200/50 [&_mark]:dark:bg-tl-amber-900/40 [&_mark]:text-inherit [&_mark]:rounded-sm">
+                          <Highlighted snippet={result.highlightedTitle} />
+                        </p>
                       ) : (
                         <p className="font-medium truncate text-gray-900 dark:text-gray-100">{result.title}</p>
                       )}

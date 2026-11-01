@@ -11,6 +11,7 @@ import { HUB_WIDGETS } from "./MegaMenuWidgets";
 import { useLiveSearch, getRecentSearches } from "@/components/search/useLiveSearch";
 import { RouteIntentRow } from "@/components/search/RouteIntentRow";
 import { SearchIcon } from "@/components/search/SearchIcon";
+import { Highlighted } from "@/components/search/Highlighted";
 
 function isActiveRoute(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -371,8 +372,9 @@ function SearchPanel({ onNavigate }: { onNavigate: () => void }) {
                       </span>
                       <div className="flex-1 min-w-0">
                         {result.highlightedTitle ? (
-                          <p className={`font-medium truncate ${isActive ? "text-tl-700 dark:text-tl-300" : "text-gray-900 dark:text-gray-100"} [&_mark]:bg-tl-amber-200/50 [&_mark]:dark:bg-tl-amber-900/40 [&_mark]:text-inherit [&_mark]:rounded-sm`}
-                            dangerouslySetInnerHTML={{ __html: result.highlightedTitle }} />
+                          <p className={`font-medium truncate ${isActive ? "text-tl-700 dark:text-tl-300" : "text-gray-900 dark:text-gray-100"} [&_mark]:bg-tl-amber-200/50 [&_mark]:dark:bg-tl-amber-900/40 [&_mark]:text-inherit [&_mark]:rounded-sm`}>
+                            <Highlighted snippet={result.highlightedTitle} />
+                          </p>
                         ) : (
                           <p className={`font-medium truncate ${isActive ? "text-tl-700 dark:text-tl-300" : "text-gray-900 dark:text-gray-100"}`}>{result.title}</p>
                         )}

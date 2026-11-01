@@ -5,18 +5,26 @@
  * **bold**, [links](url), *italic blocks*, and | tables |.
  *
  * Used by /noticias/[slug], /informe-diario/[date], /informes/*, /analisis/*
+ *
+ * Bodies carry text from feeds (DGT panel messages, AEMET warnings), so every
+ * piece of text is HTML-escaped before the markdown marks become tags, and a
+ * link keeps its href only when it is http(s), a site path or an anchor.
  */
 
+import { escapeHtml, safeHref } from "@/lib/html-escape";
+
 function formatInline(text: string): string {
-  return text
+  return escapeHtml(text)
     .replace(
       /\*\*(.+?)\*\*/g,
       '<strong class="font-semibold text-gray-900 dark:text-gray-100">$1</strong>'
     )
-    .replace(
-      /\[(.+?)\]\((.+?)\)/g,
-      '<a href="$2" class="text-tl-600 dark:text-tl-400 hover:underline">$1</a>'
-    );
+    .replace(/\[(.+?)\]\((.+?)\)/g, (_m, label: string, url: string) => {
+      const href = safeHref(url);
+      if (!href) return label;
+      const rel = /^https?:\/\//i.test(href) ? ' rel="noopener noreferrer"' : "";
+      return `<a href="${href}"${rel} class="text-tl-600 dark:text-tl-400 hover:underline">${label}</a>`;
+    });
 }
 
 function isTableBlock(block: string): boolean {
