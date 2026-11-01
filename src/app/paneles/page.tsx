@@ -17,6 +17,20 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { PageIntro } from "@/components/seo/PageIntro";
+import { panelMessagesFeed, type PanelMessagesFeed } from "@/lib/panel-messages-feed";
+
+/** The panel heartbeat read as «is the DGT publishing messages». A failed read is «not live». */
+async function getPanelMessagesFeed(): Promise<PanelMessagesFeed> {
+  try {
+    const hb = await prisma.collectorHeartbeat.findUnique({
+      where: { task: "panel" },
+      select: { meta: true, lastSuccessAt: true },
+    });
+    return panelMessagesFeed(hb?.meta ?? null, hb?.lastSuccessAt ?? null);
+  } catch {
+    return panelMessagesFeed(null, null);
+  }
+}
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -128,7 +142,7 @@ export default async function PanelesPage({ searchParams }: Props) {
   if (filterRoad) whereClause.roadNumber = filterRoad;
   if (onlyWithMessage) whereClause.hasMessage = true;
 
-  const [panels, totalCount, withMessageCount, allProvinces, topRoads] =
+  const [panels, totalCount, withMessageCount, allProvinces, topRoads, messagesFeed] =
     await Promise.all([
       prisma.variablePanel.findMany({
         where: whereClause,
@@ -164,9 +178,23 @@ export default async function PanelesPage({ searchParams }: Props) {
         orderBy: { _count: { roadNumber: "desc" } },
         take: 20,
       }),
+      getPanelMessagesFeed(),
     ]);
 
   const withoutMessageCount = totalCount - withMessageCount;
+  // Without a live messages feed «no message» is unknown, not «off».
+  const messagesLive = messagesFeed.live;
+  const messagesPublishedLabel = messagesFeed.publishedAt
+    ? messagesFeed.publishedAt.toLocaleString("es-ES", {
+        timeZone: "Europe/Madrid",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })
+    : null;
 
   // Group panels by road for display
   const byRoad = new Map<string, typeof panels>();
@@ -268,7 +296,7 @@ export default async function PanelesPage({ searchParams }: Props) {
             </div>
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-green-200 dark:border-green-800 shadow-sm p-4 text-center">
               <div className="text-2xl font-bold text-green-700 dark:text-green-400">
-                {withMessageCount.toLocaleString("es-ES")}
+                {messagesLive ? withMessageCount.toLocaleString("es-ES") : "—"}
               </div>
               <div className="text-sm text-green-600 dark:text-green-400 mt-0.5 flex items-center justify-center gap-1">
                 <MessageSquare className="w-3.5 h-3.5" />
@@ -277,7 +305,7 @@ export default async function PanelesPage({ searchParams }: Props) {
             </div>
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm p-4 text-center">
               <div className="text-2xl font-bold text-gray-400 dark:text-gray-500">
-                {withoutMessageCount.toLocaleString("es-ES")}
+                {messagesLive ? withoutMessageCount.toLocaleString("es-ES") : "—"}
               </div>
               <div className="text-sm text-gray-400 dark:text-gray-500 mt-0.5 flex items-center justify-center gap-1">
                 <MessageSquareOff className="w-3.5 h-3.5" />
@@ -286,8 +314,30 @@ export default async function PanelesPage({ searchParams }: Props) {
             </div>
           </div>
 
+          {/* The DGT messages feed is not being published */}
+          {!messagesLive && (
+            <div
+              role="status"
+              className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-4 mb-6 flex items-start gap-3"
+            >
+              <Info className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <h2 className="font-semibold text-tl-amber-800 dark:text-tl-amber-200">
+                  Mensajes de los paneles no disponibles
+                </h2>
+                <p className="text-sm text-tl-amber-700 dark:text-tl-amber-300 mt-0.5">
+                  {messagesPublishedLabel
+                    ? `La DGT no publica los mensajes de los paneles desde el ${messagesPublishedLabel}.`
+                    : "Ahora mismo no podemos confirmar los mensajes que publica la DGT."}{" "}
+                  Mostramos dónde está cada panel, pero no lo que indica en este momento.
+                  Fuente: DGT, Punto de Acceso Nacional (DATEX II).
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Active message alert */}
-          {withMessageCount > 0 && (
+          {messagesLive && withMessageCount > 0 && (
             <div className="bg-tl-amber-50 dark:bg-tl-amber-900/20 border border-tl-amber-200 dark:border-tl-amber-800 rounded-lg p-4 mb-6 flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400 flex-shrink-0 mt-0.5" />
               <div>
@@ -513,7 +563,7 @@ export default async function PanelesPage({ searchParams }: Props) {
                             ) : (
                               <div className="px-4 py-3">
                                 <p className="text-xs text-gray-400 dark:text-gray-500 italic">
-                                  Sin mensaje activo
+                                  {messagesLive ? "Sin mensaje activo" : "Mensaje no disponible"}
                                 </p>
                               </div>
                             )}
