@@ -90,6 +90,36 @@ own text on hubs).
 
 ---
 
+## Cycle 2026-11-01 (133) — /paneles stops saying «Sin mensaje activo» while the DGT messages feed is frozen
+
+**Signal (18:37Z):**
+- /api/health `degraded`, commit 33ad8f08, 51/54 ok.
+- speedlimit `error`: upstream, known (cycle 128/130).
+- cams-aq `partial`: known (cycle 132), CAMS fetch still not written.
+- panel `partial`: «messages feed last published 2872 min ago — frozen upstream».
+
+**Checked (one request to the DGT NAP from the server):**
+- The VMS messages publication answers 200.
+- Its size is 1,347 bytes, with no units.
+- Its `publicationTime` is 2026-10-30T19:42:59+01:00.
+- The locations feed is current.
+- So the collector reports this correctly. The page did not: with every `hasMessage = false`, /paneles said «Sin mensaje activo» on all 2,515 panels, along with «0 con mensaje / 2.515 sin mensaje».
+
+**Item (L1, a silent wrong claim on a page):** #250 makes the page read the panel heartbeat through `src/lib/panel-messages-feed.ts`.
+- It fails closed: the feed is live only when the run is fresh and the feed was published at most 30 min before it, which is the collector's rule.
+- When the feed isn't live, the page:
+  - shows a notice with the DGT's last publication date and the source;
+  - shows «—» in both counts;
+  - drops the «incidencias activas» alert;
+  - says «Mensaje no disponible» on each panel.
+- Checks: `npm run test:panel-feed` ok; tsc 11, the same as main; eslint clean.
+
+**Next:**
+- After the deploy, /paneles shows the notice. It goes away by itself when panel returns to `ok`.
+- Other surfaces that read `VariablePanel.hasMessage` (road pages, the panel API) get the same answer.
+- The metadata description still claims «2.463 paneles … en tiempo real».
+- Review #234–#237 (maritime) for the CTO.
+
 ## Cycle 2026-10-24 (132) — cams-aq says where its rows come from; the forecast page claims CAMS only when it is
 
 **Hand-over:** the trafico.live session moved to a new seat on 24-10. Same
