@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { PageIntro } from "@/components/seo/PageIntro";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 export const revalidate = 120; // 2 min — las páginas de atascos necesitan frescura
 
@@ -915,7 +916,7 @@ export default async function AtascosCiudadPage({
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {[faqSchema, breadcrumbSchema, placeSchema].map((s, i) => (
-        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(s) }} />
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(s) }} />
       ))}
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

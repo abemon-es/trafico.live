@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { Anchor, Ship, MapPin, Fuel, Navigation, Trophy, BarChart3 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 export const revalidate = 300;
 
@@ -308,7 +309,7 @@ export default async function PuertosPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
 
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">

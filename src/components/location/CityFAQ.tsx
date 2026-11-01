@@ -1,5 +1,6 @@
 import type { GeoEntity } from "@/lib/geo/types";
 import { getLocationStats } from "@/lib/data/location-stats";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 interface CityFAQProps {
   entity: GeoEntity;
@@ -115,7 +116,7 @@ export async function CityFAQ({ entity }: CityFAQProps) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqSchema) }}
       />
       <section
         id="faq"

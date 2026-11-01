@@ -1,3 +1,5 @@
+import { jsonLdHtml } from "@/lib/json-ld";
+
 interface BaseStructuredData {
   "@context": string;
   "@type": string;
@@ -31,7 +33,7 @@ function fnv1aHash(input: string): string {
  * validators, social previews) saw zero structured data on the page.
  */
 export function StructuredData({ data }: StructuredDataProps) {
-  const payload = JSON.stringify(data);
+  const payload = jsonLdHtml(data);
   const id = `sd-${fnv1aHash(payload)}`;
   return (
     <script

@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -339,7 +340,7 @@ export default function MejorHoraContent({ intro }: { intro?: string | null } = 
       {/* FAQ Schema */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(FAQ_SCHEMA) }}
       />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

@@ -18,6 +18,7 @@ import { AdSlot } from "@/components/ads/AdSlot";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { PageIntro } from "@/components/seo/PageIntro";
 import { panelMessagesFeed, type PanelMessagesFeed } from "@/lib/panel-messages-feed";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 /** The panel heartbeat read as «is the DGT publishing messages». A failed read is «not live». */
 async function getPanelMessagesFeed(): Promise<PanelMessagesFeed> {
@@ -246,7 +247,7 @@ export default async function PanelesPage({ searchParams }: Props) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqSchema) }}
       />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

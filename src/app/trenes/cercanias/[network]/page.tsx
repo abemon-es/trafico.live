@@ -14,6 +14,7 @@ import {
   CalendarClock,
 } from "lucide-react";
 import StationsList, { type StationEntry } from "./stations-list";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 export const revalidate = 300;
 
@@ -392,7 +393,7 @@ export default async function CercaniasNetworkPage({ params }: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdHtml({
             "@context": "https://schema.org",
             "@type": "WebPage",
             name: `Cercanías ${name}`,

@@ -11,6 +11,7 @@ import { Search, X } from "lucide-react";
 import ArticleCard from "@/components/ayuda/ArticleCard";
 import CategoryFilter from "@/components/ayuda/CategoryFilter";
 import { articles, type ArticleCategory } from "@/content/ayuda/articles";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 export default function AyudaPage() {
   const [query, setQuery] = useState("");
@@ -48,7 +49,7 @@ export default function AyudaPage() {
       {/* JSON-LD */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqSchema) }}
       />
 
       {/* Hero */}

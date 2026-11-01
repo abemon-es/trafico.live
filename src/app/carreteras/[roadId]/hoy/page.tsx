@@ -23,6 +23,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { PageIntro } from "@/components/seo/PageIntro";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 export const revalidate = 60; // refresh every minute — live page
 
@@ -279,7 +280,7 @@ export default async function RoadTodayPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {[...emergencySchemas, breadcrumbSchema, ...(faqSchema ? [faqSchema] : [])].map((s, i) => (
-        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(s) }} />
+        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(s) }} />
       ))}
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -37,6 +37,7 @@ import {
   AccidentAnalyticsSection,
   WeatherCorrelationSection,
 } from "@/components/location/sections";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 export const revalidate = 300;
 
@@ -226,7 +227,7 @@ export default async function MunicipalityPage({ params }: Props) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(placeSchema) }}
       />
 
       <LocationShell

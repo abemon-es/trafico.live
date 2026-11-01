@@ -55,6 +55,7 @@ import TrainRouteMap from "@/components/trenes/TrainRouteMap";
 import { getBrandInfo, getRollingStock } from "@/lib/trenes/brand-info";
 import StopsTimeline from "@/components/trenes/StopsTimeline";
 import PunctualityStats from "@/components/trenes/PunctualityStats";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 // ---------------------------------------------------------------------------
 // Renfe data structures
@@ -1139,7 +1140,7 @@ export default async function TrainEntityPage(
                   <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{
-                      __html: JSON.stringify({
+                      __html: jsonLdHtml({
                         "@context": "https://schema.org",
                         "@type": "FAQPage",
                         mainEntity: faq.map((f) => ({

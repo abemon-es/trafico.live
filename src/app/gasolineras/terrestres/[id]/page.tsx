@@ -11,6 +11,7 @@ import { TrackEntityView } from "@/components/analytics/TrackEntityView";
 import { StationPriceHistory } from "@/components/charts/StationPriceHistory";
 import { provincePath } from "@/lib/geo/geo-paths";
 import { utcDay } from "@/lib/data/fuel-stats-day";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -313,7 +314,7 @@ export default async function StationDetailPage({ params }: Props) {
       {/* JSON-LD Structured Data */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
 
       <Breadcrumbs

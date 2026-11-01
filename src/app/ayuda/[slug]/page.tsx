@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 import { ChevronRight, ArrowLeft, MessageCircleQuestion } from "lucide-react";
 import { articles, getArticleBySlug, getRelatedArticles } from "@/content/ayuda/articles";
 import ArticleCard from "@/components/ayuda/ArticleCard";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 // ---------------------------------------------------------------------------
 // Static params
@@ -318,7 +319,7 @@ export default async function ArticleDetailPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(articleSchema) }}
       />
 
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">

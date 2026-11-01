@@ -10,6 +10,7 @@ import { PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import LinkDirectory from "@/components/seo/LinkDirectory";
 import { provincePath } from "@/lib/geo/geo-paths";
 import { PageIntro } from "@/components/seo/PageIntro";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -130,7 +131,7 @@ export default async function RadaresPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqSchema) }}
       />
       <StructuredData data={radarDatasetSchema} />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">

@@ -4,6 +4,7 @@ import { Mail, Shield, Scale, Newspaper, Database, Bug, Handshake, MessageCircle
 import ContactForm from "./ContactForm";
 import { ContactByEmail } from "@/components/contact/ContactByEmail";
 import { CONTACT_FORMS_ENABLED } from "@/lib/email/contact-forms";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -92,7 +93,7 @@ export default function ContactoPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(STRUCTURED_DATA) }}
       />
 
       {/* Hero */}

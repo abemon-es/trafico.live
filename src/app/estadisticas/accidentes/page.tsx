@@ -7,6 +7,7 @@ import { PROVINCES, PROVINCE_NAMES } from "@/lib/geo/ine-codes";
 import { provinceSlug } from "@/lib/geo/slugify";
 import { accidentYears, spanText } from "@/lib/accident-years";
 import { PageIntro } from "@/components/seo/PageIntro";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -197,7 +198,7 @@ export default async function AccidentesPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(datasetSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(datasetSchema) }}
       />
 
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">

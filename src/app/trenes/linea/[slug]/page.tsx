@@ -24,6 +24,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 import RouteMap from "./route-map-wrapper";
 import { getBrandInfo } from "@/lib/trenes/brand-info";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 // ──────────────────────────────────────────────────────────────
 // Brand configuration (colors + labels)
@@ -1152,7 +1153,7 @@ export default async function LineaDetailPage({ params }: Props) {
         {/* JSON-LD */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
         />
       </main>
     </div>
