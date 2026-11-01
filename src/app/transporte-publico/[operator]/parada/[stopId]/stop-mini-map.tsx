@@ -3,14 +3,13 @@
 import { useEffect, useRef } from "react";
 import { setupPMTilesProtocol, TILE_SOURCES } from "@/lib/map-tiles";
 import { MAP_STYLE_DEFAULT } from "@/lib/map-config";
+import { configureMaplibreWorker } from "@/lib/maplibre-worker";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 interface TransitStopMiniMapProps {
   latitude: number;
   longitude: number;
 }
-
-const MAPLIBRE_CSS =
-  "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css";
 
 export default function TransitStopMiniMap({
   latitude,
@@ -23,22 +22,15 @@ export default function TransitStopMiniMap({
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Inject MapLibre CSS once
-    if (!document.querySelector(`link[href="${MAPLIBRE_CSS}"]`)) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = MAPLIBRE_CSS;
-      document.head.appendChild(link);
-    }
-
     let cancelled = false;
 
     async function init() {
-      const maplibregl = (await import("maplibre-gl")).default;
+      const maplibregl = await import("maplibre-gl");
 
       if (cancelled || !containerRef.current) return;
 
-      setupPMTilesProtocol();
+      await setupPMTilesProtocol();
+      configureMaplibreWorker(maplibregl);
 
       const map = new maplibregl.Map({
         container: containerRef.current,

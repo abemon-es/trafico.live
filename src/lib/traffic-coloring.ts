@@ -10,7 +10,7 @@
  * 2. match expression (rebuild style on data refresh) — best for batch updates
  */
 
-import type maplibregl from "maplibre-gl";
+import type * as maplibregl from "maplibre-gl";
 import { MAP_COLORS } from "./map-config";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -177,16 +177,18 @@ export function applyTrafficDataViaExpression(
     matchArgs.push(TRAFFIC_COLORS[seg.level]);
   }
 
+  // A "match" built with a spread is valid at runtime but TypeScript cannot
+  // type the variadic tuple, hence the cast (here and for line-opacity).
   map.setPaintProperty("roads-traffic", "line-color", [
     "match", ["get", "ref"],
     ...matchArgs,
     TRAFFIC_COLORS.noData,
-  ]);
+  ] as unknown as maplibregl.ExpressionSpecification);
 
   // Make traffic roads fully opaque
   map.setPaintProperty("roads-traffic", "line-opacity", [
     "match", ["get", "ref"],
     ...segments.flatMap((s) => [s.ref, 0.9]),
     0.3,
-  ]);
+  ] as unknown as maplibregl.ExpressionSpecification);
 }

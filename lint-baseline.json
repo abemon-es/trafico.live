@@ -11,9 +11,6 @@
     "src/app/sobre/posicionamiento/Charts.tsx": 1,
     "src/lib/fetcher.ts": 2
   },
-  "@typescript-eslint/no-require-imports": {
-    "src/lib/pmtiles-protocol.ts": 1
-  },
   "prefer-const": {
     "src/app/api/gas-stations/route.ts": 1,
     "src/app/api/roads/risk/route.ts": 1,
