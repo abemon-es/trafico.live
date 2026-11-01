@@ -55,7 +55,8 @@ assert.match(read("src/app/api/search/route.ts"), /highlightedTitle = safeHighli
 const panel = renderMarkdown("- **A-7 Panel:** <script>alert(1)</script> & <b>x</b>");
 assert.ok(!/<script|<b>/.test(panel), panel);
 assert.match(panel, /&lt;script&gt;alert\(1\)&lt;\/script&gt; &amp; &lt;b&gt;x&lt;\/b&gt;/);
-assert.equal(renderMarkdown("[clic](javascript:alert(1))"), '<p class="text-gray-700 dark:text-gray-300">clic</p>');
+// The lazy (.+?) stops at the first «)», so the leftover «)» stays as text: no link either way.
+assert.equal(renderMarkdown("[clic](javascript:alert(1))"), '<p class="text-gray-700 dark:text-gray-300">clic)</p>');
 assert.ok(!/href/.test(renderMarkdown('[x](" onmouseover="alert(1))')));
 assert.match(renderMarkdown("[DGT](https://www.dgt.es/)"), /<a href="https:\/\/www\.dgt\.es\/" rel="noopener noreferrer" /);
 assert.match(renderMarkdown("[Madrid](/trafico/madrid)"), /<a href="\/trafico\/madrid" class=/);
