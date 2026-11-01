@@ -23,6 +23,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createdByYear, planLoad, type AccidentRecord } from "../services/collector/tasks/historical-accidents/plan";
+import { STALE_THRESHOLDS } from "../src/lib/collector-thresholds";
 
 const HERE = typeof __dirname !== "undefined" ? __dirname : dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
@@ -60,7 +61,9 @@ assert.equal(again.unchanged, loaded.length);
 // 4. Image, schedule, health.
 assert.match(read("services/collector/Dockerfile.cron"), /^COPY data\/historical-accidents\.json \.\/data\/historical-accidents\.json$/m);
 assert.match(read("services/collector/crontabs/weekly"), /^15 6 1 \* \* TASK=historical-accidents npx tsx index\.ts 2>&1$/m);
-assert.match(read("src/app/api/health/route.ts"), /"historical-accidents": 2764800,/);
+// Since #205 (2026-10-22) /api/health and /status share src/lib/collector-thresholds.ts.
+assert.equal(STALE_THRESHOLDS["historical-accidents"], 2764800, "monthly run → 32 d staleness threshold");
+assert.match(read("src/app/api/health/route.ts"), /import \{[^}]*\bSTALE_THRESHOLDS\b[^}]*\} from "@\/lib\/collector-thresholds";/);
 const collector = read("services/collector/tasks/historical-accidents/collector.ts");
 assert.ok(collector.includes('path.resolve(__dirname, "../../data/historical-accidents.json")'), "the image path comes first");
 assert.ok(!/\.upsert\(/.test(collector), "no upsert: it can't take a NULL roadType, and nothing is overwritten");
