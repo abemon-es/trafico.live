@@ -9,25 +9,49 @@ import {
   generateDatasetSchema,
 } from "@/components/seo/StructuredData";
 import { PageIntro } from "@/components/seo/PageIntro";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
-export const metadata: Metadata = {
-  title: "Cámaras de Tráfico",
-  description:
-    "Visualiza en tiempo real las más de 500 cámaras de tráfico de la DGT en las carreteras españolas. Busca por carretera o provincia.",
-  openGraph: {
-    title: "Cámaras de Tráfico DGT en Tiempo Real — España",
-    description:
-      "Visualiza en tiempo real las más de 500 cámaras de tráfico de la DGT en las carreteras españolas. Busca por carretera o provincia.",
-    url: `${BASE_URL}/camaras`,
-    type: "website",
-    locale: "es_ES",
-  },
-  alternates: {
-    canonical: `${BASE_URL}/camaras`,
-  },
-};
+export const revalidate = 300;
+
+/** Active cameras, from the table; null when it can't be read (the copy then says no number). */
+async function activeCameraCount(): Promise<number | null> {
+  if (isBuildWithoutDb()) return null;
+  try {
+    return await prisma.camera.count({ where: { isActive: true } });
+  } catch {
+    return null;
+  }
+}
+
+const fmt = (n: number) => n.toLocaleString("es-ES");
+
+function hubDescription(count: number | null): string {
+  return count
+    ? `${fmt(count)} cámaras de tráfico de la DGT y de las comunidades autónomas, en directo: autopistas, autovías y carreteras de toda España. Busca por carretera, kilómetro o provincia.`
+    : "Cámaras de tráfico de la DGT y de las comunidades autónomas, en directo: autopistas, autovías y carreteras de toda España. Busca por carretera, kilómetro o provincia.";
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const count = await activeCameraCount();
+  const title = count ? `Cámaras DGT en directo: ${fmt(count)} cámaras de tráfico` : "Cámaras DGT en directo: cámaras de tráfico en España";
+  const description = hubDescription(count);
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `${BASE_URL}/camaras`,
+      type: "website",
+      locale: "es_ES",
+    },
+    alternates: {
+      canonical: `${BASE_URL}/camaras`,
+    },
+  };
+}
 
 function CamarasLoading() {
   return (
@@ -40,12 +64,13 @@ function CamarasLoading() {
   );
 }
 
-export default function CamarasPage() {
+export default async function CamarasPage() {
+  const count = await activeCameraCount();
   return (
     <>
       <StructuredData data={generateDatasetSchema({
         name: "Cámaras de tráfico DGT",
-        description: "Imágenes en tiempo real de las más de 500 cámaras de tráfico de la DGT instaladas en autopistas, autovías y carreteras nacionales de España.",
+        description: hubDescription(count),
         url: `${BASE_URL}/camaras`,
         keywords: ["tráfico", "cámaras", "DGT", "España"],
         spatialCoverage: "España",
@@ -86,10 +111,11 @@ export default function CamarasPage() {
             </h2>
             <div className="prose prose-gray dark:prose-invert max-w-none text-sm sm:text-base leading-relaxed">
               <p>
-                La Dirección General de Tráfico (DGT) gestiona una red pública
-                de más de 500 cámaras CCTV instaladas en autopistas (AP),
-                autovías (A), carreteras nacionales (N) y enlaces urbanos de
-                gran capacidad en toda España. Las imágenes son capturadas de
+                La Dirección General de Tráfico (DGT) y las comunidades
+                autónomas gestionan una red pública de cámaras CCTV en
+                autopistas (AP), autovías (A), carreteras nacionales (N) y
+                enlaces urbanos de gran capacidad en toda España
+                {count ? ` (${fmt(count)} activas ahora en trafico.live)` : ""}. Las imágenes son capturadas de
                 forma periódica desde cada cámara y difundidas en abierto para
                 consulta ciudadana, sin grabación continua y sin identificación
                 de vehículos ni matrículas.
