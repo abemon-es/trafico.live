@@ -31,6 +31,16 @@ mkdir -p "$LOGDIR" "$OUTPUT_DIR"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
 
+# Off unless PLANET_REBUILD_ENABLED=1. Planetiler picks the archive format
+# from the output extension, so "--output=…pmtiles.new" stops it in about
+# 2 s ("Unsupported format new"). A full planet build also needs well over
+# 100 GB free next to the 89 GB PBF. Fix the output name and check the disk
+# before turning this back on (PLANET_REBUILD_ENABLED=1 on the cron line).
+if [ "${PLANET_REBUILD_ENABLED:-0}" != "1" ]; then
+  log "Planet rebuild is off (PLANET_REBUILD_ENABLED is not 1). Nothing to do."
+  exit 0
+fi
+
 # ─── 1. Refresh the planet PBF ──────────────────────────────────────────────
 
 log "Downloading fresh planet-latest.osm.pbf"
