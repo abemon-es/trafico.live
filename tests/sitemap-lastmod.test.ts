@@ -145,6 +145,16 @@ async function main() {
   assert.equal(cameraCityIndexable(0), false);
   assert.equal(cameraCityIndexable(1), true);
 
+  // /carga-ev/punto/<id>: the date comes from the ev-charger fingerprint, never
+  // from EVCharger.lastUpdated (stamped on every row each run).
+  const gen = readFileSync("src/lib/sitemap-generator.ts", "utf8");
+  const charger = gen.slice(gen.indexOf("async function chargerSitemap"), gen.indexOf("async function railwayStationSitemap"));
+  assert.match(charger, /contentChangedAt\(\["ev-charger"\]\)/);
+  assert.match(charger, /lastModified: changedAt\.get\(fingerprintKey\("ev-charger", c\.id\)\)/);
+  assert.ok(!/lastUpdated/.test(charger.replace(/\/\/.*$/gm, "")), "no lastmod from lastUpdated");
+  assert.match(UPSERT_FINGERPRINTS.sql, /FROM "EVCharger" WHERE "isPublic"/);
+  assert.ok(!/lastUpdated/.test(UPSERT_FINGERPRINTS.sql), "the charger hash leaves out the run time");
+
   console.log("sitemap lastmod: all checks passed");
 }
 

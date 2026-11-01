@@ -1826,8 +1826,12 @@ async function chargerSitemap(shardIndex: number): Promise<SitemapEntry[]> {
     orderBy: { id: "asc" },
   });
 
+  // lastUpdated is the collector run, not a change: the date comes from the
+  // ev-charger fingerprint (src/lib/seo/lastmod.ts), or there is none.
+  const changedAt = await contentChangedAt(["ev-charger"]);
   return chargers.map((c) => ({
     url: `${BASE_URL}/carga-ev/punto/${c.id}`,
+    lastModified: changedAt.get(fingerprintKey("ev-charger", c.id)),
     changeFrequency: "weekly" as const,
     priority: 0.5,
   }));
