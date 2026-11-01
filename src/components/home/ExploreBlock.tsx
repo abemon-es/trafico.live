@@ -12,6 +12,7 @@ const PROVINCE_DATA: Array<{ href: string; label: string }> = [
   { href: "/gasolineras/precios", label: "Precios de gasolina por provincia" },
   { href: "/camaras", label: "Cámaras de tráfico" },
   { href: "/radares", label: "Radares por provincia y carretera" },
+  { href: "/carga-ev/provincia", label: "Puntos de carga por provincia" },
   { href: "/calidad-aire/provincia", label: "Calidad del aire por provincia" },
   { href: "/clima", label: "Clima y estaciones meteorológicas" },
 ];
