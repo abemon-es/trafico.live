@@ -163,5 +163,7 @@ http:
     tiles:
       loadBalancer:
         servers:
-          - url: http://host.docker.internal:8088
+          # The private address the compose file binds 8088 to
+          # (PRIVATE_BIND_IP in the .env next to it).
+          - url: http://<PRIVATE_BIND_IP>:8088
 ```

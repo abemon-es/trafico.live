@@ -17,6 +17,8 @@
 set -euo pipefail
 
 REMOTE="${TILES_HOST:?set TILES_HOST to the ssh alias of the tiles host}"
+# The tile server listens only on the host's private address.
+PRIVATE_BIND_IP="${PRIVATE_BIND_IP:?set PRIVATE_BIND_IP to the tiles host private address}"
 REMOTE_DIR="/opt/trafico/tiles"
 PMTILES_FILE="/tmp/spain-iberia.pmtiles"
 
@@ -54,10 +56,10 @@ ssh "$REMOTE" "
   docker run -d \
     --name trafico-tiles \
     --restart unless-stopped \
-    -p 8088:80 \
+    -p $PRIVATE_BIND_IP:8088:80 \
     -v $REMOTE_DIR/tiles:/data/tiles:ro \
     trafico-tiles
-  echo 'Tile server running on port 8088'
+  echo "Tile server running on $PRIVATE_BIND_IP:8088"
 "
 
 echo ""
@@ -65,6 +67,6 @@ echo "=== Done ==="
 echo ""
 echo "Next steps:"
 echo "1. Add tiles.trafico.live DNS record pointing to the tiles host's public IP"
-echo "2. Configure the Traefik reverse proxy for tiles.trafico.live → localhost:8088"
+echo "2. Configure the Traefik reverse proxy for tiles.trafico.live → $PRIVATE_BIND_IP:8088"
 echo "3. Verify: curl -I https://tiles.trafico.live/spain.pmtiles"
 echo "4. Update src/lib/map-style.ts TILES_URL if domain is different"
