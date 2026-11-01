@@ -3,6 +3,7 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import EstacionesTrenContent from "./content";
 import LinkDirectory from "@/components/seo/LinkDirectory";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 // The interactive catalogue below is client-rendered, so its station links do
 // not exist in the HTML Googlebot parses. This page emits a server-rendered
@@ -80,7 +81,7 @@ export default async function EstacionesTrenPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdHtml({
             "@context": "https://schema.org",
             "@type": "ItemList",
             name: "Estaciones de tren en España",
@@ -99,7 +100,7 @@ export default async function EstacionesTrenPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdHtml({
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [

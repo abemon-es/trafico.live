@@ -18,6 +18,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { RONDAS, RONDA_SLUGS, getRonda, getRondasByCity } from "./_data";
 import { PageIntro } from "@/components/seo/PageIntro";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 export const revalidate = 300;
 
@@ -221,11 +222,11 @@ export default async function RondaSlugPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(placeSchema) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(breadcrumbSchema) }}
       />
 
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">

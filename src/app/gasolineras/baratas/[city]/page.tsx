@@ -6,6 +6,7 @@ import { MapPin, Clock, TrendingDown, Fuel, ChevronRight, AlertCircle } from "lu
 import { AdSlot } from "@/components/ads/AdSlot";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { BARATAS_CITIES } from "@/lib/geo/area-routes";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -194,7 +195,7 @@ export default async function BaratasCityPage({ params }: Props) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
 
       <div className="max-w-7xl mx-auto px-4 py-8">

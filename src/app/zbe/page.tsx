@@ -21,6 +21,7 @@ import {
   generateFAQSchema,
 } from "@/components/seo/StructuredData";
 import { PageIntro } from "@/components/seo/PageIntro";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -373,11 +374,11 @@ export default async function ZBEIndexPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(datasetSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(datasetSchema) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqSchema) }}
       />
 
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">

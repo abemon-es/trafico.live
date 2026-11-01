@@ -23,6 +23,7 @@ import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { PageIntro } from "@/components/seo/PageIntro";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { TRAFFIC_CITIES } from "@/lib/geo/area-routes";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -330,7 +331,7 @@ export default async function TraficoCityPage({ params }: Props) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
 
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">

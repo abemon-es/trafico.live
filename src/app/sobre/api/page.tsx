@@ -16,6 +16,7 @@ import { PricingTable } from "./PricingTable";
 import { CodeSamples } from "./CodeSamples";
 import { EndpointCatalog } from "./EndpointCatalog";
 import { CostCalculator } from "./CostCalculator";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 // ---------------------------------------------------------------------------
 // Metadata
@@ -203,13 +204,13 @@ export default function ApiLandingPage() {
       {/* Structured data */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(serviceSchema) }}
       />
       {productSchemas.map((schema, i) => (
         <script
           key={i}
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdHtml(schema) }}
         />
       ))}
 

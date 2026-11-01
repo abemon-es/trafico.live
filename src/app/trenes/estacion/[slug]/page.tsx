@@ -18,6 +18,7 @@ import {
 import type { RailwayServiceType } from "@prisma/client";
 import { StationEntityMap } from "./entity-map";
 import { LiveTrainsAtStation } from "./LiveTrainsAtStation";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 export const revalidate = 300;
 export const dynamicParams = true;
@@ -711,7 +712,7 @@ export default async function EstacionDetallePage({ params }: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdHtml({
             "@context": "https://schema.org",
             "@graph": [
               {

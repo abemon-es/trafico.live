@@ -17,6 +17,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { PROVINCES } from "@/lib/geo/ine-codes";
 import { provinceSlug } from "@/lib/geo/slugify";
 import { provincePath } from "@/lib/geo/geo-paths";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 export const revalidate = 300;
 
@@ -160,11 +161,11 @@ export default async function RadaresProvinciaPage({ params }: Props) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqSchema) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(webPageSchema) }}
       />
 
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">

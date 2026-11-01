@@ -13,6 +13,7 @@ import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { PageIntro } from "@/components/seo/PageIntro";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -98,7 +99,7 @@ export default async function GuiaCercaniasPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(articleSchema) }}
       />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

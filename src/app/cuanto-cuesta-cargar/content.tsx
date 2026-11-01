@@ -15,6 +15,7 @@ import {
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { AffiliateWidget } from "@/components/ads/AffiliateWidget";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -775,7 +776,7 @@ export default function CuantoCuestaCargarContent() {
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
+              __html: jsonLdHtml({
                 "@context": "https://schema.org",
                 "@type": "FAQPage",
                 mainEntity: [

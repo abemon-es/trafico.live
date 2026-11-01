@@ -4,6 +4,7 @@ import { Map, Train, Bus, Plane, Car } from "lucide-react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { ODInput } from "@/components/multimodal/ODInput";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 export const metadata: Metadata = {
   title: "Cómo ir a cualquier parte de España — Rutas multimodal",
@@ -135,7 +136,7 @@ export default function IrPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdHtml({
             "@context": "https://schema.org",
             "@type": "WebPage",
             name: "Cómo ir a cualquier parte de España — Rutas multimodal",

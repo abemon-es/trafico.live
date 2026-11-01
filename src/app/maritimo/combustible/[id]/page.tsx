@@ -8,6 +8,7 @@ import { PriceComparisonCard, StationRanking, PriceHistoryChart } from "@/compon
 import { TraficoMapCard } from "@/components/map/TraficoMapCard";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { PageIntro } from "@/components/seo/PageIntro";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -169,7 +170,7 @@ export default async function MaritimeStationDetailPage({ params }: Props) {
     <div className="max-w-5xl mx-auto px-4 py-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
       <Breadcrumbs items={[
         { name: "Inicio", href: "/" },

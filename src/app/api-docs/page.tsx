@@ -20,6 +20,7 @@ import {
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { ApiKeyForm } from "./ApiKeyForm";
 import { PageIntro } from "@/components/seo/PageIntro";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -463,11 +464,11 @@ export default function ApiDocsPage() {
     <div className="min-h-screen bg-tl-50 dark:bg-tl-950">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqSchema) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(softwareSchema) }}
       />
 
       {/* ------------------------------------------------------------------ */}

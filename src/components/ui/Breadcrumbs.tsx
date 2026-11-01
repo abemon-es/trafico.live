@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 export interface BreadcrumbItem {
   name: string;
@@ -62,7 +63,7 @@ export function Breadcrumbs({
     >
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
       <ol className="flex items-center flex-wrap gap-1">
         {trail.map((item, idx) => {

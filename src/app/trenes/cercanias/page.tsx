@@ -13,6 +13,7 @@ import {
   Info,
   CheckCircle,
 } from "lucide-react";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 // Server-rendered: stats and alerts are computed from the DB at request time.
 // 300 s ISR keeps alert counts near-live without a client waterfall (the old
@@ -471,7 +472,7 @@ export default async function CercaniasPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdHtml({
             "@context": "https://schema.org",
             "@type": "WebPage",
             name: "Cercanías de España — 12 redes",

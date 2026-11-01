@@ -25,6 +25,7 @@ import type {
   Ga4DeviceRow,
   Ga4SourceRow,
 } from "./Charts";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -279,7 +280,7 @@ export default async function PosicionamientoPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(structuredData) }}
       />
 
       <main className="max-w-5xl mx-auto px-4 py-10 space-y-14">

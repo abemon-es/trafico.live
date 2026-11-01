@@ -6,6 +6,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { ComparisonTable } from "@/components/multimodal/ComparisonTable";
 import { Offers } from "@/components/multimodal/Offers";
 import { getAllODPairs, getODPairBySlugs } from "@/lib/od-pairs";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 // ISR: regenerate daily so static shell stays fresh.
 export const revalidate = 86400;
@@ -134,7 +135,7 @@ export default async function IrODPage({ params }: PageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdHtml({
             "@context": "https://schema.org",
             "@type": "WebPage",
             name: `Cómo ir de ${originName} a ${destName}`,

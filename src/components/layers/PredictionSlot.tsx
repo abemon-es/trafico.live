@@ -9,6 +9,7 @@
 import type { PredictionPayload, SlotState } from "./types";
 import { TimestampBadge } from "@/components/freshness/TimestampBadge";
 import { cn } from "@/lib/utils";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 export interface PredictionSlotProps {
   state: SlotState<PredictionPayload>;
@@ -87,7 +88,7 @@ function PredictionBody({ prediction }: { prediction: PredictionPayload }) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdHtml({
             "@context": "https://schema.org",
             "@type": "Dataset",
             name: `Predicción ${prediction.kind}`,

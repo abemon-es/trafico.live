@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { generateFAQSchema } from "@/lib/seo";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 export interface FAQItem {
   question: string;
@@ -66,7 +67,7 @@ export function FAQAccordion({
       {schema && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdHtml(schema) }}
         />
       )}
       {(title || description) && (

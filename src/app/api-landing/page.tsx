@@ -18,6 +18,7 @@ import RequestAccessForm from "@/components/api-landing/RequestAccessForm";
 import { ContactByEmail } from "@/components/contact/ContactByEmail";
 import { CONTACT_FORMS_ENABLED } from "@/lib/email/contact-forms";
 import { HeroReveal, SectionReveal } from "./Reveals";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -217,7 +218,7 @@ export default function ApiLandingPage() {
       {/* JSON-LD */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(serviceSchema) }}
       />
 
       {/* ------------------------------------------------------------------ */}

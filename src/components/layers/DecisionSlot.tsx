@@ -12,6 +12,7 @@
 import type { DecisionPayload, SlotState } from "./types";
 import { TimestampBadge } from "@/components/freshness/TimestampBadge";
 import { cn } from "@/lib/utils";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 const VERDICT_STYLE = {
   go: {
@@ -97,7 +98,7 @@ export function DecisionSlot({ state, question, className }: DecisionSlotProps) 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: jsonLdHtml({
             "@context": "https://schema.org",
             "@type": "FAQPage",
             mainEntity: [

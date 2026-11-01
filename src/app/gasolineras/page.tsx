@@ -6,6 +6,7 @@ import { Fuel, Anchor, TrendingUp, TrendingDown, Minus, MapPin, Clock, HelpCircl
 import { AdSlot } from "@/components/ads/AdSlot";
 import { StructuredData, generateDatasetSchema, generateFAQSchema } from "@/components/seo/StructuredData";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -666,7 +667,7 @@ export default async function GasolinerasPage() {
         </h2>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(generateFAQSchema({
+          dangerouslySetInnerHTML={{ __html: jsonLdHtml(generateFAQSchema({
             questions: [
               {
                 question: "¿Con qué frecuencia se actualizan los precios de las gasolineras?",

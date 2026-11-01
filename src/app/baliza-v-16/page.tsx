@@ -15,6 +15,7 @@ import {
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 export const revalidate = 86400;
 
@@ -135,7 +136,7 @@ export default function BalizaV16Page() {
         <script
           key={i}
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdHtml(schema) }}
         />
       ))}
 

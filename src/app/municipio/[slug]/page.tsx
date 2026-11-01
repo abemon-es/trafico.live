@@ -26,6 +26,7 @@ import {
   V16Section,
 } from "@/components/location/sections";
 import { provincePath } from "@/lib/geo/geo-paths";
+import { jsonLdHtml } from "@/lib/json-ld";
 
 // Force dynamic SSR (builds run without DATABASE_URL, ISR caches empty results)
 export const dynamic = "force-dynamic";
@@ -218,11 +219,11 @@ export default async function MunicipioPage({ params }: Props) {
       {/* Structured data */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(placeSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(placeSchema) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqSchema) }}
       />
 
       <LocationShell
