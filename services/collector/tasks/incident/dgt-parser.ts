@@ -93,7 +93,7 @@ export async function fetchDGTIncidents(): Promise<DGTIncident[]> {
   return incidents;
 }
 
-function parseDGTResponse(xml: string): DGTIncident[] {
+export function parseDGTResponse(xml: string): DGTIncident[] {
   try {
     const result = parser.parse(xml);
 
