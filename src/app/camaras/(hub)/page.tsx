@@ -29,8 +29,8 @@ const fmt = (n: number) => n.toLocaleString("es-ES");
 
 function hubDescription(count: number | null): string {
   return count
-    ? `${fmt(count)} cámaras de tráfico de la DGT y de las comunidades autónomas, con imagen renovada cada 5 minutos aprox. Autopistas, autovías y carreteras: busca por carretera o provincia.`
-    : "Cámaras de tráfico de la DGT y de las comunidades autónomas, con imagen renovada cada 5 minutos aprox. Autopistas, autovías y carreteras: busca por carretera o provincia.";
+    ? `${fmt(count)} cámaras de tráfico de la DGT y de las comunidades autónomas; las de la DGT renuevan la imagen cada 5 minutos aprox. Busca por carretera o provincia.`
+    : "Cámaras de tráfico de la DGT y de las comunidades autónomas; las de la DGT renuevan la imagen cada 5 minutos aprox. Busca por carretera o provincia.";
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -108,7 +108,7 @@ export default async function CamarasPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 space-y-6">
           <section className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-8">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
-              Cámaras de tráfico de la DGT en tiempo real
+              Cámaras de tráfico de la DGT: qué muestran y cada cuánto se renuevan
             </h2>
             <div className="prose prose-gray dark:prose-invert max-w-none text-sm sm:text-base leading-relaxed">
               <p>
