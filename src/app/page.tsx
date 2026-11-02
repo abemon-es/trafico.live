@@ -23,7 +23,8 @@ export const revalidate = 300;
 export const metadata: Metadata = {
   title: "Tráfico en Tiempo Real en España — Mapa, Incidencias, Cámaras DGT",
   description:
-    "Consulta el estado del tráfico en España ahora: incidencias activas, cámaras DGT en directo, radares de velocidad, precios de combustible y cargadores eléctricos. Datos oficiales actualizados cada 60 segundos.",
+    // ≤155 chars and only what is measured: incidents every 2 min (incident cron */2), not «60 s»; cameras are stills.
+    "El estado del tráfico en España ahora: incidencias de la DGT renovadas cada 2 minutos, cámaras, radares, precios de combustible y puntos de recarga.",
   alternates: {
     canonical: BASE_URL,
   },
