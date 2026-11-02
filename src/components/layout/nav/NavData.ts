@@ -151,7 +151,7 @@ export const megaMenuPanels: MegaMenuPanel[] = [
       {
         title: "Cámaras DGT",
         items: [
-          { name: "Todas las cámaras", href: "/camaras", icon: Camera, description: "Imágenes en directo" },
+          { name: "Todas las cámaras", href: "/camaras", icon: Camera, description: "Imagen cada 5 min" },
           { name: "Madrid", href: "/camaras/madrid", icon: Camera },
           { name: "Barcelona", href: "/camaras/barcelona", icon: Camera },
           { name: "Valencia", href: "/camaras/valencia", icon: Camera },

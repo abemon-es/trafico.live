@@ -112,8 +112,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title =
     cameraCount > 0
-      ? `Cámaras de Tráfico en ${cityData.name} — ${cameraCount} cámaras DGT, imagen cada 5 min`
-      : `Cámaras de Tráfico en ${cityData.name} — DGT, imagen cada 5 min`;
+      ? `Cámaras de tráfico en ${cityData.name}: ${cameraCount} cámaras DGT, imagen cada 5 min`
+      : `Cámaras de tráfico en ${cityData.name}: DGT, imagen cada 5 min`;
   const description =
     cameraCount > 0
       ? `${cameraCount} cámaras de tráfico DGT en ${cityData.name}. Imágenes de autopistas, autovías y carreteras principales que la DGT renueva cada 5 minutos aprox.`
@@ -222,7 +222,7 @@ export default async function CamarasCityPage({ params }: Props) {
   const roadsSorted = Object.keys(camerasByRoad).sort();
   const hasCameras = cameras.length > 0;
 
-  const pageTitle = `Cámaras de Tráfico en ${cityData.name} — imagen cada 5 minutos`;
+  const pageTitle = `Cámaras de tráfico en ${cityData.name}: imagen cada 5 minutos`;
   const pageDescription = `Las cámaras de tráfico de la DGT en ${cityData.name}, con imagen renovada cada 5 minutos aproximadamente. Listado completo por carretera.`;
   const structuredData = generateWebPageSchema({
     title: pageTitle,
