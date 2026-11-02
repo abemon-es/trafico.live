@@ -88,7 +88,7 @@ export function CityIntelligence() {
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-5">
               Cada ciudad tiene su propia página con sidebar de navegación, datos en vivo, mapa
-              interactivo, ranking de gasolineras, cámaras en directo, historial de accidentes,
+              interactivo, ranking de gasolineras, cámaras con imagen cada 5 min, historial de accidentes,
               zonas de riesgo, paneles DGT y noticias locales.
             </p>
 

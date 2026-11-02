@@ -57,7 +57,7 @@ export function TwoMaps() {
               Mapa de tráfico en tiempo real
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
-              El mapa de carreteras de trafico.live integra capas interactivas sobre una base vectorial de alta resolución con tecnología MapLibre GL. Visualiza el flujo de tráfico en vivo con colores por velocidad, la posición exacta de incidencias DGT, cámaras en directo y radares con alertas de proximidad. Los datos se actualizan cada 5 minutos vía DATEX II y cada 30 segundos vía SSE para incidencias.
+              El mapa de carreteras de trafico.live integra capas interactivas sobre una base vectorial de alta resolución con tecnología MapLibre GL. Visualiza el flujo de tráfico en vivo con colores por velocidad, la posición exacta de incidencias DGT, cámaras con imagen cada 5 min y radares con alertas de proximidad. Los datos se actualizan cada 5 minutos vía DATEX II y cada 30 segundos vía SSE para incidencias.
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
               Disponible en vista Globe para una perspectiva tridimensional de la Península Ibérica, Baleares, Canarias y territorios continentales. Incluye capas opcionales de gasolineras, cargadores eléctricos, zonas ZBE, balizas V16 activas y alertas meteorológicas AEMET.
