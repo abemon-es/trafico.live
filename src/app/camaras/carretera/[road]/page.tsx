@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 
   const title = `Cámaras de Tráfico en la ${roadId} — ${count > 0 ? `${count} Cámaras` : "Cámaras"} DGT ${CURRENT_YEAR}`;
-  const description = `Consulta las ${count > 0 ? count : ""} cámaras de tráfico de la DGT en la ${roadId}. Imágenes en tiempo real, punto kilométrico y dirección. Actualizado cada 5 minutos.`.replace(
+  const description = `Consulta las ${count > 0 ? count : ""} cámaras de tráfico de la DGT en la ${roadId}. Imagen renovada cada 5 minutos aprox., punto kilométrico y dirección.`.replace(
     /\s+/g,
     " "
   );
@@ -118,7 +118,7 @@ export default async function CamarasCarreteraPage({ params }: Props) {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: `Cámaras de tráfico en la ${roadId}`,
-    description: `Lista completa de cámaras DGT en la ${roadId}. ${cameras.length} cámaras con imágenes en tiempo real, punto kilométrico y provincia.`,
+    description: `Lista completa de cámaras DGT en la ${roadId}. ${cameras.length} cámaras con imagen renovada cada 5 minutos aprox., punto kilométrico y provincia.`,
     url: `${BASE_URL}/camaras/carretera/${encodeURIComponent(roadId)}`,
     breadcrumb: {
       "@type": "BreadcrumbList",
@@ -200,7 +200,7 @@ export default async function CamarasCarreteraPage({ params }: Props) {
                   </p>
                 )}
                 <p className="text-gray-600 dark:text-gray-400 max-w-2xl">
-                  Imágenes en tiempo real de las cámaras de vigilancia de la DGT instaladas en
+                  Imágenes, renovadas cada 5 minutos aproximadamente, de las cámaras de vigilancia de la DGT instaladas en
                   la {roadId}. Agrupadas por provincia y ordenadas por punto kilométrico.
                 </p>
                 <PageIntro path={`/camaras/carretera/${roadId}`} />
