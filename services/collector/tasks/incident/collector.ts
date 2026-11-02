@@ -22,6 +22,7 @@ import { fetchSCTIncidents, SCTIncident } from "./sct-parser.js";
 import { fetchEuskadiIncidents, EuskadiIncident } from "./euskadi-parser.js";
 import { sourceProblems, type StoreFailure } from "./run-status.js";
 import { fetchDGTIncidents, DGTIncident } from "./dgt-parser.js";
+import { resolveDGTLocation } from "../../shared/province-locator.js";
 import { fetchMadridIncidents, MadridIncident } from "./madrid-parser.js";
 import { fetchValenciaIncidents, ValenciaIncident } from "./valencia-parser.js";
 import { fetchDTGVIncidents, DTGVIncident } from "./dtgv-parser.js";
@@ -114,7 +115,12 @@ function normalizeIncident(
   };
 }
 
-function normalizeDGTIncident(incident: DGTIncident): NormalizedIncident {
+export function normalizeDGTIncident(incident: DGTIncident): NormalizedIncident {
+  // Province and community as codes, like every other source and every page
+  // filter. The DGT sends names, and only in a TpegNonJunctionPoint extension:
+  // 1,556 of 1,875 active DGT incidents on 02-11-2026 (mostly vehicle stops)
+  // had none, so those come from the coordinates.
+  const located = resolveDGTLocation(incident.province, incident.latitude, incident.longitude);
   return {
     situationId: incident.situationId,
     type: incident.type,
@@ -126,10 +132,10 @@ function normalizeDGTIncident(incident: DGTIncident): NormalizedIncident {
     roadType: inferRoadType(incident.roadNumber),
     kmPoint: incident.kmPoint,
     direction: mapDirection(incident.direction),
-    province: incident.province,
-    provinceName: incident.provinceName,
-    community: incident.community,
-    communityName: incident.communityName,
+    province: located?.province,
+    provinceName: located?.provinceName ?? incident.provinceName,
+    community: located?.community,
+    communityName: located?.communityName ?? incident.communityName,
     municipality: incident.municipality,
     description: incident.description,
     severity: incident.severity,
@@ -408,6 +414,12 @@ export async function run(prisma: PrismaClient) {
           update: {
             type: incident.type,
             endedAt: incident.endedAt,
+            // Location too, so existing rows get it (DGT: codes instead of names,
+            // and from coordinates when absent, since 02-11-2026). undefined leaves a column as is.
+            province: incident.province ?? undefined,
+            provinceName: incident.provinceName ?? undefined,
+            community: incident.community ?? undefined,
+            communityName: incident.communityName ?? undefined,
             fetchedAt: now,
             // Lifecycle tracking - update lastSeenAt on every observation
             lastSeenAt: now,

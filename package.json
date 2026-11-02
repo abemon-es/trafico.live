@@ -79,6 +79,7 @@
     "test:incident-classes": "tsx tests/incident-classes.test.ts",
     "test:incident-effect": "tsx tests/incident-effect.test.ts",
     "test:dgt-types": "tsx tests/dgt-incident-types.test.ts",
+    "test:province-locator": "tsx tests/province-locator.test.ts",
     "test:capture-forms": "tsx tests/capture-forms-sender.test.ts",
     "test:weekly-digest": "tsx tests/weekly-digest-send.test.ts",
     "test:indexnow": "tsx tests/notify-indexnow.test.ts",
