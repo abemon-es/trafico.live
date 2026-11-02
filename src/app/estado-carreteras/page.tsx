@@ -206,39 +206,39 @@ export default async function EstadoCarreterasPage() {
     mainEntity: faq.map((f) => ({ "@type": "Question", name: f.question, acceptedAnswer: { "@type": "Answer", text: f.answer } })),
   };
 
-  const card = "bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 mb-6";
-  const h2 = "font-heading text-xl font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2";
+  const card = "bg-white dark:bg-ink-900 rounded-xl border border-ink-200 dark:border-ink-800 p-5 mb-6";
+  const h2 = "font-heading text-xl font-bold text-ink-900 dark:text-ink-100 mb-3 flex items-center gap-2";
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqSchema) }} />
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="min-h-screen bg-ink-50 dark:bg-ink-950">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Breadcrumbs items={[{ name: "Inicio", href: "/" }, { name: "Estado de las carreteras", href: "/estado-carreteras" }]} />
 
           {/* B1: summary */}
           <header className={card}>
-            <h1 className="font-heading text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            <h1 className="font-heading text-2xl md:text-3xl font-bold text-ink-900 dark:text-ink-100 mb-2">
               Estado de las carreteras hoy en España
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 max-w-3xl leading-relaxed">
+            <p className="text-ink-600 dark:text-ink-400 max-w-3xl leading-relaxed">
               El estado actual de las carreteras con los datos de la DGT y de los servicios autonómicos de tráfico:
               cortes, obras, nieve y hielo, por comunidad y por vía. La DGT renueva sus incidencias cada 2 minutos.
             </p>
-            <p className="flex items-center gap-1.5 mt-2 text-xs text-gray-500 dark:text-gray-400">
+            <p className="flex items-center gap-1.5 mt-2 text-xs text-ink-500 dark:text-ink-400">
               <RefreshCw className="w-3.5 h-3.5" /> Datos de las {hora}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
               {[
                 { icon: <AlertTriangle className="w-5 h-5 text-tl-amber-500" />, value: d.total, label: "Incidencias activas" },
-                { icon: <Ban className="w-5 h-5 text-red-500" />, value: d.closedCount, label: "Carreteras cortadas" },
+                { icon: <Ban className="w-5 h-5 text-signal-red" />, value: d.closedCount, label: "Carreteras cortadas" },
                 { icon: <Construction className="w-5 h-5 text-tl-amber-600" />, value: d.roadworks, label: "Obras" },
                 { icon: <Snowflake className="w-5 h-5 text-tl-500" />, value: d.weatherCount, label: "Meteorología" },
               ].map((s) => (
-                <div key={s.label} className="rounded-lg border border-gray-200 dark:border-gray-800 p-3 text-center">
+                <div key={s.label} className="rounded-lg border border-ink-200 dark:border-ink-800 p-3 text-center">
                   <div className="flex justify-center mb-1">{s.icon}</div>
-                  <p className="font-mono text-2xl font-bold text-gray-900 dark:text-gray-100">{n(s.value)}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{s.label}</p>
+                  <p className="font-mono text-2xl font-bold text-ink-900 dark:text-ink-100">{n(s.value)}</p>
+                  <p className="text-xs text-ink-500 dark:text-ink-400">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -247,22 +247,22 @@ export default async function EstadoCarreterasPage() {
           {/* B2: closed roads */}
           <section className={card} aria-labelledby="cortadas">
             <h2 id="cortadas" className={h2}>
-              <Ban className="w-5 h-5 text-red-500" /> Carreteras cortadas hoy
+              <Ban className="w-5 h-5 text-signal-red" /> Carreteras cortadas hoy
             </h2>
             {d.closures.length === 0 ? (
-              <p className="text-sm text-gray-600 dark:text-gray-400">A las {hora} no hay ninguna carretera cortada registrada.</p>
+              <p className="text-sm text-ink-600 dark:text-ink-400">A las {hora} no hay ninguna carretera cortada registrada.</p>
             ) : (
               <>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                <p className="text-sm text-ink-600 dark:text-ink-400 mb-3">
                   {n(d.closedCount)} cortes activos a las {hora}
                   {d.closedCount > d.closures.length ? `; los ${n(d.closures.length)} más recientes:` : ":"}
                 </p>
-                <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                <ul className="divide-y divide-ink-100 dark:divide-ink-800">
                   {d.closures.map((i) => (
                     <li key={i.id} className="py-2 text-sm">
-                      <span className="font-semibold text-gray-900 dark:text-gray-100">{where(i)}</span>
-                      {i.description && <span className="block text-gray-600 dark:text-gray-400 line-clamp-2">{i.description}</span>}
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="font-semibold text-ink-900 dark:text-ink-100">{where(i)}</span>
+                      {i.description && <span className="block text-ink-600 dark:text-ink-400 line-clamp-2">{i.description}</span>}
+                      <span className="text-xs text-ink-500 dark:text-ink-400">
                         Desde {since(i.startedAt, d.at)} · {i.source ? (SOURCE_LABELS[i.source] ?? i.source) : "Fuente sin identificar"}
                       </span>
                     </li>
@@ -280,7 +280,7 @@ export default async function EstadoCarreterasPage() {
             <h2 id="nieve" className={h2}>
               <Snowflake className="w-5 h-5 text-tl-500" /> Nieve, hielo y cadenas
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+            <p className="text-sm text-ink-600 dark:text-ink-400 mb-3">
               {d.weatherCount === 0
                 ? `A las ${hora} no hay incidencias en carretera por nieve, hielo, niebla o viento.`
                 : `${n(d.weatherCount)} incidencias en carretera por condiciones meteorológicas a las ${hora}.`}{" "}
@@ -289,11 +289,11 @@ export default async function EstadoCarreterasPage() {
                 : `AEMET tiene ${n(d.snowAlertCount)} avisos activos por nieve o hielo${d.snowProvinces.length ? ` en ${d.snowProvinces.join(", ")}` : ""}.`}
             </p>
             {d.weather.length > 0 && (
-              <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+              <ul className="divide-y divide-ink-100 dark:divide-ink-800">
                 {d.weather.map((i) => (
                   <li key={i.id} className="py-2 text-sm">
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">{where(i)}</span>
-                    {i.description && <span className="block text-gray-600 dark:text-gray-400 line-clamp-2">{i.description}</span>}
+                    <span className="font-semibold text-ink-900 dark:text-ink-100">{where(i)}</span>
+                    {i.description && <span className="block text-ink-600 dark:text-ink-400 line-clamp-2">{i.description}</span>}
                   </li>
                 ))}
               </ul>
@@ -315,10 +315,10 @@ export default async function EstadoCarreterasPage() {
                   <li key={c.code}>
                     <Link
                       href={c.href as string}
-                      className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 dark:border-gray-800 px-3 py-2 text-sm hover:border-tl-400"
+                      className="flex items-center justify-between gap-2 rounded-lg border border-ink-200 dark:border-ink-800 px-3 py-2 text-sm hover:border-tl-400"
                     >
                       <span className="text-tl-700 dark:text-tl-300">Estado de las carreteras en {c.name}</span>
-                      <span className="font-mono text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                      <span className="font-mono text-xs text-ink-500 dark:text-ink-400 whitespace-nowrap">
                         {n(c.total)}
                         {c.closed > 0 ? ` · ${n(c.closed)} cortes` : ""}
                       </span>
@@ -339,10 +339,10 @@ export default async function EstadoCarreterasPage() {
                   <li key={r.road}>
                     <Link
                       href={`/carreteras/${encodeURIComponent(r.road)}/hoy`}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 dark:border-gray-800 px-3 py-1 text-sm hover:border-tl-400"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-ink-200 dark:border-ink-800 px-3 py-1 text-sm hover:border-tl-400"
                     >
                       <span className="text-tl-700 dark:text-tl-300">{r.road} hoy</span>
-                      <span className="font-mono text-xs text-gray-500 dark:text-gray-400">{n(r.count)}</span>
+                      <span className="font-mono text-xs text-ink-500 dark:text-ink-400">{n(r.count)}</span>
                     </Link>
                   </li>
                 ))}
@@ -356,14 +356,14 @@ export default async function EstadoCarreterasPage() {
             <dl className="space-y-4">
               {faq.map((f) => (
                 <div key={f.question}>
-                  <dt className="font-semibold text-gray-900 dark:text-gray-100">{f.question}</dt>
-                  <dd className="text-sm text-gray-600 dark:text-gray-400 mt-1">{f.answer}</dd>
+                  <dt className="font-semibold text-ink-900 dark:text-ink-100">{f.question}</dt>
+                  <dd className="text-sm text-ink-600 dark:text-ink-400 mt-1">{f.answer}</dd>
                 </div>
               ))}
             </dl>
           </section>
 
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
+          <p className="text-xs text-ink-500 dark:text-ink-400 mb-6">
             Fuentes a las {hora}: {d.sources.map((s) => `${s.label} (${n(s.count)})`).join(", ")}. Avisos meteorológicos: AEMET.
           </p>
 
