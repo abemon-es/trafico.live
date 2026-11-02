@@ -100,7 +100,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // /camaras loading.tsx made notFound() answer 200 + "index").
     if (count === 0) return { title: "Cámaras no encontradas", robots: { index: false, follow: true } };
     return {
-      title: `Cámaras ${titleLocation} | Tráfico DGT en vivo`,
+      title: `Cámaras ${titleLocation} | Tráfico DGT, imagen cada 5 min`,
       description: `${count} cámara${count > 1 ? "s" : ""} de tráfico DGT en ${titleLocation}. Imagen actualizada periódicamente. Estado del tráfico ahora.`,
       alternates: { canonical: `${BASE_URL}/camaras/${city}` },
     };
@@ -112,12 +112,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title =
     cameraCount > 0
-      ? `Cámaras de Tráfico en ${cityData.name} — ${cameraCount} cámaras DGT en vivo`
-      : `Cámaras de Tráfico en ${cityData.name} — DGT en vivo`;
+      ? `Cámaras de Tráfico en ${cityData.name} — ${cameraCount} cámaras DGT, imagen cada 5 min`
+      : `Cámaras de Tráfico en ${cityData.name} — DGT, imagen cada 5 min`;
   const description =
     cameraCount > 0
-      ? `${cameraCount} cámaras de tráfico DGT en ${cityData.name}. Imágenes en directo de autopistas, autovías y carreteras principales. Actualización continua.`
-      : `Cámaras de tráfico DGT en ${cityData.name}. Consulta el estado de las carreteras en tiempo real.`;
+      ? `${cameraCount} cámaras de tráfico DGT en ${cityData.name}. Imágenes de autopistas, autovías y carreteras principales que la DGT renueva cada 5 minutos aprox.`
+      : `Cámaras de tráfico DGT en ${cityData.name}, con imagen renovada cada 5 minutos aprox.`;
 
   return {
     title,
@@ -164,7 +164,7 @@ export default async function CamarasCityPage({ params }: Props) {
                   <div className="relative aspect-video bg-gray-100 dark:bg-gray-800">
                     <Image src={cameraImage(cam)!} alt={`Cámara ${cam.name}`} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" unoptimized />
                     <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />EN VIVO
+                      Cada 5 min
                     </div>
                   </div>
                 ) : (
@@ -222,8 +222,8 @@ export default async function CamarasCityPage({ params }: Props) {
   const roadsSorted = Object.keys(camerasByRoad).sort();
   const hasCameras = cameras.length > 0;
 
-  const pageTitle = `Cámaras de Tráfico en ${cityData.name} — En Tiempo Real`;
-  const pageDescription = `Consulta en tiempo real las cámaras de tráfico de la DGT en ${cityData.name}. Listado completo por carretera con imágenes actualizadas.`;
+  const pageTitle = `Cámaras de Tráfico en ${cityData.name} — imagen cada 5 minutos`;
+  const pageDescription = `Las cámaras de tráfico de la DGT en ${cityData.name}, con imagen renovada cada 5 minutos aproximadamente. Listado completo por carretera.`;
   const structuredData = generateWebPageSchema({
     title: pageTitle,
     description: pageDescription,
@@ -258,7 +258,7 @@ export default async function CamarasCityPage({ params }: Props) {
                 Cámaras de Tráfico en {cityData.name}
               </h1>
               <p className="text-gray-600 dark:text-gray-400 max-w-2xl">
-                Imágenes en tiempo real de las cámaras de vigilancia de la DGT en las carreteras
+                Imágenes, renovadas cada 5 minutos aproximadamente, de las cámaras de vigilancia de la DGT en las carreteras
                 de la provincia de {cityData.name}. Actualización automática cada pocos minutos.
               </p>
               <PageIntro path={`/camaras/${city}`} className="mt-3 max-w-2xl text-base leading-relaxed text-gray-600 dark:text-gray-300" />

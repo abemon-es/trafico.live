@@ -35,7 +35,7 @@ function hubDescription(count: number | null): string {
 
 export async function generateMetadata(): Promise<Metadata> {
   const count = await activeCameraCount();
-  const title = count ? `Cámaras DGT en directo: ${fmt(count)} cámaras de tráfico` : "Cámaras DGT en directo: cámaras de tráfico en España";
+  const title = count ? `Cámaras DGT: ${fmt(count)} cámaras de tráfico, imagen cada 5 min` : "Cámaras DGT: cámaras de tráfico, imagen cada 5 min";
   const description = hubDescription(count);
   return {
     title,
@@ -94,7 +94,7 @@ export default async function CamarasPage() {
             aproximadamente. Busca por carretera, kilómetro o provincia.
           </p>
           <PageIntro path="/camaras" className="-mt-3 mb-6 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" />
-          <h2 className="sr-only">Cámaras de tráfico en directo de la DGT en toda España</h2>
+          <h2 className="sr-only">Cámaras de tráfico de la DGT en toda España, imagen cada 5 minutos</h2>
         </div>
       </div>
 
