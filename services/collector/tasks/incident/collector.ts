@@ -21,6 +21,7 @@ import { heartbeat } from "../../shared/heartbeat.js";
 import { fetchSCTIncidents, SCTIncident } from "./sct-parser.js";
 import { fetchEuskadiIncidents, EuskadiIncident } from "./euskadi-parser.js";
 import { sourceProblems, type StoreFailure } from "./run-status.js";
+import { judgeFetch, nextReference, referencesFromMeta, type FetchVerdict, type SourceReference } from "./deactivation.js";
 import { fetchDGTIncidents, DGTIncident } from "./dgt-parser.js";
 import { resolveDGTLocation } from "../../shared/province-locator.js";
 import { fetchMadridIncidents, MadridIncident } from "./madrid-parser.js";
@@ -374,8 +375,13 @@ export async function run(prisma: PrismaClient) {
       select: { situationId: true, isActive: true },
     });
     const existingIds = new Set(existingIncidents.map(i => i.situationId));
+    // DGT records carry the situation's own start time and one situationId
+    // per situation, so a DGT incident that missed a pass and came back is the
+    // same situation: it keeps its startedAt. Since per-source deactivation
+    // (2026-11-02) one missed pass is enough to deactivate it.
+    const dgtIds = new Set(validIncidents.filter((i) => i.source === "DGT").map((i) => i.situationId));
     const reactivatedIds = existingIncidents
-      .filter((i) => !i.isActive)
+      .filter((i) => !i.isActive && !dgtIds.has(i.situationId))
       .map((i) => i.situationId);
 
     // Chunked parallel upserts (50x parallelism per chunk)
@@ -485,6 +491,60 @@ export async function run(prisma: PrismaClient) {
 
     console.log(`[collector] Processing complete: ${created} created, ${updated} updated, ${skipped} skipped`);
 
+    // Euskadi's "active" is an estimated window (euskadi-parser.ts); its
+    // counts per type are here to check that estimate against (2026-10-27).
+    // A source that failed, a day read only in part or a source skipping
+    // items wholesale makes the run `partial`, named (run-status.ts).
+    const SOURCES: [label: string, source: string, result: PromiseSettledResult<unknown>][] = [
+      ["DGT", "DGT", dgtResult], ["SCT", "SCT", sctResult], ["Euskadi", "EUSKADI", euskadiResult],
+      ["Madrid", "MADRID", madridResult], ["Valencia", "VALENCIA", valenciaResult], ["DT-GV", "DT-GV", dtgvResult],
+      ["Navarra", "NAVARRA", navarraResult], ["CyL", "CYL", cylResult], ["Barcelona", "BARCELONA", barcelonaResult],
+    ];
+    const euskadi = euskadiResult.status === "fulfilled" ? euskadiResult.value.stats : null;
+    const problems = sourceProblems(
+      SOURCES.map(([label, , result]) => [label, result]),
+      {
+        Euskadi: euskadi,
+        CyL: cylResult.status === "fulfilled"
+          ? { items: cylResult.value.stats.records, skipped: cylResult.value.stats.skipped, parsed: cylResult.value.stats.parsed }
+          : null,
+      },
+      storeFailures,
+    );
+
+    // Per-source deactivation (deactivation.ts): when a source's fetch is
+    // valid (parsed, no problem named for it, nothing failed to store, and at
+    // least half the rows of its last valid pass), its rows that did not come
+    // in this pass are deactivated now. Every row stored in this pass has
+    // fetchedAt = now. Failed, short and first passes rely on the 1-hour
+    // window below. Verdict, rows and deactivated per source go to the heartbeat.
+    const rowsBySource = new Map<string, number>();
+    for (const incident of allIncidents) rowsBySource.set(incident.source, (rowsBySource.get(incident.source) ?? 0) + 1);
+    const previousHeartbeat = await prisma.collectorHeartbeat.findUnique({ where: { task: "incident" }, select: { meta: true } });
+    const previousRefs = referencesFromMeta(previousHeartbeat?.meta);
+    const deactivation: Record<string, { verdict: FetchVerdict; rows: number; deactivated: number } & Partial<SourceReference>> = {};
+    for (const [label, source, result] of SOURCES) {
+      const troubled = result.status === "rejected" || problems.some((p) => p.startsWith(`${label}:`) || p.startsWith(`${source}:`));
+      const pass = { fetched: !troubled, rows: rowsBySource.get(source) ?? 0 };
+      const verdict = judgeFetch(pass, previousRefs[source], now);
+      let deactivated = 0;
+      if (verdict === "valid") {
+        deactivated = await prisma.$executeRaw`
+          UPDATE "TrafficIncident"
+          SET "isActive" = false,
+              "durationSecs" = EXTRACT(EPOCH FROM ("lastSeenAt" - "firstSeenAt"))::int
+          WHERE "isActive" = true
+            AND "source" = ${source}
+            AND "fetchedAt" < ${now}
+        `;
+      } else {
+        console.log(`[collector] ${source}: fetch ${verdict} (${pass.rows} rows, reference ${previousRefs[source]?.reference ?? "none"}); 1-hour window only`);
+      }
+      const reference = nextReference(verdict, pass, previousRefs[source], now);
+      deactivation[source] = { verdict, rows: pass.rows, deactivated, ...(reference ?? {}) };
+    }
+    console.log(`[collector] Deactivated this pass: ${Object.entries(deactivation).map(([s, d]) => `${s} ${d.deactivated} (${d.verdict})`).join(", ")}`);
+
     // Deactivate old incidents from all sources (not seen in 1 hour)
     // Calculate durationSecs based on lifecycle tracking (lastSeenAt - firstSeenAt)
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
@@ -533,30 +593,12 @@ export async function run(prisma: PrismaClient) {
       console.log(`  ${stat.source} (${stat.isActive ? "active" : "inactive"}): ${stat._count}`);
     }
 
-    // Euskadi's "active" is an estimated window (euskadi-parser.ts); its
-    // counts per type are here to check that estimate against (2026-10-27).
-    // A source that failed, a day read only in part or a source skipping
-    // items wholesale makes the run `partial`, named (run-status.ts).
-    const euskadi = euskadiResult.status === "fulfilled" ? euskadiResult.value.stats : null;
-    const problems = sourceProblems(
-      [
-        ["DGT", dgtResult], ["SCT", sctResult], ["Euskadi", euskadiResult], ["Madrid", madridResult],
-        ["Valencia", valenciaResult], ["DT-GV", dtgvResult], ["Navarra", navarraResult], ["CyL", cylResult],
-        ["Barcelona", barcelonaResult],
-      ],
-      {
-        Euskadi: euskadi,
-        CyL: cylResult.status === "fulfilled"
-          ? { items: cylResult.value.stats.records, skipped: cylResult.value.stats.skipped, parsed: cylResult.value.stats.parsed }
-          : null,
-      },
-      storeFailures,
-    );
     await heartbeat(prisma, "incident", problems.length > 0 ? "partial" : "ok", {
       total: allIncidents.length,
       created,
       updated,
       skipped,
+      deactivation,
       ...(Object.keys(storeFailures).length > 0 && { storeFailures }),
       ...(euskadi && {
         euskadi: {
