@@ -96,6 +96,9 @@ model TrafficIncident {
   provinceName  String?
   community     String?
   communityName String?
+  // How province was assigned (DGT): "dgt" named by the source, "poligono" point
+  // in polygon, "borde" nearest edge ≤ 5 km (inferred, may be off at tripoints)
+  provinceSource String?
   municipality  String? // Town name
 
   // Cause categorization (from DATEX II)

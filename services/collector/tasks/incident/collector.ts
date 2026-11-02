@@ -79,6 +79,8 @@ interface NormalizedIncident {
   provinceName?: string;
   community?: string;
   communityName?: string;
+  // How the province was assigned (DGT only): «dgt», «poligono» or «borde» (inferred)
+  provinceSource?: string;
   municipality?: string;
   description?: string;
   severity: Severity;
@@ -136,6 +138,7 @@ export function normalizeDGTIncident(incident: DGTIncident): NormalizedIncident 
     provinceName: located?.provinceName ?? incident.provinceName,
     community: located?.community,
     communityName: located?.communityName ?? incident.communityName,
+    provinceSource: located?.source,
     municipality: incident.municipality,
     description: incident.description,
     severity: incident.severity,
@@ -401,6 +404,7 @@ export async function run(prisma: PrismaClient) {
             provinceName: incident.provinceName,
             community: incident.community,
             communityName: incident.communityName,
+            provinceSource: incident.provinceSource,
             municipality: incident.municipality,
             description: incident.description,
             severity: incident.severity,
@@ -420,6 +424,7 @@ export async function run(prisma: PrismaClient) {
             provinceName: incident.provinceName ?? undefined,
             community: incident.community ?? undefined,
             communityName: incident.communityName ?? undefined,
+            provinceSource: incident.provinceSource ?? undefined,
             fetchedAt: now,
             // Lifecycle tracking - update lastSeenAt on every observation
             lastSeenAt: now,

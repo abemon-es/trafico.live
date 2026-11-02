@@ -91,10 +91,18 @@ function distToRingKm(lng: number, lat: number, ring: Ring): number {
 }
 
 /**
- * INE province code («28») containing the point; if none contains it, the
- * province whose edge is nearest, when it is within NEAREST_MAX_KM; else null.
+ * How a province was assigned, stored in TrafficIncident.provinceSource so an
+ * inferred one can be told apart and corrected later (CTO, 2026-11-02):
+ *   «dgt»      the DGT named it;
+ *   «poligono» the point is inside the province polygon;
+ *   «borde»    outside every polygon, nearest edge within NEAREST_MAX_KM. On
+ *              the frontier cases of 2026-11-02, 18 of 20 matched OSM; the two
+ *              misses were tripoints (N-211 at Mequinenza, AP-7 at Oliva).
  */
-export function provinceCodeAt(lat: number, lng: number): string | null {
+export type ProvinceSource = "dgt" | "poligono" | "borde";
+
+/** Province containing the point, else the nearest edge within NEAREST_MAX_KM, else null. */
+export function provinceAt(lat: number, lng: number): { code: string; source: "poligono" | "borde" } | null {
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
   const shapes = load();
   for (const s of shapes) {
@@ -103,7 +111,7 @@ export function provinceCodeAt(lat: number, lng: number): string | null {
     for (const poly of s.polygons) {
       if (!inRing(lng, lat, poly[0])) continue;
       if (poly.slice(1).some((hole) => inRing(lng, lat, hole))) continue;
-      return s.code;
+      return { code: s.code, source: "poligono" };
     }
   }
   // Outside every polygon: nearest edge within NEAREST_MAX_KM.
@@ -118,7 +126,12 @@ export function provinceCodeAt(lat: number, lng: number): string | null {
       if (km <= NEAREST_MAX_KM && (!best || km < best.km)) best = { code: s.code, km };
     }
   }
-  return best?.code ?? null;
+  return best ? { code: best.code, source: "borde" } : null;
+}
+
+/** INE province code («28») of a point (see provinceAt), or null. */
+export function provinceCodeAt(lat: number, lng: number): string | null {
+  return provinceAt(lat, lng)?.code ?? null;
 }
 
 export interface ProvinceLocation {
@@ -126,18 +139,20 @@ export interface ProvinceLocation {
   provinceName: string;
   community: string; // community code, «13»
   communityName: string;
+  source: ProvinceSource;
 }
 
-function fromCode(code: string | null): ProvinceLocation | null {
+function fromCode(code: string | null | undefined, source: ProvinceSource): ProvinceLocation | null {
   if (!code || !PROVINCES[code]) return null;
   const community = PROVINCE_TO_COMMUNITY[code];
   if (!community || !COMMUNITIES[community]) return null;
-  return { province: code, provinceName: PROVINCES[code], community, communityName: COMMUNITIES[community] };
+  return { province: code, provinceName: PROVINCES[code], community, communityName: COMMUNITIES[community], source };
 }
 
-/** Codes and names of the province containing a point, or null. */
+/** Codes and names of the province of a point (see provinceAt), or null. */
 export function locateProvince(lat: number, lng: number): ProvinceLocation | null {
-  return fromCode(provinceCodeAt(lat, lng));
+  const found = provinceAt(lat, lng);
+  return found ? fromCode(found.code, found.source) : null;
 }
 
 /**
@@ -147,5 +162,5 @@ export function locateProvince(lat: number, lng: number): ProvinceLocation | nul
  * code; otherwise the coordinates decide.
  */
 export function resolveDGTLocation(dgtProvince: string | undefined, lat: number, lng: number): ProvinceLocation | null {
-  return fromCode(dgtProvince ? normalizeProvince(dgtProvince) : null) ?? locateProvince(lat, lng);
+  return fromCode(dgtProvince ? normalizeProvince(dgtProvince) : null, "dgt") ?? locateProvince(lat, lng);
 }
