@@ -5,6 +5,8 @@
  * 11:38, 1,556 of 1,875 active DGT incidents (mostly vehicle stops) had none.
  *
  *   1. provinceCodeAt on known points (capitals, islands, Ceuta) and null at sea;
+ *      1b. points just outside the generalised polygons take the nearest (≤ 5 km),
+ *          marked source «borde» (inferred); «poligono» and «dgt» otherwise;
  *   2. locateProvince gives codes and names; resolveDGTLocation maps the DGT's
  *      name first and falls back to the coordinates;
  *   3. the collector's copy of the polygons is identical to public/geo's;
@@ -18,7 +20,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { locateProvince, provinceCodeAt, resolveDGTLocation } from "../services/collector/shared/province-locator";
+import { locateProvince, provinceAt, provinceCodeAt, resolveDGTLocation } from "../services/collector/shared/province-locator";
 
 // 1. Points.
 const at: [string, number, number, string | null][] = [
@@ -41,19 +43,40 @@ const at: [string, number, number, string | null][] = [
 for (const [name, lat, lng, code] of at) assert.equal(provinceCodeAt(lat, lng), code, name);
 assert.equal(provinceCodeAt(NaN, 0), null);
 
+// 1b. Points just outside the generalised polygons take the nearest province
+// (≤ 5 km). Real DGT incidents of 2026-11-02 that #270 left without a province,
+// with the province OpenStreetMap gives for each point.
+const nearEdge: [string, number, number, string][] = [
+  ["Ma-1, Calvià", 39.52092, 2.52911, "07"],
+  ["Ma-13, Alcúdia", 39.84995, 3.109771, "07"],
+  ["AL-5106, Carboneras", 36.981327, -1.902195, "04"],
+  ["N-352, Ceuta", 35.882065, -5.325099, "51"],
+  ["A-8, Castro-Urdiales", 43.399723, -3.25527, "39"],
+  ["CA-36, Cádiz", 36.497055, -6.261518, "11"],
+  ["PO-550, Cambados", 42.51467, -8.816511, "36"],
+  ["DP-4307, Malpica", 43.317997, -8.824689, "15"],
+  ["N-340, Almuñécar", 36.73596, -3.680976, "18"],
+  ["A-7, Estepona", 36.39249, -5.202987, "29"],
+];
+for (const [name, lat, lng, code] of nearEdge) assert.deepEqual(provinceAt(lat, lng), { code, source: "borde" }, name);
+// Inside a polygon: «poligono» (only the nearest edge is marked as inferred).
+assert.deepEqual(provinceAt(40.4168, -3.7038), { code: "28", source: "poligono" });
+
 // 2. Codes and names.
 assert.deepEqual(locateProvince(37.3891, -5.9845), {
-  province: "41", provinceName: "Sevilla", community: "01", communityName: "Andalucía",
+  province: "41", provinceName: "Sevilla", community: "01", communityName: "Andalucía", source: "poligono",
 });
 assert.deepEqual(locateProvince(43.263, -2.935), {
-  province: "48", provinceName: "Bizkaia", community: "16", communityName: "País Vasco",
+  province: "48", provinceName: "Bizkaia", community: "16", communityName: "País Vasco", source: "poligono",
 });
 assert.equal(locateProvince(36.4, -4.4), null);
 // The DGT's name wins (even with the point slightly off, here at sea off Palma)...
 assert.equal(resolveDGTLocation("Balears, Illes", 39.4, 2.6)?.province, "07");
 assert.equal(resolveDGTLocation("Madrid", 40.4168, -3.7038)?.community, "13");
+assert.equal(resolveDGTLocation("Madrid", 40.4168, -3.7038)?.source, "dgt");
 // ...without one, or with an unknown one, the coordinates decide.
 assert.equal(resolveDGTLocation(undefined, 41.3874, 2.1686)?.province, "08");
+assert.equal(resolveDGTLocation(undefined, 39.52092, 2.52911)?.source, "borde");
 assert.equal(resolveDGTLocation("Atlántida", 41.6488, -0.8891)?.province, "50");
 assert.equal(resolveDGTLocation(undefined, 36.4, -4.4), null);
 
@@ -71,5 +94,12 @@ assert.match(collector, /const located = resolveDGTLocation\(incident\.province,
 assert.match(collector, /province: located\?\.province,/);
 assert.match(collector, /community: located\?\.community,/);
 assert.match(collector, /community: incident\.community \?\? undefined,/, "the upsert updates the community");
+assert.match(collector, /provinceSource: located\?\.source,/);
+assert.match(collector, /provinceSource: incident\.provinceSource \?\? undefined,/, "the upsert updates provinceSource");
+assert.match(readFileSync("prisma/schema.prisma", "utf8"), /\n  provinceSource String\?\n/);
+assert.match(
+  readFileSync("prisma/migrations/20261102150000_incident_province_source/migration.sql", "utf8"),
+  /ALTER TABLE "TrafficIncident" ADD COLUMN "provinceSource" TEXT;/
+);
 
 console.log("province-locator: ok");
