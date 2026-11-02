@@ -42,6 +42,10 @@ async function main() {
   try {
     require.resolve("gtfs-realtime-bindings");
   } catch {
+    // The collector image sets COLLECTOR_TESTS_REQUIRED=1 (Dockerfile.cron): there a missing package is a failure.
+    if (process.env.COLLECTOR_TESTS_REQUIRED === "1") {
+      throw new Error("gtfs-realtime-bindings missing in the collector image (COLLECTOR_TESTS_REQUIRED=1)");
+    }
     console.log("collector-hostile-input: SKIP, gtfs-realtime-bindings not installed here (run it in the collector image)");
     process.exit(0);
   }

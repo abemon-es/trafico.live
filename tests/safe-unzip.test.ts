@@ -94,6 +94,10 @@ async function main() {
   // image, a laptop) say so and stop, instead of failing as if the code were wrong.
   const missing = ["unzip", "zipinfo"].filter((bin) => spawnSync(bin, ["-v"]).error);
   if (missing.length > 0) {
+    // The collector image sets COLLECTOR_TESTS_REQUIRED=1 (Dockerfile.cron): there a missing binary is a failure.
+    if (process.env.COLLECTOR_TESTS_REQUIRED === "1") {
+      throw new Error(`${missing.join(" and ")} missing in the collector image (COLLECTOR_TESTS_REQUIRED=1)`);
+    }
     console.log(`safe-unzip: SKIP, ${missing.join(" and ")} not installed here (run it in the collector image)`);
     return;
   }

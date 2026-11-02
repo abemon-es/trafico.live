@@ -97,6 +97,9 @@ COPY services/collector/crontabs/ ./crontabs/
 ENV TZ=Europe/Madrid
 ENV NODE_ENV=production
 ENV CRONTAB_TIER=realtime
+# tests/safe-unzip and tests/collector-hostile-input fail (not SKIP) here when
+# unzip, zipinfo or gtfs-realtime-bindings are missing: this image must carry them.
+ENV COLLECTOR_TESTS_REQUIRED=1
 
 # The eumetsat-radar task writes PNG tiles to /app/public/radar, which the web
 # container serves at trafico.live/radar/*. Create it owned by the collector
