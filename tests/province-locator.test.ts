@@ -5,6 +5,7 @@
  * 11:38, 1,556 of 1,875 active DGT incidents (mostly vehicle stops) had none.
  *
  *   1. provinceCodeAt on known points (capitals, islands, Ceuta) and null at sea;
+ *      1b. points just outside the generalised polygons take the nearest (≤ 5 km);
  *   2. locateProvince gives codes and names; resolveDGTLocation maps the DGT's
  *      name first and falls back to the coordinates;
  *   3. the collector's copy of the polygons is identical to public/geo's;
@@ -40,6 +41,23 @@ const at: [string, number, number, string | null][] = [
 ];
 for (const [name, lat, lng, code] of at) assert.equal(provinceCodeAt(lat, lng), code, name);
 assert.equal(provinceCodeAt(NaN, 0), null);
+
+// 1b. Points just outside the generalised polygons take the nearest province
+// (≤ 5 km). Real DGT incidents of 2026-11-02 that #270 left without a province,
+// with the province OpenStreetMap gives for each point.
+const nearEdge: [string, number, number, string][] = [
+  ["Ma-1, Calvià", 39.52092, 2.52911, "07"],
+  ["Ma-13, Alcúdia", 39.84995, 3.109771, "07"],
+  ["AL-5106, Carboneras", 36.981327, -1.902195, "04"],
+  ["N-352, Ceuta", 35.882065, -5.325099, "51"],
+  ["A-8, Castro-Urdiales", 43.399723, -3.25527, "39"],
+  ["CA-36, Cádiz", 36.497055, -6.261518, "11"],
+  ["PO-550, Cambados", 42.51467, -8.816511, "36"],
+  ["DP-4307, Malpica", 43.317997, -8.824689, "15"],
+  ["N-340, Almuñécar", 36.73596, -3.680976, "18"],
+  ["A-7, Estepona", 36.39249, -5.202987, "29"],
+];
+for (const [name, lat, lng, code] of nearEdge) assert.equal(provinceCodeAt(lat, lng), code, name);
 
 // 2. Codes and names.
 assert.deepEqual(locateProvince(37.3891, -5.9845), {

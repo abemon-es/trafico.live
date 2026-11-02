@@ -10,7 +10,10 @@
  * no province or community page. Coordinates they always have.
  *
  * Plain ray casting over each ring (holes subtract), with a bounding box per
- * province to skip most of them. A point at sea or outside Spain → null.
+ * province to skip most of them. A point just outside every polygon (coast,
+ * generalised inland borders) takes the nearest province within 5 km; open sea
+ * or further away → null. That margin also reaches a few km past the land
+ * border (Gibraltar, Hendaye): fine for DGT records, which are all in Spain.
  */
 
 import { readFileSync } from "fs";
@@ -59,10 +62,42 @@ function load(): ProvinceShape[] {
   return shapes;
 }
 
-/** INE province code («28») containing the point, or null. */
+/**
+ * How far outside every polygon a point may fall and still take the nearest
+ * province. The polygons are generalised (~3,450 vertices for all of Spain), so
+ * coastal roads and some inland borders fall just outside them: on 2026-11-02,
+ * 20 DGT incidents created after #270 had no province, all within 3.1 km of a
+ * polygon edge (Ma-1, CA-36, PO-550, AP-7 at Oliva, N-352 in Ceuta...). Open sea
+ * further out stays null.
+ */
+const NEAREST_MAX_KM = 5;
+const KM_PER_DEG = 111.32;
+
+/** Distance in km from a point to a ring's edges (equirectangular, fine at a few km). */
+function distToRingKm(lng: number, lat: number, ring: Ring): number {
+  const k = Math.cos((lat * Math.PI) / 180);
+  const px = lng * k;
+  let best = Infinity;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const ax = ring[j][0] * k, ay = ring[j][1];
+    const bx = ring[i][0] * k, by = ring[i][1];
+    const dx = bx - ax, dy = by - ay;
+    const len = dx * dx + dy * dy;
+    const t = len === 0 ? 0 : Math.max(0, Math.min(1, ((px - ax) * dx + (lat - ay) * dy) / len));
+    const d = Math.hypot(px - (ax + t * dx), lat - (ay + t * dy));
+    if (d < best) best = d;
+  }
+  return best * KM_PER_DEG;
+}
+
+/**
+ * INE province code («28») containing the point; if none contains it, the
+ * province whose edge is nearest, when it is within NEAREST_MAX_KM; else null.
+ */
 export function provinceCodeAt(lat: number, lng: number): string | null {
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-  for (const s of load()) {
+  const shapes = load();
+  for (const s of shapes) {
     const [minLng, minLat, maxLng, maxLat] = s.bbox;
     if (lng < minLng || lng > maxLng || lat < minLat || lat > maxLat) continue;
     for (const poly of s.polygons) {
@@ -71,7 +106,19 @@ export function provinceCodeAt(lat: number, lng: number): string | null {
       return s.code;
     }
   }
-  return null;
+  // Outside every polygon: nearest edge within NEAREST_MAX_KM.
+  const dLat = NEAREST_MAX_KM / KM_PER_DEG;
+  const dLng = dLat / Math.max(Math.cos((lat * Math.PI) / 180), 0.1);
+  let best: { code: string; km: number } | null = null;
+  for (const s of shapes) {
+    const [minLng, minLat, maxLng, maxLat] = s.bbox;
+    if (lng < minLng - dLng || lng > maxLng + dLng || lat < minLat - dLat || lat > maxLat + dLat) continue;
+    for (const poly of s.polygons) {
+      const km = distToRingKm(lng, lat, poly[0]);
+      if (km <= NEAREST_MAX_KM && (!best || km < best.km)) best = { code: s.code, km };
+    }
+  }
+  return best?.code ?? null;
 }
 
 export interface ProvinceLocation {
