@@ -35,9 +35,16 @@ assert.equal(incidentEffect("ROADWORK", "diversionOfTraffic"), "DIVERSION");
 assert.equal(incidentEffect("CLOSURE", "diversionOfTraffic"), "ROAD_CLOSED", "a closure with a diversion is still closed");
 assert.equal(incidentEffect("ACCIDENT", "laneClosures"), "RESTRICTED");
 
+// 2b. Rows stored before #268: DGT closures typed OTHER keep counting as closed roads.
+assert.equal(incidentEffect("OTHER", "roadClosed"), "ROAD_CLOSED", "an old OTHER with roadClosed is a closed road");
+assert.equal(incidentEffect("OTHER", "carriagewayClosures"), "ROAD_CLOSED");
+assert.equal(incidentEffect("OTHER", "laneClosures"), "OTHER_EFFECT", "a lane closure is not");
+assert.equal(incidentEffect("OTHER", "laneClosures:2"), "OTHER_EFFECT");
+assert.equal(incidentEffect("ACCIDENT", "roadClosed"), "ROAD_CLOSED", "the source says closed");
+
 // 3. Both routes use it, and the old mappings are gone.
 const api = readFileSync("src/app/api/incidents/route.ts", "utf8");
-assert.match(api, /effect: incidentEffect\(db\.type\)/);
+assert.match(api, /effect: incidentEffect\(db\.type, db\.managementType\)/);
 assert.ok(!/function mapTypeToEffect/.test(api), "no second copy of the rule in the API");
 const timeline = readFileSync("src/app/api/incidents/timeline/route.ts", "utf8");
 assert.match(timeline, /return incidentEffect\(type, managementType\);/);

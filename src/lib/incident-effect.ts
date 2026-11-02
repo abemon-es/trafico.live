@@ -18,7 +18,10 @@ export type IncidentEffect = "ROAD_CLOSED" | "SLOW_TRAFFIC" | "RESTRICTED" | "DI
 
 export function incidentEffect(type: string, managementType?: string | null): IncidentEffect {
   if (type === "CLOSURE") return "ROAD_CLOSED";
-  // Only the timeline passes managementType (as it did before); /api/incidents has no DIVERSION.
+  // Same criterion as ROAD_CLOSURE_MANAGEMENT in the collector (dgt-parser.ts). DGT
+  // closures stored before #268 (02-11-2026 10:28) are type OTHER with this
+  // managementType; without this line the past series would lose every closure.
+  if (managementType && /^(roadClosed|carriagewayClosures)\b/.test(managementType)) return "ROAD_CLOSED";
   if (managementType && /diversion/i.test(managementType)) return "DIVERSION";
   switch (type) {
     case "CONGESTION":

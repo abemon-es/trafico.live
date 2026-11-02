@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
     let incidents = dbIncidents.map((db: TrafficIncident) => ({
       situationId: db.situationId,
       type: db.type,
-      effect: incidentEffect(db.type),
+      effect: incidentEffect(db.type, db.managementType),
       cause: mapTypeToCause(db.type),
       startedAt: db.startedAt,
       endedAt: db.endedAt ?? undefined,
