@@ -77,4 +77,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 # is incompatible with session-level advisory locks that prisma migrate deploy uses.
 # Falls back to DATABASE_URL if MIGRATE_DATABASE_URL is not set.
 # See: https://pris.ly/d/migrate-advisory-locking
-CMD ["sh", "-c", "DATABASE_URL=${MIGRATE_DATABASE_URL:-$DATABASE_URL} npx prisma migrate deploy 2>&1 || echo '[migrate] Skipped'; exec su -s /bin/sh nextjs -c 'npm start'"]
+# A failed deploy does not stop the app, but it is not silent either: an
+# unfinished migration blocks every later one (P3009). It logs an ERROR line
+# with the exit code, and /api/health turns «degraded» naming the migration.
+CMD ["sh", "-c", "DATABASE_URL=${MIGRATE_DATABASE_URL:-$DATABASE_URL} npx prisma migrate deploy 2>&1 || echo \"[migrate] ERROR: prisma migrate deploy failed (exit $?); an unfinished migration blocks later ones (P3009), see /api/health migrations\" >&2; exec su -s /bin/sh nextjs -c 'npm start'"]
