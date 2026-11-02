@@ -6,7 +6,7 @@
  * templated page. The daily camera run counts the days a snapshot wasn't an
  * image (Camera.snapshotFailDays, services/collector/tasks/camera/snapshots.ts);
  * from the first one the page shows its «sin imagen» state, and the snapshot
- * isn't offered as og:image or VideoObject either.
+ * isn't offered as og:image or ImageObject either.
  */
 export function cameraImage(cam: { thumbnailUrl: string | null; snapshotFailDays?: number | null }): string | null {
   return cam.thumbnailUrl && !cam.snapshotFailDays ? cam.thumbnailUrl : null;

@@ -6,7 +6,7 @@
  * próximas y datos de ubicación en carretera + pk.
  *
  * Fuente: DGT — Red de cámaras de tráfico.
- * Schema.org VideoObject + Place JSON-LD.
+ * Schema.org ImageObject + Place JSON-LD.
  */
 
 import type { Metadata } from "next";
@@ -26,7 +26,6 @@ import {
   ArrowRight,
   CheckCircle,
   XCircle,
-  Video,
   Navigation,
   AlertTriangle,
   ExternalLink,
@@ -185,7 +184,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!camera) return { title: "Cámara no encontrada" };
 
   const title = `Cámara DGT ${camera.name}${camera.roadNumber ? ` — ${camera.roadNumber}` : ""}${camera.provinceName ? ` · ${camera.provinceName}` : ""}`;
-  const description = `Imagen en directo de la cámara de tráfico ${camera.name}${camera.roadNumber ? ` en la ${camera.roadNumber}` : ""}${camera.provinceName ? `, ${camera.provinceName}` : ""}. Fuente: DGT.`;
+  const description = `Imagen renovada cada 5 minutos aprox. de la cámara de tráfico ${camera.name}${camera.roadNumber ? ` en la ${camera.roadNumber}` : ""}${camera.provinceName ? `, ${camera.provinceName}` : ""}. Fuente: DGT.`;
 
   return {
     title,
@@ -221,18 +220,17 @@ export default async function CameraDetailPage({ params }: Props) {
 
   const { camera, nearbyCameras, nearbyIncidents } = data;
 
-  // VideoObject JSON-LD: DGT thumbnail is a periodically-refreshed live feed
-  const videoSchema = cameraImage(camera)
+  // ImageObject JSON-LD: the DGT publishes a still image it renews every ~5 min,
+  // not a video (Last-Modified measured 2026-11-02). Until then this was a
+  // VideoObject with isLiveBroadcast: true and a .jpg as contentUrl.
+  const imageSchema = cameraImage(camera)
     ? {
         "@context": "https://schema.org",
-        "@type": "VideoObject",
+        "@type": "ImageObject",
         name: `Cámara de tráfico DGT — ${camera.name}`,
-        description: `Imagen en directo de la cámara de tráfico de la DGT en ${camera.name}${camera.roadNumber ? ` (${camera.roadNumber}${camera.kmPoint ? `, km ${Number(camera.kmPoint).toFixed(1)}` : ""})` : ""}${camera.provinceName ? `, ${camera.provinceName}` : ""}. Actualización periódica desde el centro de gestión de tráfico.`,
-        thumbnailUrl: [cameraImage(camera)!],
+        description: `Imagen renovada cada 5 minutos aprox. de la cámara de tráfico de la DGT en ${camera.name}${camera.roadNumber ? ` (${camera.roadNumber}${camera.kmPoint ? `, km ${Number(camera.kmPoint).toFixed(1)}` : ""})` : ""}${camera.provinceName ? `, ${camera.provinceName}` : ""}. Actualización periódica desde el centro de gestión de tráfico.`,
         contentUrl: cameraImage(camera)!,
-        uploadDate: camera.lastUpdated.toISOString(),
-        isLiveBroadcast: true,
-        isFamilyFriendly: true,
+        creditText: "DGT",
         publisher: {
           "@type": "Organization",
           name: "Dirección General de Tráfico (DGT)",
@@ -284,7 +282,7 @@ export default async function CameraDetailPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <TrackEntityView entityType="camera" entityId={id} />
-      {videoSchema && <StructuredData data={videoSchema} />}
+      {imageSchema && <StructuredData data={imageSchema} />}
       <StructuredData data={placeSchema} />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
@@ -348,11 +346,11 @@ export default async function CameraDetailPage({ params }: Props) {
 
         {/* Camera image / stream */}
         {cameraImage(camera) ? (
-          <section aria-label="Imagen en directo">
+          <section aria-label="Imagen de la cámara">
             <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-900 border border-gray-200 dark:border-gray-800">
               <Image
                 src={cameraImage(camera)!}
-                alt={`Imagen en directo de la cámara de tráfico ${camera.name}`}
+                alt={`Imagen de la cámara de tráfico ${camera.name}`}
                 fill
                 sizes="(max-width: 768px) 100vw, 960px"
                 className="object-cover"
@@ -360,8 +358,8 @@ export default async function CameraDetailPage({ params }: Props) {
                 unoptimized
               />
               <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/60 text-white text-[11px] px-2 py-1 rounded-md backdrop-blur-sm">
-                <Video className="w-3 h-3" />
-                DGT · Actualización periódica
+                <Camera className="w-3 h-3" />
+                DGT · Cada 5 min
               </div>
               {camera.roadNumber && (
                 <div className="absolute top-2 right-2 bg-black/60 text-white text-[11px] font-mono px-2 py-1 rounded-md backdrop-blur-sm">
@@ -382,7 +380,7 @@ export default async function CameraDetailPage({ params }: Props) {
           >
             <Camera className="w-10 h-10 text-gray-300 dark:text-gray-700 mb-3" />
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              No hay imagen en directo disponible para esta cámara
+              No hay imagen disponible para esta cámara
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
               La DGT no publica el feed visual de todos sus dispositivos.
