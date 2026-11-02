@@ -79,5 +79,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 # See: https://pris.ly/d/migrate-advisory-locking
 # A failed deploy does not stop the app, but it is not silent either: an
 # unfinished migration blocks every later one (P3009). It logs an ERROR line
-# with the exit code, and /api/health turns «degraded» naming the migration.
+# with the exit code, and /api/health turns «degraded» (migrations.pending).
 CMD ["sh", "-c", "DATABASE_URL=${MIGRATE_DATABASE_URL:-$DATABASE_URL} npx prisma migrate deploy 2>&1 || echo \"[migrate] ERROR: prisma migrate deploy failed (exit $?); an unfinished migration blocks later ones (P3009), see /api/health migrations\" >&2; exec su -s /bin/sh nextjs -c 'npm start'"]

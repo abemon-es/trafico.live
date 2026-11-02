@@ -130,7 +130,7 @@ DATABASE_URL="postgresql://apps:PASSWORD@hetzner-dev:5435/<db>" npx prisma migra
 
 Una migración que se aplica a mano antes del merge se escribe idempotente: `IF NOT EXISTS` en ADD COLUMN, CREATE TABLE, CREATE INDEX y ADD VALUE; CREATE TYPE dentro de `DO $$ … EXCEPTION WHEN duplicate_object …`, y DROP con `IF EXISTS`. Así, el `prisma migrate deploy` que hace la web al arrancar la vuelve a ejecutar sin error y la registra. Lo que no se puede hacer idempotente (ALTER COLUMN … TYPE, ADD CONSTRAINT, RENAME, UPDATE/INSERT/DELETE de datos) lleva la línea `-- manual-apply: resolve`, y después del merge se registra con `prisma migrate resolve --applied <migración>`. Lo comprueba `npm run test:migrations-idempotent`, solo en las migraciones posteriores al 2026-11-02.
 
-Si `migrate deploy` falla al arrancar, la app arranca igual, pero el log deja una línea `[migrate] ERROR` y `/api/health` pasa a `degraded` con la migración sin terminar en `migrations.unfinished`.
+Si `migrate deploy` falla al arrancar, la app arranca igual, pero el log deja una línea `[migrate] ERROR` y `/api/health` pasa a `degraded` con `migrations.pending` > 0. Los nombres de las migraciones están en el log del servidor (`[health] unfinished Prisma migrations`), no en la respuesta pública.
 
 ### Prisma Studio
 

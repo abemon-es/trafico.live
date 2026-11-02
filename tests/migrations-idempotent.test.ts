@@ -14,7 +14,8 @@
  *      `-- manual-apply: resolve`: then OPS records it with `migrate resolve`;
  *   3. only migrations after CUTOFF are checked (history is left as it is);
  *   4. a failed start-up deploy logs an ERROR and /api/health turns degraded,
- *      naming the unfinished migration (CTO: the old «Skipped» hid a P3009).
+ *      with the count; names only in the server log (CTO, CSO: the old
+ *      «Skipped» hid a P3009).
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
  *   npm run test:migrations-idempotent
@@ -126,6 +127,9 @@ assert.match(docker, /migrate deploy 2>&1 \|\| echo \\"\[migrate\] ERROR: prisma
 const health = readFileSync("src/app/api/health/route.ts", "utf8");
 assert.match(health, /WHERE finished_at IS NULL AND rolled_back_at IS NULL/);
 assert.match(health, /hasStale \|\| redisDown \|\| migrationsBlocked/);
+assert.match(health, /SET LOCAL statement_timeout = 2000/, "a slow database cannot hang the health check");
+assert.match(health, /migrations: \{ ok: migrations\.ok, pending: migrations\.pending \}/, "public: only the count (CSO)");
+assert.ok(!/migrations: \{[^}]*unfinished/.test(health), "no migration names in the public response");
 assert.ok(readFileSync("docs/operations.md", "utf8").includes("### Migraciones aplicadas a mano"), "the procedure is documented");
 
 console.log(`migrations-idempotent: ok (${checked.length} after the cutoff)`);
