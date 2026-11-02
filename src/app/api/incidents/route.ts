@@ -12,6 +12,7 @@ const CLASS_WHERE: Record<string, object> = {
   citySensor: CITY_SENSOR_WHERE,
 };
 import { parseBbox } from "@/lib/bbox";
+import { incidentEffect } from "@/lib/incident-effect";
 
 const CACHE_KEY_PREFIX = "api:incidents";
 const CACHE_TTL = 60; // 1 minute
@@ -44,28 +45,7 @@ const CAUSE_LABELS: Record<IncidentCause, string> = {
   OTHER_CAUSE: "Otras incidencias",
 };
 
-// Map database IncidentType to API IncidentEffect
-function mapTypeToEffect(type: IncidentType): IncidentEffect {
-  switch (type) {
-    case "ROADWORK":
-      return "RESTRICTED";
-    case "ACCIDENT":
-      return "ROAD_CLOSED";
-    case "WEATHER":
-      return "RESTRICTED";
-    case "CONGESTION":
-      return "SLOW_TRAFFIC";
-    case "CLOSURE":
-      return "ROAD_CLOSED";
-    case "HAZARD":
-    case "VEHICLE_BREAKDOWN":
-      return "SLOW_TRAFFIC";
-    case "EVENT":
-      return "RESTRICTED";
-    default:
-      return "OTHER_EFFECT";
-  }
-}
+// The effect comes from src/lib/incident-effect.ts (shared with /api/incidents/timeline).
 
 // Map database IncidentType to API IncidentCause
 function mapTypeToCause(type: IncidentType): IncidentCause {
@@ -164,7 +144,7 @@ export async function GET(request: NextRequest) {
     let incidents = dbIncidents.map((db: TrafficIncident) => ({
       situationId: db.situationId,
       type: db.type,
-      effect: mapTypeToEffect(db.type),
+      effect: incidentEffect(db.type),
       cause: mapTypeToCause(db.type),
       startedAt: db.startedAt,
       endedAt: db.endedAt ?? undefined,

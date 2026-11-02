@@ -77,6 +77,7 @@
     "test:fuel-cleanup": "tsx tests/fuel-articles-cleanup.test.ts",
     "test:reports": "tsx tests/reports-closed-days.test.ts",
     "test:incident-classes": "tsx tests/incident-classes.test.ts",
+    "test:incident-effect": "tsx tests/incident-effect.test.ts",
     "test:dgt-types": "tsx tests/dgt-incident-types.test.ts",
     "test:capture-forms": "tsx tests/capture-forms-sender.test.ts",
     "test:weekly-digest": "tsx tests/weekly-digest-send.test.ts",

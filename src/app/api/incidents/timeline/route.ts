@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { observedEnd } from "@/lib/incident-time";
 import { getFromCache, setInCache } from "@/lib/redis";
 import { applyRateLimit } from "@/lib/api-utils";
+import { incidentEffect } from "@/lib/incident-effect";
 
 export const dynamic = "force-dynamic";
 
@@ -32,12 +33,10 @@ interface TimelineSlot {
 }
 
 // Map raw DB types to our effect/cause classification
+// Same rule as /api/incidents (src/lib/incident-effect.ts). This used to compare
+// the type with «ROAD_CLOSED», which no IncidentType is, so CLOSUREs never counted.
 function classifyEffect(type: string, managementType: string | null): string {
-  if (managementType?.includes("diversion")) return "DIVERSION";
-  if (type === "ROAD_CLOSED" || managementType?.includes("roadClosed")) return "ROAD_CLOSED";
-  if (type === "SLOW_TRAFFIC" || type === "CONGESTION") return "SLOW_TRAFFIC";
-  if (managementType?.includes("restricted") || type === "RESTRICTION") return "RESTRICTED";
-  return "OTHER_EFFECT";
+  return incidentEffect(type, managementType);
 }
 
 function classifyCause(causeType: string | null, type: string): string {
