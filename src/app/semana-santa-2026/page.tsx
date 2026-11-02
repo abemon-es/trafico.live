@@ -255,7 +255,7 @@ const FAQ_ITEMS = [
     question:
       "¿Dónde consultar el estado del tráfico en tiempo real durante Semana Santa?",
     answer:
-      "Puedes consultar el estado del tráfico en tiempo real en trafico.live, que integra los datos oficiales de la DGT actualizados cada minuto: incidencias activas, cámaras en directo, paneles de mensaje variable (PMV) y alertas meteorológicas. También puedes llamar al teléfono de información de la DGT (011) o consultar la app de la DGT para móviles.",
+      "Puedes consultar el estado del tráfico en tiempo real en trafico.live, que integra los datos oficiales de la DGT actualizados cada minuto: incidencias activas, cámaras con imagen cada 5 minutos, paneles de mensaje variable (PMV) y alertas meteorológicas. También puedes llamar al teléfono de información de la DGT (011) o consultar la app de la DGT para móviles.",
   },
 ];
 

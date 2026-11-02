@@ -561,7 +561,7 @@ export default async function RadaresRoadPage({ params }: PageProps) {
                 Ver toda la información de la {roadId}
               </p>
               <p className="text-sm text-tl-700 dark:text-tl-300 mt-0.5">
-                Cámaras en directo, incidencias, gasolineras, cargadores EV y más.
+                Cámaras con imagen cada 5 min, incidencias, gasolineras, cargadores EV y más.
               </p>
             </div>
             <Link

@@ -119,9 +119,9 @@ const FAQ_ITEMS = [
       "La DGT usa tres niveles: LOW (incidencia leve, sin afectación relevante), MEDIUM (incidencia con retenciones o afectación parcial) y HIGH (incidencia grave, corte de vía o afectación severa). trafico.live mantiene la misma clasificación con codificación de colores (verde, ámbar, rojo).",
   },
   {
-    question: "¿Puedo consultar cámaras en directo?",
+    question: "¿Puedo ver las cámaras de tráfico?",
     answer:
-      "Sí. /camaras reúne ~1.500 cámaras DGT y autonómicas. Mostramos los snapshots más recientes con timestamp. Algunas cámaras emiten en circuito cerrado y no son públicas; en tal caso se indica como “sin disponibilidad”.",
+      "Sí. /camaras reúne las cámaras de la DGT y de las comunidades autónomas. No es vídeo: cada cámara publica una foto fija (las de la DGT la renuevan cada 5 minutos aproximadamente) y mostramos la más reciente con su hora. Algunas cámaras no son públicas; en ese caso se indica como «sin disponibilidad».",
   },
   {
     question: "¿Cubrís todas las vías o solo autopistas?",
@@ -179,7 +179,7 @@ export default async function TraficoHubPage() {
           Tráfico en España
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-          Incidencias DGT, cámaras en directo, radares, obras y sensores de tráfico urbano en
+          Incidencias DGT, cámaras con imagen cada 5 min, radares, obras y sensores de tráfico urbano en
           Madrid, Barcelona y Valencia. Actualización cada 2–5 minutos.
         </p>
         <PageIntro path="/trafico" />
@@ -271,7 +271,7 @@ export default async function TraficoHubPage() {
           title=""
           items={[
             { title: "Incidencias", description: "Retenciones, accidentes, obras", href: "/incidencias", icon: AlertTriangle },
-            { title: "Cámaras", description: "~1.500 cámaras DGT + autonómicas", href: "/camaras", icon: Camera },
+            { title: "Cámaras", description: "Cámaras DGT y autonómicas", href: "/camaras", icon: Camera },
             { title: "Radares", description: "Fijos, tramo y móviles", href: "/radares", icon: Gauge },
             { title: "Carreteras", description: "Red viaria por vía e IMD", href: "/carreteras", icon: MapPin },
             { title: "Estaciones de aforo", description: "14.400 estaciones con IMD", href: "/estaciones-aforo", icon: MapIcon },

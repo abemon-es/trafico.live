@@ -136,14 +136,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const hasIncidents = incidents.length > 0;
 
   const title = `${road.id} hoy — ${hasIncidents ? `${incidents.length} incidencia${incidents.length > 1 ? "s" : ""} activa${incidents.length > 1 ? "s" : ""}` : "Sin incidencias"} | Estado en vivo`;
-  const description = `Estado de la ${typeLabel} ${road.id} hoy: ${incidents.length} incidencia${incidents.length !== 1 ? "s" : ""} activa${incidents.length !== 1 ? "s" : ""}, ${cameras.length} cámaras en vivo, accidentes históricos, paneles variables y radares. Actualizado cada minuto.`;
+  const description = `Estado de la ${typeLabel} ${road.id} hoy: ${incidents.length} incidencia${incidents.length !== 1 ? "s" : ""} activa${incidents.length !== 1 ? "s" : ""}, ${cameras.length} cámaras con imagen cada 5 min, accidentes históricos, paneles variables y radares. Actualizado cada minuto.`;
 
   return {
     title,
     description,
     alternates: { canonical: `${BASE_URL}/carreteras/${road.id}/hoy` },
     openGraph: {
-      title: `${road.id} hoy — tráfico, accidentes y cámaras en directo`,
+      title: `${road.id} hoy: tráfico, accidentes y cámaras con imagen cada 5 min`,
       description,
       type: "website",
     },
@@ -428,7 +428,7 @@ export default async function RoadTodayPage({ params }: PageProps) {
           <section className="mb-6" aria-labelledby="heading-cameras">
             <h2 id="heading-cameras" className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
               <Camera className="w-5 h-5 text-tl-500" />
-              Cámaras en directo — {road.id}
+              Cámaras de la {road.id}: imagen cada 5 min
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {cameras.slice(0, 6).map((cam) => (

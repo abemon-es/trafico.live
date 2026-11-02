@@ -22,14 +22,14 @@ export const revalidate = 0;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 export const metadata: Metadata = {
-  title: "Tráfico en Andorra — Incidencias y Cámaras en Directo",
+  title: "Tráfico en Andorra: incidencias y cámaras de tráfico",
   description:
     "Estado del tráfico en Andorra en tiempo real. Cámaras de tráfico, incidencias y estado de las carreteras. Datos de mobilitat.ad.",
   alternates: {
     canonical: `${BASE_URL}/andorra`,
   },
   openGraph: {
-    title: "Tráfico en Andorra — Incidencias y Cámaras en Directo",
+    title: "Tráfico en Andorra: incidencias y cámaras de tráfico",
     description:
       "Estado del tráfico en Andorra en tiempo real. Cámaras de tráfico, incidencias y estado de las carreteras. Datos de mobilitat.ad.",
     url: `${BASE_URL}/andorra`,
@@ -154,7 +154,7 @@ export default async function AndorraPage() {
   const webPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: "Tráfico en Andorra — Incidencias y Cámaras en Directo",
+    name: "Tráfico en Andorra: incidencias y cámaras de tráfico",
     description:
       "Estado del tráfico en Andorra en tiempo real con cámaras de tráfico e incidencias de mobilitat.ad.",
     url: `${BASE_URL}/andorra`,
