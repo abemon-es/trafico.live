@@ -57,6 +57,41 @@ async function checkRedis(): Promise<{ ok: boolean; latency_ms?: number }> {
   }
 }
 
+/**
+ * Prisma migrations left unfinished. The web container runs `prisma migrate
+ * deploy` on start-up and goes on if it fails; one unfinished migration then
+ * blocks every later one (P3009) without a sound. After #271 (2026-11-02) a
+ * hand-applied migration was left «unfinished» that way.
+ *
+ * Read-only, with a 2 s statement_timeout so a slow database cannot hang the
+ * health check. The public response carries only the count (CSO); the names go
+ * to the server log, once per change rather than on every 30 s probe. If the
+ * table cannot be read, `ok: null` says so instead of guessing.
+ */
+let lastLoggedUnfinished = "";
+async function checkMigrations(): Promise<{ ok: boolean | null; pending: number }> {
+  try {
+    const rows = await prisma.$transaction(
+      async (tx) => {
+        await tx.$executeRaw`SET LOCAL statement_timeout = 2000`;
+        return tx.$queryRaw<{ migration_name: string }[]>`
+          SELECT migration_name FROM "_prisma_migrations"
+          WHERE finished_at IS NULL AND rolled_back_at IS NULL
+          ORDER BY started_at`;
+      },
+      { timeout: 3000 },
+    );
+    const names = rows.map((r) => r.migration_name).join(", ");
+    if (names && names !== lastLoggedUnfinished) {
+      console.error(`[health] unfinished Prisma migrations (P3009 blocks later ones): ${names}`);
+    }
+    lastLoggedUnfinished = names;
+    return { ok: rows.length === 0, pending: rows.length };
+  } catch {
+    return { ok: null, pending: 0 };
+  }
+}
+
 async function checkHeartbeats(): Promise<{
   collectors: CollectorEntry[];
   staleCount: number;
@@ -126,19 +161,21 @@ async function checkHeartbeats(): Promise<{
 }
 
 export async function GET() {
-  const [db, redisCheck, heartbeats] = await Promise.all([
+  const [db, redisCheck, heartbeats, migrations] = await Promise.all([
     checkDatabase(),
     checkRedis(),
     checkHeartbeats(),
+    checkMigrations(),
   ]);
 
   const dbOk = db.ok;
   const hasStale = heartbeats.staleCount > 0 || !!heartbeats.error;
   const redisDown = !redisCheck.ok;
+  const migrationsBlocked = migrations.ok === false;
 
   const overallStatus = !dbOk
     ? "unhealthy"
-    : hasStale || redisDown
+    : hasStale || redisDown || migrationsBlocked
     ? "degraded"
     : "healthy";
 
@@ -146,6 +183,9 @@ export async function GET() {
     status: overallStatus,
     db: { ok: db.ok, latency_ms: db.latency_ms ?? null, ...(db.error ? { error: db.error } : {}) },
     redis: { ok: redisCheck.ok, latency_ms: redisCheck.latency_ms ?? null },
+    // An unfinished migration blocks every later one (P3009): degraded. Only the
+    // count here; the names are in the server log (CSO).
+    migrations: { ok: migrations.ok, pending: migrations.pending },
     collectors: heartbeats.collectors,
     staleCount: heartbeats.staleCount,
     totalCollectors: heartbeats.collectors.length,
