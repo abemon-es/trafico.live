@@ -2,11 +2,12 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Fuel, MapPin, Clock, TrendingDown, ChevronRight, Trophy } from "lucide-react";
-import prisma from "@/lib/db";
+import prisma, { isBuildWithoutDb } from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { PageIntro } from "@/components/seo/PageIntro";
 import { jsonLdHtml } from "@/lib/json-ld";
+import { glpByProvince, type GlpProvince } from "@/lib/fuel/glp-by-province";
 
 export const revalidate = 300;
 
@@ -97,10 +98,76 @@ const FUEL_TYPES: Record<
 
 type Props = { params: Promise<{ fuelType: string }> };
 
+/** «2/11/2026 08:30», Madrid time. */
+function madridStamp(d: Date): string {
+  return d.toLocaleString("es-ES", {
+    timeZone: "Europe/Madrid",
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
+/** Stations with a GLP price, their count, cheapest price and last price update (for the title and snippet). */
+async function glpHeadline(): Promise<{ count: number; min: number | null; updatedAt: Date | null } | null> {
+  if (isBuildWithoutDb()) return null;
+  try {
+    const agg = await prisma.gasStation.aggregate({
+      where: { priceGLP: { gt: 0 } },
+      _count: true,
+      _min: { priceGLP: true },
+      _max: { lastPriceUpdate: true },
+    });
+    return { count: agg._count, min: toNumber(agg._min.priceGLP), updatedAt: agg._max.lastPriceUpdate ?? null };
+  } catch {
+    return null;
+  }
+}
+
+/** /gasolineras/tipo/glp only: stations by province (src/lib/fuel/glp-by-province.ts) and the Gasolina 95 mean. */
+async function glpPageData(): Promise<{ provinces: GlpProvince[]; avg95: number | null; updatedAt: Date | null } | null> {
+  if (isBuildWithoutDb()) return null;
+  try {
+    const [rows, g95, head] = await Promise.all([
+      prisma.gasStation.findMany({
+        where: { priceGLP: { gt: 0 } },
+        select: { id: true, name: true, locality: true, municipality: true, province: true, priceGLP: true },
+      }),
+      prisma.gasStation.aggregate({ where: { priceGasolina95E5: { gt: 0 } }, _avg: { priceGasolina95E5: true } }),
+      glpHeadline(),
+    ]);
+    const provinces = glpByProvince(
+      rows.map((r) => ({ ...r, priceGLP: toNumber(r.priceGLP) ?? 0 }))
+    );
+    return { provinces, avg95: toNumber(g95._avg.priceGasolina95E5), updatedAt: head?.updatedAt ?? null };
+  } catch {
+    return null;
+  }
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { fuelType } = await params;
   const fuel = FUEL_TYPES[fuelType];
   if (!fuel) return { title: "Tipo de combustible no encontrado" };
+
+  if (fuelType === "glp") {
+    // The intent is «dónde repostar GLP» (GSC 10-2026); title and snippet say what the page shows.
+    const h = await glpHeadline();
+    const title = h ? `Dónde repostar GLP (Autogas): ${h.count.toLocaleString("es-ES")} gasolineras por provincia` : "Dónde repostar GLP (Autogas): gasolineras por provincia";
+    const description =
+      h && h.min != null
+        ? `Gasolineras con GLP en cada provincia, las más baratas y el precio medio de hoy: desde ${h.min.toFixed(3)} €/L.${h.updatedAt ? ` Datos oficiales actualizados ${h.updatedAt.toLocaleDateString("es-ES", { timeZone: "Europe/Madrid" })}.` : ""}`
+        : "Gasolineras con GLP en cada provincia, las más baratas y el precio medio de hoy. Datos oficiales del Ministerio.";
+    return {
+      title: { absolute: title },
+      description,
+      openGraph: { title, description, type: "website" },
+      alternates: { canonical: `${BASE_URL}/gasolineras/tipo/${fuelType}` },
+    };
+  }
 
   return {
     title: `Gasolineras con ${fuel.label} en España — Precios Hoy ${CURRENT_YEAR}`,
@@ -207,6 +274,12 @@ export default async function FuelTypePage({ params }: Props) {
     }),
   ]);
 
+  const glp = fuelType === "glp" ? await glpPageData() : null;
+  const glpProvinces = glp?.provinces ?? [];
+  // Same last update as the snippet (glpHeadline), so page and description agree.
+  const glpUpdated = glp?.updatedAt ?? null;
+  const glpTop = [...glpProvinces].sort((a, b) => b.count - a.count).slice(0, 3);
+
   const avgPrice = (avgResult._avg as Record<string, number | null>)[fuel.dbField];
   const minPrice = (avgResult._min as Record<string, number | null>)[fuel.dbField];
 
@@ -250,6 +323,18 @@ export default async function FuelTypePage({ params }: Props) {
       {
         "@type": "FAQPage",
         mainEntity: [
+          ...(glpProvinces.length > 0
+            ? [
+                {
+                  "@type": "Question",
+                  name: "¿Dónde repostar GLP en España?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: `Hay ${totalCount.toLocaleString("es-ES")} gasolineras con GLP en ${glpProvinces.length} provincias. Donde más hay: ${glpTop.map((p) => `${p.name} (${p.count})`).join(", ")}. En esta página tienes las tres más baratas de cada provincia, con su precio de hoy.`,
+                  },
+                },
+              ]
+            : []),
           {
             "@type": "Question",
             name: `¿Dónde encontrar ${fuel.label} más barato en España?`,
@@ -312,6 +397,24 @@ export default async function FuelTypePage({ params }: Props) {
               <span>Actualizado — {formattedDate}</span>
             </div>
           </div>
+
+          {/* «Dónde repostar GLP»: the province first, without scrolling (CMO, experiment trafico-glp-donde) */}
+          {glpProvinces.length > 0 && (
+            <nav aria-label="GLP por provincia" className="mb-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Dónde repostar GLP: elige tu provincia
+              </h2>
+              <ul className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
+                {glpProvinces.map((p) => (
+                  <li key={p.code}>
+                    <a href={`#${p.anchor}`} className="text-tl-700 dark:text-tl-300 hover:underline">
+                      {p.name} <span className="font-mono text-gray-500 dark:text-gray-400">({p.count})</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
 
           {/* Stats bar */}
           <div className="grid grid-cols-3 gap-3 mb-8">
@@ -421,6 +524,52 @@ export default async function FuelTypePage({ params }: Props) {
             )}
           </section>
 
+          {/* GLP by province: count, cheapest and mean, the three cheapest stations */}
+          {glpProvinces.length > 0 && (
+            <section className="mb-10" aria-labelledby="glp-provincias">
+              <h2 id="glp-provincias" className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                Dónde repostar GLP en cada provincia
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                {totalCount.toLocaleString("es-ES")} gasolineras con GLP en {glpProvinces.length} provincias. Las tres más
+                baratas de cada una, con su precio de hoy en €/L.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {glpProvinces.map((p) => (
+                  <div
+                    key={p.code}
+                    id={p.anchor}
+                    className="scroll-mt-24 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4"
+                  >
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">GLP en {p.name}</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                      {p.count} {p.count === 1 ? "gasolinera" : "gasolineras"} · desde{" "}
+                      <span className="font-mono">{p.min.toFixed(3)} €/L</span> · media{" "}
+                      <span className="font-mono">{p.avg.toFixed(3)} €/L</span>
+                    </p>
+                    <ol className="space-y-1 text-sm">
+                      {p.cheapest.map((st) => {
+                        const where = st.locality ?? st.municipality;
+                        return (
+                          <li key={st.id} className="flex justify-between gap-2">
+                            <Link href={`/gasolineras/terrestres/${st.id}`} className="text-tl-700 dark:text-tl-300 hover:underline truncate">
+                              {st.name}
+                              {where ? `, ${where}` : ""}
+                            </Link>
+                            <span className="font-mono text-gray-700 dark:text-gray-300 shrink-0">{st.priceGLP.toFixed(3)}</span>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                    <Link href={`/gasolineras/precios/${p.slug}`} className="mt-2 inline-block text-xs text-tl-700 dark:text-tl-300 hover:underline">
+                      Todas las gasolineras de {p.name}
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Other fuel types */}
           <section className="mb-10">
             <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">
@@ -445,6 +594,20 @@ export default async function FuelTypePage({ params }: Props) {
               Preguntas frecuentes sobre {fuel.label}
             </h2>
             <div className="space-y-3">
+              {glpProvinces.length > 0 && (
+                <details className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group">
+                  <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors select-none">
+                    ¿Dónde repostar GLP en España?
+                    <ChevronRight className="w-4 h-4 text-gray-400 transition-transform group-open:rotate-90" />
+                  </summary>
+                  <div className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800">
+                    Hay <strong>{totalCount.toLocaleString("es-ES")} gasolineras con GLP</strong> en{" "}
+                    {glpProvinces.length} provincias. Donde más hay:{" "}
+                    {glpTop.map((p) => `${p.name} (${p.count})`).join(", ")}. Arriba tienes las tres más baratas de
+                    cada provincia, con su precio de hoy.
+                  </div>
+                </details>
+              )}
               <details className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden group">
                 <summary className="flex items-center justify-between px-5 py-4 cursor-pointer font-medium text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors select-none">
                   ¿Dónde encontrar {fuel.label} más barato en España?
@@ -555,7 +718,38 @@ export default async function FuelTypePage({ params }: Props) {
             ]}
           />
 
-          {/* SEO copy */}
+          {/* SEO copy: GLP has its own text, with today's figures */}
+          {glpProvinces.length > 0 ? (
+            <div className="mt-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+              <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-3">
+                GLP (Autogas) en España: qué es y dónde repostarlo
+              </h2>
+              <div className="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-gray-400 space-y-3">
+                <p>
+                  El GLP, gas licuado del petróleo o Autogas, es una mezcla de propano y butano. Lo usan los coches
+                  bifuel, que llevan un depósito de gasolina y otro de GLP y pueden circular con cualquiera de los
+                  dos. La DGT da la etiqueta ECO a los turismos que funcionan con GLP.
+                </p>
+                <p>
+                  Hoy hay <strong>{totalCount.toLocaleString("es-ES")} gasolineras con GLP</strong> en{" "}
+                  {glpProvinces.length} provincias. Donde más hay es en{" "}
+                  {glpTop.map((p) => `${p.name} (${p.count})`).join(", ")}; en algunas provincias solo hay unas
+                  pocas, así que en ruta conviene mirar antes dónde está la siguiente.
+                </p>
+                {avgPrice != null && glp?.avg95 != null && (
+                  <p>
+                    El litro de GLP cuesta de media <strong className="font-mono">{avgPrice.toFixed(3)} €/L</strong>,
+                    frente a <strong className="font-mono">{glp.avg95.toFixed(3)} €/L</strong> de la gasolina 95,
+                    según los precios que las estaciones comunican hoy al Ministerio.
+                  </p>
+                )}
+                <p>
+                  Para repostar, elige tu provincia en la lista de arriba o abre la ficha de cada gasolinera: tiene
+                  su dirección y el precio de cada combustible que vende.
+                </p>
+              </div>
+            </div>
+          ) : (
           <div className="mt-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6">
             <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-3">
               {fuel.label} en España: todo lo que necesitas saber
@@ -581,6 +775,7 @@ export default async function FuelTypePage({ params }: Props) {
               </p>
             </div>
           </div>
+          )}
 
           {/* Data source */}
           <div className="mt-4 flex items-start gap-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg px-4 py-3">
@@ -589,6 +784,7 @@ export default async function FuelTypePage({ params }: Props) {
               Fuente: API oficial del Ministerio para la Transición Ecológica y el Reto Demográfico
               (MITERD). Los precios mostrados corresponden a los comunicados por las estaciones de
               servicio y pueden variar ligeramente respecto al precio real en el surtidor.
+              {glpUpdated ? ` Precios de GLP actualizados el ${madridStamp(glpUpdated)}.` : ""}
             </p>
           </div>
         </main>
