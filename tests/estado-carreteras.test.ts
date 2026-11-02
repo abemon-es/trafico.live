@@ -6,7 +6,7 @@
  *   2. the literal H2 «Carreteras cortadas hoy», «Nieve, hielo y cadenas»,
  *      anchors «Estado de las carreteras en <comunidad>» and «<vía> hoy»;
  *   3. every FAQ answer carries the time; no chains question without chain data;
- *   4. no «en directo», no unmeasured cadence, no raw hex colours;
+ *   4. no «en directo», no unmeasured cadence, no raw hex colours, brand tokens only;
  *   5. linked from the home body, /incidencias, /cortes-trafico, the menu and the sitemap.
  *
  * Plain tsx script (project has no test framework); exits 1 on failure.
@@ -52,6 +52,8 @@ const code = page.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, "");
 assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(code), "no raw hex colours");
 assert.ok(/#[0-9a-fA-F]{3,8}\b/.test("bg-[#ff8800]"), "the hex check still catches a colour");
 assert.match(page, /export const revalidate = 120;/);
+// A new page uses the brand tokens (tl-*, ink-*, signal-*), never generic Tailwind colours (CTO, #272).
+assert.ok(!/\b(?:bg|text|border|divide|ring|from|to)-(?:gray|slate|zinc|neutral|red|blue|green|amber|yellow)-\d/.test(code), "no generic Tailwind colours");
 
 // 5. Ways in.
 const home = readFileSync("src/app/HomeClient.tsx", "utf8");
