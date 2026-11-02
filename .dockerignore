@@ -27,10 +27,16 @@ packages/*/node_modules/
 .next/
 out/
 
-# Environment + secrets
+# Environment + secrets, at any depth: Dockerfile.cron does COPY services/collector/ ./,
+# so a services/collector/.env (or a key file) would otherwise land in the image.
 .env
 .env.*
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
 !.env.example
+!**/.env.example
 
 # Git
 .git/
