@@ -29,8 +29,8 @@ const fmt = (n: number) => n.toLocaleString("es-ES");
 
 function hubDescription(count: number | null): string {
   return count
-    ? `${fmt(count)} cámaras de tráfico de la DGT y de las comunidades autónomas, en directo: autopistas, autovías y carreteras de toda España. Busca por carretera, kilómetro o provincia.`
-    : "Cámaras de tráfico de la DGT y de las comunidades autónomas, en directo: autopistas, autovías y carreteras de toda España. Busca por carretera, kilómetro o provincia.";
+    ? `${fmt(count)} cámaras de tráfico de la DGT y de las comunidades autónomas; las de la DGT renuevan la imagen cada 5 minutos aprox. Busca por carretera o provincia.`
+    : "Cámaras de tráfico de la DGT y de las comunidades autónomas; las de la DGT renuevan la imagen cada 5 minutos aprox. Busca por carretera o provincia.";
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -88,9 +88,10 @@ export default async function CamarasPage() {
             Cámaras de Tráfico
           </h1>
           <p className="mt-2 mb-6 text-gray-600 dark:text-gray-400 max-w-3xl">
-            Imágenes en tiempo real de las cámaras de la DGT instaladas en
-            autopistas, autovías y carreteras nacionales de toda España. Busca por
-            carretera, kilómetro o provincia.
+            Imágenes de las cámaras de la DGT instaladas en autopistas, autovías
+            y carreteras nacionales de toda España. No es vídeo: cada cámara
+            publica una foto fija que la DGT renueva cada 5 minutos
+            aproximadamente. Busca por carretera, kilómetro o provincia.
           </p>
           <PageIntro path="/camaras" className="-mt-3 mb-6 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-300" />
           <h2 className="sr-only">Cámaras de tráfico en directo de la DGT en toda España</h2>
@@ -107,7 +108,7 @@ export default async function CamarasPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 space-y-6">
           <section className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-8">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
-              Cámaras de tráfico de la DGT en tiempo real
+              Cámaras de tráfico de la DGT: qué muestran y cada cuánto se renuevan
             </h2>
             <div className="prose prose-gray dark:prose-invert max-w-none text-sm sm:text-base leading-relaxed">
               <p>
