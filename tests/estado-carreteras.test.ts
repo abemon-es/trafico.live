@@ -47,7 +47,10 @@ assert.match(page, /"@type": "FAQPage"/);
 
 // 4. Group style.
 assert.ok(!/en directo/i.test(page), "no «en directo»");
-assert.ok(!/#[0-9a-fA-F]{3,6}\b/.test(page), "no raw hex colours");
+// Comments are stripped first: «#268» in a comment is a PR number, not a colour.
+const code = page.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, "");
+assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(code), "no raw hex colours");
+assert.ok(/#[0-9a-fA-F]{3,8}\b/.test("bg-[#ff8800]"), "the hex check still catches a colour");
 assert.match(page, /export const revalidate = 120;/);
 
 // 5. Ways in.
