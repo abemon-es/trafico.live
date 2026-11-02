@@ -230,7 +230,6 @@ export default async function CameraDetailPage({ params }: Props) {
         name: `Cámara de tráfico DGT — ${camera.name}`,
         description: `Imagen renovada cada 5 minutos aprox. de la cámara de tráfico de la DGT en ${camera.name}${camera.roadNumber ? ` (${camera.roadNumber}${camera.kmPoint ? `, km ${Number(camera.kmPoint).toFixed(1)}` : ""})` : ""}${camera.provinceName ? `, ${camera.provinceName}` : ""}. Actualización periódica desde el centro de gestión de tráfico.`,
         contentUrl: cameraImage(camera)!,
-        dateModified: camera.lastUpdated.toISOString(),
         creditText: "DGT",
         publisher: {
           "@type": "Organization",
