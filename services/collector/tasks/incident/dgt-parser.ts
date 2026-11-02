@@ -93,7 +93,7 @@ export async function fetchDGTIncidents(): Promise<DGTIncident[]> {
   return incidents;
 }
 
-function parseDGTResponse(xml: string): DGTIncident[] {
+export function parseDGTResponse(xml: string): DGTIncident[] {
   try {
     const result = parser.parse(xml);
 
@@ -224,9 +224,13 @@ function parseRecord(
   }
 }
 
-function extractRecordType(record: Record<string, unknown>): string {
+export function extractRecordType(record: Record<string, unknown>): string {
+  // DATEX v3 sends the namespace with the type («sit:AbnormalTraffic»); without
+  // stripping it no record type matched the map and every DGT record whose
+  // cause wasn't roadworks or an accident was stored as OTHER (02-11-2026: 1,095
+  // of 1,232 active DGT incidents).
   const xsiType = record["@_xsi:type"] || record["@_type"];
-  if (xsiType) return String(xsiType);
+  if (xsiType) return String(xsiType).replace(/^[A-Za-z0-9_-]+:/, "");
 
   if ("vehicleObstructionType" in record || "obstructionType" in record) {
     return "VehicleObstruction";
@@ -247,17 +251,35 @@ function extractRecordType(record: Record<string, unknown>): string {
   return "Unknown";
 }
 
-function mapToIncidentType(
+/** Management types that close the road or a whole carriageway: a «carretera cortada». Lane closures are not. */
+export const ROAD_CLOSURE_MANAGEMENT = new Set(["roadClosed", "carriagewayClosures"]);
+
+/** DATEX v3 causeType → our type (the DGT feed of 02-11-2026 uses all of these). */
+const CAUSE_TYPE_MAP: Record<string, IncidentType> = {
+  roadMaintenance: "ROADWORK",
+  accident: "ACCIDENT",
+  poorEnvironment: "WEATHER",
+  poorEnvironmentConditions: "WEATHER",
+  vehicleObstruction: "VEHICLE_BREAKDOWN",
+  obstruction: "HAZARD",
+  environmentalObstruction: "HAZARD",
+  infrastructureDamageObstruction: "HAZARD",
+  abnormalTraffic: "CONGESTION",
+  disturbance: "EVENT",
+};
+
+export function mapToIncidentType(
   recordType: string,
   record: Record<string, unknown>
 ): IncidentType {
-  // Check for specific cause types first
+  // A closed road or carriageway is a closure whatever its cause (works included).
+  const management = datexString(record.roadOrCarriagewayOrLaneManagementType);
+  if (management && ROAD_CLOSURE_MANAGEMENT.has(management)) return "CLOSURE";
+
+  // Then the cause.
   const cause = record.cause as Record<string, unknown> | undefined;
   const causeType = datexString(cause?.causeType);
-
-  if (causeType === "roadMaintenance") return "ROADWORK";
-  if (causeType === "accident") return "ACCIDENT";
-  if (causeType === "poorEnvironmentConditions") return "WEATHER";
+  if (causeType && CAUSE_TYPE_MAP[causeType]) return CAUSE_TYPE_MAP[causeType];
 
   // Map by record type
   const typeMap: Record<string, IncidentType> = {
@@ -270,7 +292,15 @@ function mapToIncidentType(
     Congestion: "CONGESTION",
     AbnormalTraffic: "CONGESTION",
     RoadClosure: "CLOSURE",
-    RoadOrCarriagewayOrLaneManagement: "CLOSURE",
+    // Lane closures, narrow lanes, alternate one-way traffic: not a closed road
+    // (those return CLOSURE above). Without a cause there is nothing more to say.
+    RoadOrCarriagewayOrLaneManagement: "OTHER",
+    VehicleObstruction: "VEHICLE_BREAKDOWN",
+    GeneralObstruction: "HAZARD",
+    EnvironmentalObstruction: "HAZARD",
+    InfrastructureDamageObstruction: "HAZARD",
+    NonWeatherRelatedRoadConditions: "HAZARD",
+    WeatherRelatedRoadConditions: "WEATHER",
     Event: "EVENT",
     SpecialEvent: "EVENT",
     Hazard: "HAZARD",
