@@ -40,12 +40,12 @@ const TRAFFIC_CITIES: Record<string, { name: string; province: string }> = {
 };
 
 export const metadata: Metadata = {
-  title: "Tráfico en España — Incidencias DGT, cámaras y sensores en vivo",
+  title: "Tráfico en España: incidencias DGT, sensores en vivo y cámaras",
   description:
     "Estado del tráfico vial en tiempo real: incidencias DGT, retenciones, obras, cámaras y sensores. Cobertura nacional + ciudades: Madrid, Barcelona, Valencia, Sevilla…",
   alternates: { canonical: `${BASE_URL}/trafico` },
   openGraph: {
-    title: "Tráfico en España — DGT en vivo",
+    title: "Tráfico en España: incidencias DGT, sensores en vivo y cámaras",
     description:
       "Incidencias DGT, cámaras, sensores y obras. Actualización cada 2 minutos.",
     url: `${BASE_URL}/trafico`,
