@@ -345,7 +345,7 @@ export const megaMenuPanels: MegaMenuPanel[] = [
         items: [
           { name: "Gasolina 95", href: "/precio-gasolina-hoy", icon: Fuel, description: "Media nacional actualizada" },
           { name: "Diésel", href: "/precio-diesel-hoy", icon: Fuel, description: "Media nacional actualizada" },
-          { name: "GLP", href: "/gasolineras", icon: Fuel, description: "Gas licuado del petróleo" },
+          { name: "GLP", href: "/gasolineras/tipo/glp", icon: Fuel, description: "Dónde repostar GLP por provincia" },
           { name: "Por provincia", href: "/gasolineras/precios", icon: MapPin, description: "Comparar 52 provincias" },
           { name: "Histórico CNMC", href: "/gasolineras/historico", icon: BarChart3, description: "Precios desde 2016" },
         ],

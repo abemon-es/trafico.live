@@ -12,6 +12,7 @@ import { StationPriceHistory } from "@/components/charts/StationPriceHistory";
 import { provincePath } from "@/lib/geo/geo-paths";
 import { utcDay } from "@/lib/data/fuel-stats-day";
 import { jsonLdHtml } from "@/lib/json-ld";
+import { glpAnchor, provinceSlugsByCode } from "@/lib/fuel/glp-by-province";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -283,6 +284,12 @@ export default async function StationDetailPage({ params }: Props) {
       : {}),
   };
 
+  // A station that sells GLP links its province card on /gasolineras/tipo/glp (CMO, trafico-glp-donde):
+  // the same slug map as the cards, so the anchor always exists.
+  const glpProvince = station.priceGLP != null && Number(station.priceGLP) > 0 && station.province
+    ? provinceSlugsByCode().get(station.province)
+    : undefined;
+
   // All fuel prices for display
   const mainFuels = [
     { key: "gasoleoA", label: "Gasoleo A", price: station.priceGasoleoA, color: "amber", trend: dieselTrend },
@@ -550,6 +557,13 @@ export default async function StationDetailPage({ params }: Props) {
         <p className="text-xs text-gray-400 mt-4">
           Ultima actualizacion: {new Date(station.lastPriceUpdate).toLocaleString("es-ES")}
         </p>
+        {glpProvince && (
+          <p className="text-sm mt-3">
+            <Link href={`/gasolineras/tipo/glp#${glpAnchor(glpProvince.slug)}`} className="text-tl-600 dark:text-tl-400 hover:underline">
+              Más gasolineras con GLP en {glpProvince.name}
+            </Link>
+          </p>
+        )}
       </div>
 
       {/* Price Comparison Card */}

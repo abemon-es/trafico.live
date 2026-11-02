@@ -60,4 +60,11 @@ const prov = readFileSync("src/app/gasolineras/precios/[province]/page.tsx", "ut
 assert.match(prov, /\{glpCount > 0 && \(/, "the GLP line only when the province has GLP");
 assert.match(prov, /href=\{`\/gasolineras\/tipo\/glp#\$\{glpAnchor\(province\)\}`\}/);
 
+// 4. Every station with GLP links its province card; the menu's GLP goes to the GLP page.
+const station = readFileSync("src/app/gasolineras/terrestres/[id]/page.tsx", "utf8");
+assert.match(station, /provinceSlugsByCode\(\)\.get\(station\.province\)/, "same slug map as the cards");
+assert.match(station, /href=\{`\/gasolineras\/tipo\/glp#\$\{glpAnchor\(glpProvince\.slug\)\}`\}/);
+assert.match(station, /Number\(station\.priceGLP\) > 0/, "only stations that sell GLP");
+assert.match(readFileSync("src/components/layout/nav/NavData.ts", "utf8"), /\{ name: "GLP", href: "\/gasolineras\/tipo\/glp"/);
+
 console.log("glp-donde: ok");
