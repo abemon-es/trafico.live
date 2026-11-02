@@ -427,6 +427,12 @@ export default async function CortesTráficoPage() {
             title="También te puede interesar"
             links={[
               {
+                title: "Estado de las carreteras hoy",
+                description: "Cortes, obras, nieve y hielo por comunidad y vía",
+                href: "/estado-carreteras",
+                icon: <Map className="w-5 h-5" />,
+              },
+              {
                 title: "Atascos y retenciones",
                 description: "Congestiones y tráfico lento en España ahora",
                 href: "/atascos",

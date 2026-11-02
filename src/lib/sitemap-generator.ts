@@ -965,6 +965,11 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       priority: 0.95,
     },
     {
+      url: `${BASE_URL}/estado-carreteras`,
+      changeFrequency: "hourly",
+      priority: 0.9,
+    },
+    {
       url: `${BASE_URL}/cortes-trafico`,
       changeFrequency: "hourly",
       priority: 0.9,

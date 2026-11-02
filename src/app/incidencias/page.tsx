@@ -118,6 +118,7 @@ export default function IncidenciasPage() {
           </ul>
         </section>
         <RelatedLinks links={[
+          { title: "Estado de las carreteras hoy", description: "Cortes, obras, nieve y hielo por comunidad y vía", href: "/estado-carreteras", icon: <Route className="w-5 h-5" /> },
           { title: "Estado del tráfico en tiempo real", description: "Mapa interactivo con todas las capas de datos", href: "/trafico", icon: <MapPin className="w-5 h-5" /> },
           { title: "Cámaras DGT", description: "Imágenes en vivo de las principales carreteras", href: "/camaras", icon: <Video className="w-5 h-5" /> },
           { title: "Carreteras de España", description: "Red viaria nacional por tipo y provincia", href: "/carreteras", icon: <Route className="w-5 h-5" /> },
