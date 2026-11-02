@@ -14,6 +14,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateRawSync } from "node:zlib";
+import { spawnSync } from "node:child_process";
 import { UnsafeZipError, extractionLimits, parseZipinfo, safeExtract } from "../services/collector/shared/safe-unzip";
 
 // ── A minimal ZIP writer (stored or deflated entries, unix attributes) ───────
@@ -89,6 +90,13 @@ const stops = Buffer.from("stop_id,stop_name,stop_lat,stop_lon\n1,Plaza,41.6,-4.
 const routes = Buffer.from("route_id,route_short_name,route_type\nR1,1,3\n");
 
 async function main() {
+  // Info-ZIP unzip/zipinfo only exist in the collector image: elsewhere (the web
+  // image, a laptop) say so and stop, instead of failing as if the code were wrong.
+  const missing = ["unzip", "zipinfo"].filter((bin) => spawnSync(bin, ["-v"]).error);
+  if (missing.length > 0) {
+    console.log(`safe-unzip: SKIP, ${missing.join(" and ")} not installed here (run it in the collector image)`);
+    return;
+  }
   // 1. A normal feed: only the root-level .txt files come out, intact.
   const ok = await extract([
     { name: "stops.txt", data: stops, deflate: true },

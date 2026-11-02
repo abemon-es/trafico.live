@@ -37,6 +37,14 @@ const PARSER = "../services/collector/tasks/transit-rt-shared/parser";
 type Decode = (b: ArrayBuffer, op: string, at: Date) => { latitude: number; longitude: number }[];
 
 async function main() {
+  // gtfs-realtime-bindings lives only in the collector's node_modules: elsewhere
+  // (the web image) say so and stop, instead of failing on the import.
+  try {
+    require.resolve("gtfs-realtime-bindings");
+  } catch {
+    console.log("collector-hostile-input: SKIP, gtfs-realtime-bindings not installed here (run it in the collector image)");
+    process.exit(0);
+  }
   const { decodeVehiclePositions } = (await import(PARSER)) as { decodeVehiclePositions: Decode };
   // 4. The versions under test.
   const semverAtLeast = (v: string, min: [number, number, number]) => {
