@@ -518,8 +518,16 @@ export async function run(prisma: PrismaClient) {
     // in this pass are deactivated now. Every row stored in this pass has
     // fetchedAt = now. Failed, short and first passes rely on the 1-hour
     // window below. Verdict, rows and deactivated per source go to the heartbeat.
-    const rowsBySource = new Map<string, number>();
-    for (const incident of allIncidents) rowsBySource.set(incident.source, (rowsBySource.get(incident.source) ?? 0) + 1);
+    // «rows» counts distinct situations stored in this pass (validIncidents by
+    // situationId), not DATEX records: the DGT feed sends several records per
+    // situation (06-11 10:32: 1,470 records, 956 situations).
+    const situationsBySource = new Map<string, Set<string>>();
+    for (const incident of validIncidents) {
+      const ids = situationsBySource.get(incident.source) ?? new Set<string>();
+      ids.add(incident.situationId);
+      situationsBySource.set(incident.source, ids);
+    }
+    const rowsBySource = new Map([...situationsBySource].map(([source, ids]) => [source, ids.size]));
     const previousHeartbeat = await prisma.collectorHeartbeat.findUnique({ where: { task: "incident" }, select: { meta: true } });
     const previousRefs = referencesFromMeta(previousHeartbeat?.meta);
     const deactivation: Record<string, { verdict: FetchVerdict; rows: number; deactivated: number } & Partial<SourceReference>> = {};
