@@ -90,7 +90,6 @@ echo "    git rm -r services/radar-collector/"
 echo "    git rm -r services/speedlimit-collector/"
 echo "    git rm -r services/v16-collector/"
 echo "    git rm -r services/weather-collector/"
-echo "    git rm Dockerfile.incident-collector Dockerfile.v16-collector"
 echo ""
 
 echo "=== Migration plan complete ==="
