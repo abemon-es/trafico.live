@@ -68,5 +68,8 @@ assert.match(c, /AND "fetchedAt" < \$\{oneHourAgo\}/, "the 1-hour window still r
 assert.match(c, /\n      deactivation,\n/, "verdicts and counts per source in the heartbeat");
 assert.match(c, /fetchedAt: now,[\s\S]*fetchedAt: now,/, "create and update both stamp fetchedAt = now");
 assert.match(c, /\.filter\(\(i\) => !i\.isActive && !dgtIds\.has\(i\.situationId\)\)/, "a DGT incident that comes back keeps its startedAt");
+assert.match(c, /for \(const incident of validIncidents\) \{\s*const ids = situationsBySource\.get\(incident\.source\)/, "rows count stored situations, not DATEX records");
+assert.match(c, /ids\.add\(incident\.situationId\);/, "one row per situationId");
+assert.doesNotMatch(c, /for \(const incident of allIncidents\) rowsBySource/, "no longer counts every parsed record");
 
 console.log("incident-deactivation: ok");
