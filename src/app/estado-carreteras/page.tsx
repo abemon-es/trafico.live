@@ -230,9 +230,9 @@ export default async function EstadoCarreterasPage() {
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
               {[
-                { icon: <AlertTriangle className="w-5 h-5 text-tl-amber-500" />, value: d.total, label: "Incidencias activas" },
+                { icon: <AlertTriangle className="w-5 h-5 text-tl-amber-500 dark:text-tl-amber-400" />, value: d.total, label: "Incidencias activas" },
                 { icon: <Ban className="w-5 h-5 text-signal-red" />, value: d.closedCount, label: "Carreteras cortadas" },
-                { icon: <Construction className="w-5 h-5 text-tl-amber-600" />, value: d.roadworks, label: "Obras" },
+                { icon: <Construction className="w-5 h-5 text-tl-amber-600 dark:text-tl-amber-400" />, value: d.roadworks, label: "Obras" },
                 { icon: <Snowflake className="w-5 h-5 text-tl-500" />, value: d.weatherCount, label: "Meteorología" },
               ].map((s) => (
                 <div key={s.label} className="rounded-lg border border-ink-200 dark:border-ink-800 p-3 text-center">
