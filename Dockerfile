@@ -1,4 +1,4 @@
-FROM node:24-slim AS builder
+FROM node:24-slim@sha256:c86ecead9e55a5210ac1727de38a4ca840bf03dcaf34dc9749addbf383b1920c AS builder
 
 WORKDIR /app
 
@@ -40,7 +40,7 @@ RUN --mount=type=secret,id=database_url,required=false \
       npm run build; \
     fi
 
-FROM node:24-slim AS runtime
+FROM node:24-slim@sha256:c86ecead9e55a5210ac1727de38a4ca840bf03dcaf34dc9749addbf383b1920c AS runtime
 
 WORKDIR /app
 
