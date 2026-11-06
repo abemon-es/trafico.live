@@ -137,7 +137,6 @@ trafico.live/
 │   ├── migrations/           # Migration history
 │   └── seed.ts               # Reference data seed
 ├── scripts/                  # One-off import and maintenance scripts
-├── railway.toml              # Legacy deployment config (kept for reference)
 └── next.config.ts            # Next.js configuration
 ```
 
