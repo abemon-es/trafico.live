@@ -10,7 +10,7 @@ Browser (MapLibre GL JS)
   ├─ pmtiles://https://tiles.trafico.live/spain.pmtiles   ← Static basemap tiles
   ├─ https://tiles.trafico.live/fonts/{fontstack}/{range}.pbf  ← Font glyphs
   ├─ https://tiles.trafico.live/sprites/v4/light.json     ← Sprite assets
-  └─ https://tiles.trafico.live/dynamic/{table}/{z}/{x}/{y} ← Live PostGIS (future)
+  └─ https://tiles.trafico.live/dynamic/{source}/{z}/{x}/{y} ← Live PostGIS via Martin
 ```
 
 ## URLs
@@ -21,7 +21,7 @@ Browser (MapLibre GL JS)
 | `https://tiles.trafico.live/spain.pmtiles` | Basemap PMTiles (range requests) | 24h |
 | `https://tiles.trafico.live/fonts/{fontstack}/{range}.pbf` | Font glyphs | 7d |
 | `https://tiles.trafico.live/sprites/v4/{theme}.json` | Sprite metadata | 7d |
-| `https://tiles.trafico.live/dynamic/*` | Martin live tiles (future) | 60s |
+| `https://tiles.trafico.live/dynamic/*` | Martin live tiles (PostGIS functions); 5 tiles/s per visitor, burst 40, then 429 | 60s |
 
 ## Stack
 
@@ -132,7 +132,7 @@ maplibregl.addProtocol("pmtiles", protocol.tile);
 | File | Purpose |
 |------|---------|
 | `services/tiles/Dockerfile` | Container image (nginx:alpine + config) |
-| `services/tiles/nginx.conf` | nginx config with CORS, range requests, Martin proxy |
+| `services/tiles/nginx.conf` | nginx config with CORS, range requests, Martin proxy, per-visitor limit on `/dynamic/` |
 | `services/tiles/docker-compose.yml` | Coolify-compatible compose |
 | `services/tiles/deploy.sh` | Manual deploy script |
 | `services/tiles/README.md` | This file |
