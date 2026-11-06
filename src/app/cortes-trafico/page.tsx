@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Car,
   Map,
+  Route,
   Activity,
   Shield,
 } from "lucide-react";
@@ -430,7 +431,7 @@ export default async function CortesTráficoPage() {
                 title: "Estado de las carreteras hoy",
                 description: "Cortes, obras, nieve y hielo por comunidad y vía",
                 href: "/estado-carreteras",
-                icon: <Map className="w-5 h-5" />,
+                icon: <Route className="w-5 h-5" />,
               },
               {
                 title: "Atascos y retenciones",
