@@ -259,7 +259,7 @@ done
 
 section "2. Entity pages (iter-5)"
 expect_status 200 "/aviacion/avion/4CA2B7"
-expect_status 200 "/maritimo/puerto/barcelona"
+expect_status 200 "/maritimo/puertos/barcelona"
 expect_status 200 "/calidad-aire/estacion/28079004"
 expect_status 200 "/accidentes/carretera/a-1"
 expect_status 200 "/accidentes/madrid"
@@ -288,6 +288,7 @@ section "4. Removed routes + redirects"
 expect_redirect "/calendario" "/sobre/contacto"
 expect_redirect "/calendario/booking" "/sobre/contacto"
 expect_redirect "/provincias" "/espana"
+expect_redirect "/maritimo/puerto/barcelona" "/maritimo/puertos/barcelona"   # one page per port, 2026-11-07
 expect_redirect "/combustible/madrid" "/gasolineras/precios/madrid"
 # Note: /trenes/tren, /carga-ev/punto, /maritimo/buque are stub-redirect pages
 # in code but observed serving 200 in prod (see followup: iter-7). Test as

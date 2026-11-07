@@ -231,6 +231,20 @@ const nextConfig: NextConfig = {
         destination: "/gasolineras/:path*",
         permanent: true,
       },
+      // One page per port. /maritimo/puerto/<slug> (a SpanishPort alone,
+      // linked from nowhere) and /maritimo/puertos/<slug> (the same port with
+      // its fuel stations, AIS traffic and movements, linked site-wide) were
+      // two indexable pages for the same port; the plural one stays.
+      {
+        source: "/maritimo/puerto",
+        destination: "/maritimo/puertos",
+        permanent: true,
+      },
+      {
+        source: "/maritimo/puerto/:slug",
+        destination: "/maritimo/puertos/:slug",
+        permanent: true,
+      },
       // 301: /provincias → /espana
       {
         source: "/provincias",
