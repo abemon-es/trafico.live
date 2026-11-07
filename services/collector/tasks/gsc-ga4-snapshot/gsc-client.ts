@@ -5,11 +5,13 @@
  * which has siteFullUser access to sc-domain:trafico.live.
  *
  * Fetches last-30d aggregate and daily timeseries for clicks, impressions,
- * CTR and average position, plus top 20 pages and queries.
+ * CTR and average position, plus the 20 pages and the 20 queries with most
+ * impressions (ranked here: the API sorts by clicks and ignores an orderBy).
  */
 
 import { google } from "googleapis";
 import { log, logError } from "../../shared/utils.js";
+import { topByImpressions } from "./top-rows.js";
 
 const TASK = "gsc-ga4-snapshot";
 const GSC_SITE = "sc-domain:trafico.live";
@@ -56,6 +58,8 @@ export interface GscData {
   dailySeries: GscDailyRow[];
   topPages: GscPageRow[];
   topQueries: GscQueryRow[];
+  /** Pages with at least one impression in the window: what Google shows at all. */
+  pagesWithImpressions: number;
 }
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
@@ -136,7 +140,10 @@ export async function fetchGscData(): Promise<GscData> {
   }
 
   // ── 3. Top pages ─────────────────────────────────────────────────────────────
+  // Every row (25 000 is the API's maximum per request; the site has ~100
+  // pages with impressions), ranked by impressions here.
   let topPages: GscPageRow[] = [];
+  let pagesWithImpressions = 0;
 
   try {
     const pagesRes = await webmasters.searchanalytics.query({
@@ -145,18 +152,19 @@ export async function fetchGscData(): Promise<GscData> {
         startDate,
         endDate,
         dimensions: ["page"],
-        rowLimit: 20,
-        orderBy: [{ fieldName: "impressions", sortOrder: "DESCENDING" }],
+        rowLimit: 25000,
       },
     });
-    topPages = (pagesRes.data.rows ?? []).map((r) => ({
+    const pages: GscPageRow[] = (pagesRes.data.rows ?? []).map((r) => ({
       page: (r.keys?.[0] ?? "") as string,
       clicks: Math.round(r.clicks ?? 0),
       impressions: Math.round(r.impressions ?? 0),
       position: r.position ?? 0,
       ctr: r.ctr ?? 0,
     }));
-    log(TASK, `GSC top pages: ${topPages.length}`);
+    pagesWithImpressions = pages.filter((p) => p.impressions > 0).length;
+    topPages = topByImpressions(pages);
+    log(TASK, `GSC pages with impressions: ${pagesWithImpressions}; top ${topPages.length} by impressions`);
   } catch (err) {
     logError(TASK, "Failed to fetch GSC top pages:", err);
   }
@@ -171,18 +179,18 @@ export async function fetchGscData(): Promise<GscData> {
         startDate,
         endDate,
         dimensions: ["query"],
-        rowLimit: 20,
-        orderBy: [{ fieldName: "impressions", sortOrder: "DESCENDING" }],
+        rowLimit: 25000,
       },
     });
-    topQueries = (queriesRes.data.rows ?? []).map((r) => ({
+    const queries: GscQueryRow[] = (queriesRes.data.rows ?? []).map((r) => ({
       query: (r.keys?.[0] ?? "") as string,
       clicks: Math.round(r.clicks ?? 0),
       impressions: Math.round(r.impressions ?? 0),
       position: r.position ?? 0,
       ctr: r.ctr ?? 0,
     }));
-    log(TASK, `GSC top queries: ${topQueries.length}`);
+    topQueries = topByImpressions(queries);
+    log(TASK, `GSC queries: ${queries.length}; top ${topQueries.length} by impressions`);
   } catch (err) {
     logError(TASK, "Failed to fetch GSC top queries:", err);
   }
@@ -195,5 +203,6 @@ export async function fetchGscData(): Promise<GscData> {
     dailySeries,
     topPages,
     topQueries,
+    pagesWithImpressions,
   };
 }

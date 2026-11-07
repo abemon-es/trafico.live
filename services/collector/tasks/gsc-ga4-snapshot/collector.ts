@@ -114,6 +114,7 @@ export async function run(prisma: PrismaClient): Promise<void> {
   await heartbeat(prisma, TASK, degraded ? "partial" : "ok", {
     gscClicks30d: gscData.clicks30d,
     gscImpressions30d: gscData.impressions30d,
+    gscPages30d: gscData.pagesWithImpressions,
     ga4Sessions30d: ga4Data.sessions30d,
     ga4Users30d: ga4Data.users30d,
     ga4FailedSections: ga4Data.failedSections,
