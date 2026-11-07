@@ -91,6 +91,7 @@
     "test:no-route-loading": "tsx tests/no-route-loading.test.ts",
     "test:portugal-fuel-districts": "tsx tests/portugal-fuel-districts.test.ts",
     "test:incident-deactivation": "tsx tests/incident-deactivation.test.ts",
+    "test:gsc-top": "tsx tests/gsc-top-impressions.test.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
