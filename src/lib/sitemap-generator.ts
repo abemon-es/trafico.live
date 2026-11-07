@@ -9,6 +9,7 @@ import { provinceSlug, slugify } from "@/lib/geo/slugify";
 import { PROVINCE_SLUG_TO_COMMUNITY_SLUG } from "@/lib/geo/province-slugs";
 import { priorityEntries } from "@/lib/sitemap-priority";
 import { evProvincePath } from "@/lib/geo/ev-province";
+import { portSlug } from "@/lib/maritimo/port-slug";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
@@ -1455,29 +1456,32 @@ async function coreSitemap(): Promise<SitemapEntry[]> {
       priority: 0.85,
     }));
 
-  // Maritime port detail pages
+  // Port pages (/maritimo/puertos/<slug>) named by maritime stations. The page
+  // resolves the slug with portSlug(), so the sitemap builds it the same way
+  // (its own slugging listed ten 404s, «L'Escala» → /lescala). Ports with a
+  // SpanishPort entry are in the spanish-port shard, under the same URL.
   let maritimePortPages: SitemapEntry[] = [];
   try {
-    const uniquePorts = await prisma.maritimeStation.findMany({
-      select: { port: true },
-      distinct: ["port"],
-      where: { port: { not: null } },
-      orderBy: { port: "asc" },
-    });
-    maritimePortPages = uniquePorts
-      .filter((p) => p.port)
-      .map((p) => ({
-        url: `${BASE_URL}/maritimo/puertos/${encodeURIComponent(
-          p
-            .port!.toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .replace(/\s+/g, "-")
-            .replace(/[^a-z0-9-]/g, "")
-        )}`,
+    const [uniquePorts, spanishPorts] = await Promise.all([
+      prisma.maritimeStation.findMany({
+        select: { port: true },
+        distinct: ["port"],
+        where: { port: { not: null } },
+        orderBy: { port: "asc" },
+      }),
+      prisma.spanishPort.findMany({ select: { slug: true } }),
+    ]);
+    const listed = new Set(spanishPorts.map((p) => p.slug));
+    maritimePortPages = uniquePorts.flatMap((p) => {
+      const slug = p.port ? portSlug(p.port) : "";
+      if (!slug || listed.has(slug)) return [];
+      listed.add(slug);
+      return [{
+        url: `${BASE_URL}/maritimo/puertos/${slug}`,
         changeFrequency: "weekly" as const,
         priority: 0.6,
-      }));
+      }];
+    });
   } catch {
     // DB unavailable — skip dynamic port pages
   }
@@ -2015,7 +2019,8 @@ async function aircraftSitemap(shardIndex: number): Promise<SitemapEntry[]> {
 }
 
 // ---------------------------------------------------------------------------
-// Spanish port sitemap shards — /maritimo/puerto/[slug]
+// Spanish port sitemap shards — /maritimo/puertos/[slug] for each SpanishPort
+// (the page takes a SpanishPort with or without maritime stations)
 // ---------------------------------------------------------------------------
 
 async function spanishPortSitemap(shardIndex: number): Promise<SitemapEntry[]> {
@@ -2027,7 +2032,7 @@ async function spanishPortSitemap(shardIndex: number): Promise<SitemapEntry[]> {
       orderBy: { slug: "asc" },
     });
     return ports.map((p) => ({
-      url: `${BASE_URL}/maritimo/puerto/${p.slug}`,
+      url: `${BASE_URL}/maritimo/puertos/${p.slug}`,
       changeFrequency: "daily" as const,
       priority: 0.6,
     }));
