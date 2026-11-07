@@ -24,7 +24,10 @@ import { log } from "../../shared/utils.js";
 const TASK = "content-fingerprints";
 
 /** Keys are `<family>:<id>`; src/lib/seo/lastmod.ts reads the same families. */
-export const FAMILIES = ["camera", "camera-road", "camera-province", "radar", "radar-road", "radar-province", "gas-station", "ev-charger"] as const;
+export const FAMILIES = [
+  "camera", "camera-road", "camera-province", "radar", "radar-road", "radar-province", "gas-station", "ev-charger",
+  "maritime-station", "municipality", "postal-code", "railway-station", "railway-line", "spanish-port",
+] as const;
 
 /** A key not produced for this long (its page left the sitemap) is forgotten. */
 export const FORGET_AFTER_DAYS = 30;
@@ -105,6 +108,21 @@ ORDER BY family`;
  * - ev-charger:<id>      /carga-ev/punto/<id>: the point, where it is, its power,
  *                        connector types, operator, network, hours and payment
  *                        (lastUpdated is stamped on every row each run)
+ * - maritime-station:<id> /maritimo/combustible/<id>: the station, its port and
+ *                        the 4 prices it prints (never lastPriceUpdate)
+ * - municipality:<code>  /espana/<community>/<province>/<slug>: the municipality
+ *                        and the gas hash of each of its stations, matched the
+ *                        way municipalityCodeForms does (5 digits or stripped)
+ * - postal-code:<cp>     /codigo-postal/<cp>: the gas hash of its stations and
+ *                        how many charging points it has (not the province
+ *                        average, a daily statistic)
+ * - railway-station:<slug> /trenes/estacion/<slug>: the station and the lines
+ *                        whose stops name it (alerts and trains are live)
+ * - railway-line:<slug>  /trenes/linea/<slug>: the routes under that slug with
+ *                        their stops and shape id (not the GeoJSON, alerts or
+ *                        fleet)
+ * - spanish-port:<slug>  /maritimo/puerto/<slug>: the port's card (port calls
+ *                        are live, ferries are found by distance)
  */
 export const UPSERT_FINGERPRINTS = Prisma.sql`
 WITH
@@ -148,6 +166,83 @@ ev AS (
   FROM "EVCharger" WHERE "isPublic"
 ),
 ${GAS_CTE},
+mar AS (
+  SELECT id,
+         md5(concat_ws('|', ${norm("name")}, ${norm("port")}, ${norm("locality")}, ${norm('"provinceName"')},
+                     latitude::text || ',' || longitude::text, ${norm("schedule")}, "is24h"::text,
+                     coalesce("priceGasoleoA"::text, ''),
+                     coalesce("priceGasoleoB"::text, ''),
+                     coalesce("priceGasolina95E5"::text, ''),
+                     coalesce("priceGasolina98E5"::text, ''))) AS h
+  FROM "MaritimeStation"
+),
+mu AS (
+  SELECT code,
+         concat_ws('|', code, name, slug, "provinceCode", coalesce(population::text, ''),
+                   coalesce(area::text, ''), coalesce(latitude::text, ''), coalesce(longitude::text, '')) AS line
+  FROM "Municipality"
+),
+mun AS (
+  SELECT m.code,
+         md5(m.line || E'\n' || coalesce(string_agg(g.h, E'\n' ORDER BY g.id), '')) AS h
+  FROM mu m
+  LEFT JOIN "GasStation" s ON s."municipalityCode" IN (m.code, ltrim(m.code, '0'))
+  LEFT JOIN gas g ON g.id = s.id
+  GROUP BY m.code, m.line
+),
+evc AS (
+  SELECT "postalCode" AS cp, count(*)::text AS n FROM "EVCharger" WHERE "postalCode" IS NOT NULL GROUP BY "postalCode"
+),
+pc AS (
+  SELECT s."postalCode" AS cp,
+         md5(string_agg(g.h, E'\n' ORDER BY g.id) || E'\n' || coalesce(max(evc.n), '0')) AS h
+  FROM "GasStation" s
+  JOIN gas g ON g.id = s.id
+  LEFT JOIN evc ON evc.cp = s."postalCode"
+  WHERE s."postalCode" IS NOT NULL
+  GROUP BY s."postalCode"
+),
+rr AS (
+  SELECT "routeId", slug, "stopIds", "stopNames",
+         concat_ws('|', "routeId", coalesce(slug, ''), coalesce("shortName", ''), coalesce("longName", ''),
+                   coalesce(brand, ''), "serviceType"::text, coalesce(color, ''), coalesce("textColor", ''),
+                   coalesce("originName", ''), coalesce("destName", ''), coalesce(network, ''),
+                   coalesce("stopsCount"::text, ''), coalesce("tripCount"::text, ''), coalesce("shapeId", '')) AS line
+  FROM "RailwayRoute"
+),
+rstop AS (
+  SELECT DISTINCT rr.line, u.name FROM rr, unnest(rr."stopNames") AS u(name)
+),
+rs0 AS (
+  SELECT id, slug, name,
+         concat_ws('|', "stopId", coalesce(code, ''), name, latitude::text || ',' || longitude::text,
+                   coalesce("parentId", ''), "locationType"::text, coalesce("platformCode", ''),
+                   coalesce(province, ''), coalesce("provinceName", ''), coalesce(community, ''),
+                   coalesce("communityName", ''), coalesce(municipality, ''), coalesce(network, ''),
+                   coalesce((SELECT string_agg(t::text, ',' ORDER BY t::text) FROM unnest("serviceTypes") t), ''),
+                   coalesce(wheelchair::text, '')) AS line
+  FROM "RailwayStation" WHERE slug IS NOT NULL
+),
+rst AS (
+  SELECT st.slug,
+         md5(st.line || E'\n' || coalesce(string_agg(rs.line, E'\n' ORDER BY rs.line), '')) AS h
+  FROM rs0 st
+  LEFT JOIN rstop rs ON rs.name = st.name
+  GROUP BY st.id, st.slug, st.line
+),
+rln AS (
+  SELECT slug,
+         md5(string_agg(concat_ws('|', line, array_to_string("stopIds", ','), array_to_string("stopNames", ',')),
+                        E'\n' ORDER BY "routeId")) AS h
+  FROM rr WHERE slug IS NOT NULL
+  GROUP BY slug
+),
+prt AS (
+  SELECT slug,
+         md5(concat_ws('|', name, type::text, latitude::text || ',' || longitude::text, coalesce(province, ''),
+                       coalesce("provinceName", ''), coalesce("coastalZone", ''), "stationCount"::text)) AS h
+  FROM "SpanishPort"
+),
 page (key, hash) AS (
   SELECT 'camera:' || id, md5(line || '|' || at) FROM cam
   UNION ALL
@@ -169,6 +264,18 @@ page (key, hash) AS (
   SELECT 'gas-station:' || id, h FROM gas
   UNION ALL
   SELECT 'ev-charger:' || id, md5(line || '|' || at) FROM ev
+  UNION ALL
+  SELECT 'maritime-station:' || id, h FROM mar
+  UNION ALL
+  SELECT 'municipality:' || code, h FROM mun
+  UNION ALL
+  SELECT 'postal-code:' || cp, h FROM pc
+  UNION ALL
+  SELECT 'railway-station:' || slug, h FROM rst
+  UNION ALL
+  SELECT 'railway-line:' || slug, h FROM rln
+  UNION ALL
+  SELECT 'spanish-port:' || slug, h FROM prt
 ),
 ${UPSERT_TAIL}`;
 

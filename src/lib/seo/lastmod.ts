@@ -13,7 +13,10 @@
 import type { PrismaClient } from "@prisma/client";
 
 /** The collector task's FAMILIES; tests/sitemap-lastmod.test.ts checks they match. */
-export const FINGERPRINT_FAMILIES = ["camera", "camera-road", "camera-province", "radar", "radar-road", "radar-province", "gas-station", "ev-charger"] as const;
+export const FINGERPRINT_FAMILIES = [
+  "camera", "camera-road", "camera-province", "radar", "radar-road", "radar-province", "gas-station", "ev-charger",
+  "maritime-station", "municipality", "postal-code", "railway-station", "railway-line", "spanish-port",
+] as const;
 export type FingerprintFamily = (typeof FINGERPRINT_FAMILIES)[number];
 
 export function fingerprintKey(family: FingerprintFamily, id: string): string {
