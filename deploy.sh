@@ -27,10 +27,29 @@ else
   echo "WARNING: no DATABASE_URL in $ENV_FILE — DB-backed pages will prerender empty"
 fi
 
+# Public build-time values. Next inlines NEXT_PUBLIC_* into the client bundle
+# at build time, and the env file is not in the build context (.dockerignore),
+# so a value that is only in the env file never reaches the browser. Only
+# public values go here (the Turnstile site key is printed in the page HTML);
+# anything secret is a BuildKit secret, like DATABASE_URL above.
+env_value() {
+  local v
+  v="$(grep -E "^$1=" "$ENV_FILE" 2>/dev/null | head -1 | cut -d= -f2- | tr -d '\r' || true)"
+  v="${v%\"}"; v="${v#\"}"; v="${v%\'}"; v="${v#\'}"
+  printf '%s' "$v"
+}
+TURNSTILE_SITE_KEY="$(env_value NEXT_PUBLIC_TURNSTILE_SITE_KEY)"
+if [ -n "$TURNSTILE_SITE_KEY" ]; then
+  echo "Build will include NEXT_PUBLIC_TURNSTILE_SITE_KEY from $ENV_FILE"
+else
+  echo "WARNING: no NEXT_PUBLIC_TURNSTILE_SITE_KEY in $ENV_FILE — contact forms will render without the Turnstile widget"
+fi
+
 echo "Building $IMAGE..."
 DOCKER_BUILDKIT=1 docker build --memory 4096m --memory-swap 4096m \
   --secret id=database_url,src="$DBURL_FILE" \
   --build-arg GIT_COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)" \
+  --build-arg NEXT_PUBLIC_TURNSTILE_SITE_KEY="$TURNSTILE_SITE_KEY" \
   -f Dockerfile -t "$IMAGE" .
 
 # ─── Zero-downtime swap ───────────────────────────────────────────────────────
