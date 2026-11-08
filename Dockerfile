@@ -25,6 +25,12 @@ RUN if [ -n "$LINT_RATCHET_SKIP" ]; then \
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
+# Public values Next inlines into the client bundle at build time. deploy.sh
+# passes them from the server env file (not in the build context). Public by
+# design: never put a secret in an ARG, it stays in the image history.
+ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=$NEXT_PUBLIC_TURNSTILE_SITE_KEY
+
 # Build with a real DATABASE_URL when deploy.sh supplies one as a BuildKit
 # secret, so the ~177 pages that query Postgres prerender with actual data
 # instead of baking empty HTML into the image (see deploy.sh for the full
