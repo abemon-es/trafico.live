@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { CheckCircle2, AlertCircle, Loader2, Send } from "lucide-react";
+import Honeypot from "@/components/forms/Honeypot";
+import { useTurnstile } from "@/components/forms/useTurnstile";
+import { trackGenerateLead } from "@/lib/analytics";
 
 const TOPICS = [
   { value: "general", label: "Consulta general" },
@@ -17,26 +20,6 @@ const TOPICS = [
 
 type Status = "idle" | "submitting" | "success" | "error";
 
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (el: HTMLElement, options: TurnstileOptions) => string;
-      remove: (widgetId: string) => void;
-      reset: (widgetId?: string) => void;
-    };
-    onloadTurnstileCallback?: () => void;
-  }
-}
-
-interface TurnstileOptions {
-  sitekey: string;
-  callback: (token: string) => void;
-  "error-callback"?: () => void;
-  "expired-callback"?: () => void;
-  theme?: "light" | "dark" | "auto";
-  language?: string;
-}
-
 interface ContactFormProps {
   turnstileSiteKey: string | null;
 }
@@ -47,58 +30,13 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
   const [email, setEmail] = useState("");
   const [empresa, setEmpresa] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [website, setWebsite] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
-  const [turnstileToken, setTurnstileToken] = useState<string>("");
+  const turnstile = useTurnstile(turnstileSiteKey);
   // false when the server accepted the message but has no way to deliver it
   const [delivered, setDelivered] = useState(true);
-
-  const turnstileContainerRef = useRef<HTMLDivElement>(null);
-  const widgetIdRef = useRef<string | null>(null);
-
-  // Load Turnstile script + render widget when site key is provided
-  useEffect(() => {
-    if (!turnstileSiteKey) return;
-
-    const TURNSTILE_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit";
-
-    const renderWidget = () => {
-      if (!turnstileContainerRef.current || !window.turnstile) return;
-      try {
-        widgetIdRef.current = window.turnstile.render(turnstileContainerRef.current, {
-          sitekey: turnstileSiteKey,
-          callback: (token: string) => setTurnstileToken(token),
-          "error-callback": () => setTurnstileToken(""),
-          "expired-callback": () => setTurnstileToken(""),
-          theme: "auto",
-          language: "es",
-        });
-      } catch (e) {
-        console.error("[turnstile] render failed", e);
-      }
-    };
-
-    if (window.turnstile) {
-      renderWidget();
-    } else {
-      window.onloadTurnstileCallback = renderWidget;
-      const script = document.createElement("script");
-      script.src = TURNSTILE_SRC;
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-    }
-
-    return () => {
-      if (widgetIdRef.current && window.turnstile) {
-        try {
-          window.turnstile.remove(widgetIdRef.current);
-        } catch {
-          // ignore
-        }
-      }
-    };
-  }, [turnstileSiteKey]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -117,7 +55,9 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
           empresa: empresa.trim(),
           topic,
           mensaje: mensaje.trim(),
-          turnstileToken,
+          consentPrivacy: consent,
+          turnstileToken: turnstile.token,
+          website,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; delivered?: boolean };
@@ -125,22 +65,19 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
         throw new Error(data.error || "No se pudo enviar el mensaje");
       }
       setDelivered(data.delivered !== false);
+      trackGenerateLead("contacto");
       setStatus("success");
       // Reset form for next submission
       setNombre("");
       setEmail("");
       setEmpresa("");
       setMensaje("");
+      setConsent(false);
       setTopic("general");
-      setTurnstileToken("");
-      if (widgetIdRef.current && window.turnstile) {
-        try {
-          window.turnstile.reset(widgetIdRef.current);
-        } catch {
-          // ignore
-        }
-      }
+      turnstile.reset();
     } catch (err) {
+      // A Turnstile token is single-use: the server already spent this one.
+      turnstile.reset();
       setStatus("error");
       setErrorMsg(err instanceof Error ? err.message : "Error desconocido");
     }
@@ -178,15 +115,17 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
     );
   }
 
-  const turnstileReady = !turnstileSiteKey || Boolean(turnstileToken);
   const formReady =
     nombre.trim().length >= 2 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) &&
     mensaje.trim().length >= 20 &&
-    turnstileReady;
+    consent &&
+    turnstile.ready;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+    <form onSubmit={handleSubmit} className="relative space-y-5" noValidate>
+      <Honeypot value={website} onChange={setWebsite} />
+
       {/* Topic */}
       <div>
         <label htmlFor="topic" className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
@@ -279,10 +218,29 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
         />
       </div>
 
+      {/* Privacidad */}
+      <div className="flex items-start gap-3">
+        <input
+          id="consent"
+          type="checkbox"
+          checked={consent}
+          onChange={(e) => setConsent(e.target.checked)}
+          required
+          className="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-gray-700 text-tl-600 focus:ring-tl-500"
+        />
+        <label htmlFor="consent" className="text-sm text-gray-700 dark:text-gray-300 leading-snug">
+          He leído y acepto la{" "}
+          <Link href="/privacidad" className="text-tl-600 hover:underline dark:text-tl-400">
+            política de privacidad
+          </Link>
+          . <span className="text-rose-500">*</span>
+        </label>
+      </div>
+
       {/* Turnstile */}
       {turnstileSiteKey ? (
         <div>
-          <div ref={turnstileContainerRef} className="cf-turnstile" />
+          <div ref={turnstile.containerRef} className="cf-turnstile" />
         </div>
       ) : null}
 
@@ -297,11 +255,7 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
       {/* Submit */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          Al enviar aceptas nuestra{" "}
-          <Link href="/privacidad" className="text-tl-600 hover:underline dark:text-tl-400">
-            política de privacidad
-          </Link>
-          .
+          Usaremos tus datos solo para responderte.
         </p>
         <button
           type="submit"

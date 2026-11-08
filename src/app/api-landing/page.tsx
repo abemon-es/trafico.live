@@ -544,7 +544,7 @@ export default function ApiLandingPage() {
           <SectionReveal delay={0.1}>
             {CONTACT_FORMS_ENABLED ? (
               <div className="bg-background rounded-2xl border border-tl-200 dark:border-tl-800 p-8 shadow-sm">
-                <RequestAccessForm />
+                <RequestAccessForm turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || null} />
               </div>
             ) : (
               <ContactByEmail subject="Acceso a la API de trafico.live" />

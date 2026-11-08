@@ -7,7 +7,9 @@
  * - Validación servidor-side de campos + email
  * - Verificación opcional Cloudflare Turnstile (si TURNSTILE_SECRET_KEY presente)
  * - Rate limit: 5 peticiones/hora por IP (Redis o memoria)
- * - Envío via SES (helper compartido)
+ * - Honeypot y casilla de privacidad obligatoria
+ * - Envío via SES (helper compartido); copia a BMC One después de responder
+ * - Sin SES: la copia a BMC One es la entrega (src/lib/contact-delivery.ts)
  * - Reply-To = email del remitente (operador puede responder con un click)
  */
 
@@ -17,6 +19,10 @@ import { createLimiter } from "@/lib/limiter";
 import { reportApiError } from "@/lib/api-error";
 import { getClientIP } from "@/lib/api-utils";
 import { isSESConfigured, sendEmail } from "@/lib/email/ses";
+import { INLINE_RETRY, forwardToBmc, isBmcForwardConfigured, type ForwardInput } from "@/lib/bmc-forms-forward";
+import { forwardToBmcAfterResponse } from "@/lib/bmc-forms-forward-after";
+import { deliverContact } from "@/lib/contact-delivery";
+import { honeypotTripped, verifyTurnstile } from "@/lib/form-guards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,6 +46,8 @@ interface ContactPayload {
   mensaje: string;
   turnstileToken?: string;
 }
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 // ---------------------------------------------------------------------------
 // Rate limiter — 5 peticiones por hora por IP (más permisivo que /api/contact
@@ -86,36 +94,11 @@ function validate(body: unknown):
   if (mensaje.length < 20 || mensaje.length > 5000) {
     return { ok: false, error: "El mensaje debe tener entre 20 y 5000 caracteres" };
   }
+  if (b.consentPrivacy !== true) {
+    return { ok: false, error: "Debes aceptar la política de privacidad" };
+  }
 
   return { ok: true, data: { nombre, email, empresa, topic, mensaje, turnstileToken } };
-}
-
-// ---------------------------------------------------------------------------
-// Cloudflare Turnstile
-// ---------------------------------------------------------------------------
-
-async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
-  const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret) return true; // no configurado → modo desarrollo/setup
-  if (!token) return false;
-
-  try {
-    const form = new URLSearchParams();
-    form.set("secret", secret);
-    form.set("response", token);
-    if (ip) form.set("remoteip", ip);
-    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: form.toString(),
-      signal: AbortSignal.timeout(8000),
-    });
-    const json = (await res.json()) as { success?: boolean };
-    return Boolean(json.success);
-  } catch (error) {
-    reportApiError(error, "contacto-general] Turnstile verification failed");
-    return false;
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -210,13 +193,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: false, error: "JSON inválido" }, { status: 400 });
   }
 
+  // Honeypot: answered like a success, nothing stored or sent.
+  if (honeypotTripped(json)) {
+    return NextResponse.json({ ok: true });
+  }
+
   const v = validate(json);
   if (!v.ok) {
     return NextResponse.json({ ok: false, error: v.error }, { status: 400 });
   }
 
   // Turnstile
-  const turnstileOk = await verifyTurnstile(v.data.turnstileToken ?? "", ip);
+  const turnstileOk = await verifyTurnstile(v.data.turnstileToken ?? "", ip, "contacto-general");
   if (!turnstileOk) {
     return NextResponse.json(
       { ok: false, error: "Verificación anti-bot fallida. Recarga la página e inténtalo de nuevo." },
@@ -228,36 +216,65 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const topicLabel = TOPIC_LABELS[v.data.topic];
   const userAgent = request.headers.get("user-agent");
 
-  if (!isSESConfigured()) {
-    // No sender: refuse, and say where to write. Until 2026-10-22 this branch
-    // answered «recibido», sent nothing and wrote the whole message to the log.
-    // Nothing from the request is logged; the event carries no personal data.
-    reportApiError(
-      new Error("Contact form refused: no email sender configured"),
-      "contacto-general",
-      { form: "contacto-general", topic: v.data.topic }
-    );
-    return NextResponse.json(
-      { ok: false, error: "El formulario no está disponible. Escríbenos a hola@trafico.live" },
-      { status: 503 }
-    );
-  }
+  const forwardInput: ForwardInput = {
+    name: v.data.nombre,
+    email: v.data.email,
+    company: v.data.empresa || undefined,
+    subject: `Contacto trafico.live: ${topicLabel}`,
+    message: v.data.mensaje,
+    consentPrivacy: true,
+    language: "es",
+    page: `${BASE_URL}/sobre/contacto`,
+  };
 
-  try {
-    await sendEmail({
-      to: "hola@trafico.live",
-      subject: `[trafico.live · ${topicLabel}] ${v.data.nombre}`,
-      html: internalEmailHtml(v.data, { ip, userAgent }),
-      replyTo: v.data.email,
-      tags: { type: "contacto-general", topic: v.data.topic },
-    });
-  } catch (error) {
-    reportApiError(error, "contacto-general] Failed to send");
-    return NextResponse.json(
-      { ok: false, error: "Error al enviar. Inténtalo más tarde o escribe directamente a hola@trafico.live" },
-      { status: 500 }
-    );
-  }
+  const result = await deliverContact({
+    sesConfigured: isSESConfigured(),
+    forwardConfigured: isBmcForwardConfigured(),
+    sendEmails: async () => {
+      await sendEmail({
+        to: "hola@trafico.live",
+        subject: `[trafico.live · ${topicLabel}] ${v.data.nombre}`,
+        html: internalEmailHtml(v.data, { ip, userAgent }),
+        replyTo: v.data.email,
+        tags: { type: "contacto-general", topic: v.data.topic },
+      });
+    },
+    forwardNow: () => forwardToBmc(forwardInput, {}, INLINE_RETRY),
+    forwardLater: () => forwardToBmcAfterResponse(forwardInput),
+  });
 
-  return NextResponse.json({ ok: true });
+  switch (result.kind) {
+    case "emailed":
+    case "forwarded":
+      return NextResponse.json({ ok: true });
+    case "email-failed":
+      reportApiError(result.error, "contacto-general] Failed to send");
+      return NextResponse.json(
+        { ok: false, error: "Error al enviar. Inténtalo más tarde o escribe directamente a hola@trafico.live" },
+        { status: 500 }
+      );
+    case "forward-failed":
+      // Nothing from the request is logged; only the outcome code.
+      reportApiError(new Error("Contact form: copy to BMC One failed"), "contacto-general", {
+        form: "contacto-general",
+        topic: v.data.topic,
+        code: result.code,
+      });
+      return NextResponse.json(
+        { ok: false, error: "No hemos podido registrar tu mensaje. Inténtalo más tarde o escríbenos a hola@trafico.live" },
+        { status: 503 }
+      );
+    case "no-channel":
+      // No sender and no forwarding: refuse, and say where to write. Nothing
+      // from the request is logged; the event carries no personal data.
+      reportApiError(
+        new Error("Contact form refused: no email sender or forwarding configured"),
+        "contacto-general",
+        { form: "contacto-general", topic: v.data.topic }
+      );
+      return NextResponse.json(
+        { ok: false, error: "El formulario no está disponible. Escríbenos a hola@trafico.live" },
+        { status: 503 }
+      );
+  }
 }

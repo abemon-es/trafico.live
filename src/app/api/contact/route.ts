@@ -2,8 +2,10 @@
  * POST /api/contact
  *
  * Gestiona solicitudes de acceso API desde RequestAccessForm.
- * Envía dos emails vía SES: interno a support@ y auto-respuesta al solicitante.
- * Rate limit: 3 peticiones/hora por IP.
+ * Con SES: email interno a support@ y auto-respuesta al solicitante; copia a
+ * BMC One después de responder. Sin SES: la copia a BMC One es la entrega
+ * (ver src/lib/contact-delivery.ts). Honeypot, Turnstile y casilla de
+ * privacidad obligatoria. Rate limit: 3 peticiones/hora por IP.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -12,6 +14,11 @@ import { createLimiter } from "@/lib/limiter";
 import { reportApiError } from "@/lib/api-error";
 import { getClientIP } from "@/lib/api-utils";
 import { sendEmail, isSESConfigured } from "@/lib/email/ses";
+import { escapeHtml } from "@/lib/html-escape";
+import { INLINE_RETRY, forwardToBmc, isBmcForwardConfigured, type ForwardInput } from "@/lib/bmc-forms-forward";
+import { forwardToBmcAfterResponse } from "@/lib/bmc-forms-forward-after";
+import { deliverContact } from "@/lib/contact-delivery";
+import { honeypotTripped, verifyTurnstile } from "@/lib/form-guards";
 
 // ---------------------------------------------------------------------------
 // Rate limiter — 3 peticiones por hora por IP
@@ -36,7 +43,12 @@ interface ContactPayload {
   company?: string;
   useCase: string;
   source?: string;
+  /** true only if the person ticked the privacy checkbox. */
+  consentPrivacy?: boolean;
+  turnstileToken?: string;
 }
+
+const MAX = { name: 120, email: 200, company: 160, useCase: 5000 } as const;
 
 function internalEmailHtml(data: ContactPayload): string {
   const rows = [
@@ -52,7 +64,7 @@ function internalEmailHtml(data: ContactPayload): string {
       ([label, value]) =>
         `<tr>
           <td style="padding:8px 12px; font-size:13px; color:#6b7280; white-space:nowrap; border-bottom:1px solid #f3f4f6;">${label}</td>
-          <td style="padding:8px 12px; font-size:14px; color:#111827; border-bottom:1px solid #f3f4f6;">${value}</td>
+          <td style="padding:8px 12px; font-size:14px; color:#111827; border-bottom:1px solid #f3f4f6; white-space:pre-wrap;">${escapeHtml(value)}</td>
         </tr>`
     )
     .join("");
@@ -123,7 +135,7 @@ function autoReplyHtml(name: string): string {
         <tr>
           <td style="padding:32px;">
             <h1 style="margin:0 0 8px; font-size:22px; color:#111827; font-weight:700;">
-              Hemos recibido tu solicitud, ${name}
+              Hemos recibido tu solicitud, ${escapeHtml(name)}
             </h1>
             <p style="margin:0 0 20px; font-size:15px; color:#374151; line-height:1.6;">
               Gracias por tu interés en la API de trafico.live. Hemos registrado tu solicitud
@@ -201,18 +213,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
-  const { name, email, company, useCase, source } = body;
+  // Honeypot: answered like a success, nothing stored or sent.
+  if (honeypotTripped(body)) {
+    return NextResponse.json({ ok: true }, { status: 200 });
+  }
+
+  const { name, email, company, useCase, source, consentPrivacy, turnstileToken } = body;
 
   // Validate required fields
   if (
     !name ||
     typeof name !== "string" ||
     !name.trim() ||
+    name.trim().length > MAX.name ||
     !email ||
     typeof email !== "string" ||
+    email.trim().length > MAX.email ||
     !useCase ||
     typeof useCase !== "string" ||
-    !useCase.trim()
+    !useCase.trim() ||
+    useCase.trim().length > MAX.useCase ||
+    (company !== undefined && (typeof company !== "string" || company.trim().length > MAX.company))
   ) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
@@ -223,18 +244,49 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
+  if (consentPrivacy !== true) {
+    return NextResponse.json(
+      { ok: false, error: "Debes aceptar la política de privacidad" },
+      { status: 400 }
+    );
+  }
+
+  const turnstileOk = await verifyTurnstile(
+    typeof turnstileToken === "string" ? turnstileToken : "",
+    ip,
+    "contact"
+  );
+  if (!turnstileOk) {
+    return NextResponse.json(
+      { ok: false, error: "Verificación anti-bot fallida. Recarga la página e inténtalo de nuevo." },
+      { status: 403 }
+    );
+  }
+
   const payload: ContactPayload = {
     name: name.trim(),
     email: email.trim().toLowerCase(),
     company: company?.trim() || undefined,
     useCase: useCase.trim(),
-    source: source?.trim() || "api-landing",
+    source: (typeof source === "string" && source.trim().slice(0, 40)) || "api-landing",
   };
 
-  // Send emails (fire-and-forget on failure — never leak server errors to client)
-  if (isSESConfigured()) {
-    try {
-      await Promise.allSettled([
+  const forwardInput: ForwardInput = {
+    name: payload.name,
+    email: payload.email,
+    company: payload.company,
+    subject: "Solicitud de acceso a la API",
+    message: payload.useCase,
+    consentPrivacy: true,
+    language: "es",
+    page: `${BASE_URL}/api-landing`,
+  };
+
+  const result = await deliverContact({
+    sesConfigured: isSESConfigured(),
+    forwardConfigured: isBmcForwardConfigured(),
+    sendEmails: async () => {
+      const [internal] = await Promise.allSettled([
         sendEmail({
           to: "support@trafico.live",
           subject: `Nueva solicitud de acceso API — ${payload.name}`,
@@ -249,25 +301,45 @@ export async function POST(request: NextRequest) {
           tags: { type: "access-request-reply" },
         }),
       ]);
-    } catch (error) {
-      reportApiError(error, "contact] Failed to send access request emails");
-    }
-  } else {
-    // No sender: refuse, and say where to write. Until 2026-10-22 this branch
-    // answered «registered», sent nothing and wrote the whole request (name,
-    // email, message) to the log. Nothing from the request is logged; the
-    // event below carries no personal data and exists so someone notices.
-    reportApiError(
-      new Error("Contact form refused: no email sender configured"),
-      "contact",
-      { form: "api-access-request" }
-    );
-    return NextResponse.json(
-      { ok: false, error: "El formulario no está disponible. Escríbenos a hola@trafico.live" },
-      { status: 503 }
-    );
-  }
+      // The auto-reply is a courtesy; the request is delivered when the team gets it.
+      if (internal.status === "rejected") throw internal.reason;
+    },
+    forwardNow: () => forwardToBmc(forwardInput, {}, INLINE_RETRY),
+    forwardLater: () => forwardToBmcAfterResponse(forwardInput),
+  });
 
-  // Always return generic success (never leak details)
-  return NextResponse.json({ ok: true }, { status: 200 });
+  switch (result.kind) {
+    case "emailed":
+    case "forwarded":
+      // Generic success (never leak details)
+      return NextResponse.json({ ok: true }, { status: 200 });
+    case "email-failed":
+      reportApiError(result.error, "contact] Failed to send access request email");
+      return NextResponse.json(
+        { ok: false, error: "Error al enviar. Inténtalo más tarde o escríbenos a hola@trafico.live" },
+        { status: 500 }
+      );
+    case "forward-failed":
+      // Nothing from the request is logged; only the outcome code.
+      reportApiError(new Error("Contact form: copy to BMC One failed"), "contact", {
+        form: "api-access-request",
+        code: result.code,
+      });
+      return NextResponse.json(
+        { ok: false, error: "No hemos podido registrar tu solicitud. Inténtalo más tarde o escríbenos a hola@trafico.live" },
+        { status: 503 }
+      );
+    case "no-channel":
+      // No sender and no forwarding: refuse, and say where to write. Nothing
+      // from the request is logged; the event carries no personal data.
+      reportApiError(
+        new Error("Contact form refused: no email sender or forwarding configured"),
+        "contact",
+        { form: "api-access-request" }
+      );
+      return NextResponse.json(
+        { ok: false, error: "El formulario no está disponible. Escríbenos a hola@trafico.live" },
+        { status: 503 }
+      );
+  }
 }
