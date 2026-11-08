@@ -97,11 +97,14 @@ test("both routes: honeypot, consent, Turnstile and the shared delivery", () => 
     const src = read(f);
     assert.match(src, /honeypotTripped\(/, `${f}: honeypot`);
     assert.match(src, /consentPrivacy !== true/, `${f}: consent required`);
-    assert.match(src, /verifyTurnstile\(/, `${f}: Turnstile`);
+    assert.match(src, /checkTurnstile\(/, `${f}: Turnstile`);
+    assert.match(src, /turnstile === "misconfigured"[\s\S]{0,200}status: 503/, `${f}: missing Turnstile secret → 503, not «received»`);
     assert.match(src, /deliverContact\(/, `${f}: shared delivery`);
     assert.match(src, /forwardToBmc\(forwardInput, \{\}, INLINE_RETRY\)/, `${f}: inline copy when it is the delivery`);
     assert.ok(!/console\.log\(/.test(src), `${f}: nothing from the request goes to the log`);
   }
+  assert.match(read("src/app/api/contact/route.ts"), /entryPoint: "api_access"/);
+  assert.match(read("src/app/api/contacto/general/route.ts"), /entryPoint: "contacto"/);
   // The access-request email interpolates what people typed: escaped.
   assert.match(read("src/app/api/contact/route.ts"), /\$\{escapeHtml\(value\)\}/);
 });

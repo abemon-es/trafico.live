@@ -76,7 +76,19 @@ test("201: header, envelope and contract fields; no Origin", async () => {
   assert.equal(body.page, "https://trafico.live/sobre/contacto");
   assert.deepEqual(Object.keys(body.fields).sort(), ["company", "consentPrivacy", "email", "message", "name", "subject"]);
   assert.equal(body.fields.consentPrivacy, true);
+  assert.equal(body.entryPoint, undefined, "optional: the platform defaults to contacto");
   assert.equal(h.logs.length, 0);
+});
+
+test("entryPoint goes at the root of the envelope, never inside fields", async () => {
+  for (const entryPoint of ["api_access", "contacto"] as const) {
+    __resetForwardState();
+    const h = harness([res(201, { ok: true, ref: "TL-7K4Q2M" })]);
+    await forwardToBmc({ ...INPUT, entryPoint }, h.deps);
+    const body = JSON.parse(h.calls[0].init.body as string);
+    assert.equal(body.entryPoint, entryPoint);
+    assert.equal(body.fields.entryPoint, undefined);
+  }
 });
 
 test("400: not retried, logs only field names and the real attempt count", async () => {

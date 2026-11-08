@@ -39,6 +39,8 @@ export interface ForwardInput {
   language?: "es" | "en" | "pt";
   /** URL http(s) de la página del formulario (fija por ruta, no viene del cliente). */
   page?: string;
+  /** Punto de entrada (raíz del sobre); la plataforma lo guarda como canal web:<valor>. */
+  entryPoint?: "api_access" | "contacto";
 }
 
 export type ForwardOutcome =
@@ -140,6 +142,7 @@ export async function forwardToBmc(
     const body = JSON.stringify({
       language: input.language ?? "es",
       ...(input.page ? { page: input.page } : {}),
+      ...(input.entryPoint ? { entryPoint: input.entryPoint } : {}),
       fields,
     });
     const submittedNames = safeNames(Object.keys(fields));

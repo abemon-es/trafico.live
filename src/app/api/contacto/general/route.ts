@@ -22,7 +22,7 @@ import { isSESConfigured, sendEmail } from "@/lib/email/ses";
 import { INLINE_RETRY, forwardToBmc, isBmcForwardConfigured, type ForwardInput } from "@/lib/bmc-forms-forward";
 import { forwardToBmcAfterResponse } from "@/lib/bmc-forms-forward-after";
 import { deliverContact } from "@/lib/contact-delivery";
-import { honeypotTripped, verifyTurnstile } from "@/lib/form-guards";
+import { checkTurnstile, honeypotTripped } from "@/lib/form-guards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -204,8 +204,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   // Turnstile
-  const turnstileOk = await verifyTurnstile(v.data.turnstileToken ?? "", ip, "contacto-general");
-  if (!turnstileOk) {
+  const turnstile = await checkTurnstile(v.data.turnstileToken ?? "", ip, {
+    onError: (error) => reportApiError(error, "contacto-general] Turnstile"),
+  });
+  if (turnstile === "misconfigured") {
+    return NextResponse.json(
+      { ok: false, error: "El formulario no está disponible. Escríbenos a hola@trafico.live" },
+      { status: 503 }
+    );
+  }
+  if (turnstile === "failed") {
     return NextResponse.json(
       { ok: false, error: "Verificación anti-bot fallida. Recarga la página e inténtalo de nuevo." },
       { status: 403 }
@@ -225,6 +233,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     consentPrivacy: true,
     language: "es",
     page: `${BASE_URL}/sobre/contacto`,
+    entryPoint: "contacto",
   };
 
   const result = await deliverContact({

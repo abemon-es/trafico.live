@@ -18,7 +18,7 @@ import { escapeHtml } from "@/lib/html-escape";
 import { INLINE_RETRY, forwardToBmc, isBmcForwardConfigured, type ForwardInput } from "@/lib/bmc-forms-forward";
 import { forwardToBmcAfterResponse } from "@/lib/bmc-forms-forward-after";
 import { deliverContact } from "@/lib/contact-delivery";
-import { honeypotTripped, verifyTurnstile } from "@/lib/form-guards";
+import { checkTurnstile, honeypotTripped } from "@/lib/form-guards";
 
 // ---------------------------------------------------------------------------
 // Rate limiter — 3 peticiones por hora por IP
@@ -251,12 +251,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const turnstileOk = await verifyTurnstile(
-    typeof turnstileToken === "string" ? turnstileToken : "",
-    ip,
-    "contact"
-  );
-  if (!turnstileOk) {
+  const turnstile = await checkTurnstile(typeof turnstileToken === "string" ? turnstileToken : "", ip, {
+    onError: (error) => reportApiError(error, "contact] Turnstile"),
+  });
+  if (turnstile === "misconfigured") {
+    return NextResponse.json(
+      { ok: false, error: "El formulario no está disponible. Escríbenos a hola@trafico.live" },
+      { status: 503 }
+    );
+  }
+  if (turnstile === "failed") {
     return NextResponse.json(
       { ok: false, error: "Verificación anti-bot fallida. Recarga la página e inténtalo de nuevo." },
       { status: 403 }
@@ -280,6 +284,7 @@ export async function POST(request: NextRequest) {
     consentPrivacy: true,
     language: "es",
     page: `${BASE_URL}/api-landing`,
+    entryPoint: "api_access",
   };
 
   const result = await deliverContact({

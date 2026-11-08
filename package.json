@@ -40,7 +40,7 @@
     "test:transit-gtfs": "tsx tests/transit-gtfs-fetch.test.ts",
     "test:safe-unzip": "tsx tests/safe-unzip.test.ts",
     "test:estrecho": "tsx tests/estrecho-hoy.test.ts",
-    "test:contact-leads": "tsx tests/bmc-forms-forward.test.ts && tsx tests/contact-delivery.test.ts",
+    "test:contact-leads": "tsx tests/bmc-forms-forward.test.ts && tsx tests/contact-delivery.test.ts && tsx tests/form-guards.test.ts",
     "test:ferry-terminals": "tsx tests/ferry-terminals.test.ts",
     "test:ferry-dates": "tsx tests/ferry-service-dates.test.ts",
     "test:carga-ev-provincia": "tsx tests/carga-ev-provincia.test.ts",
