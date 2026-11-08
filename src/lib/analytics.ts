@@ -31,6 +31,18 @@ export function trackSearch(query: string, resultCount: number, category?: strin
   });
 }
 
+/**
+ * A B2B lead the server accepted (2xx): an API access request or a contact
+ * message. The only event BMC One's Digital panel counts as a lead. Fire it
+ * after `res.ok`, never on click. Price alerts and the newsletter are not
+ * leads and keep their own events.
+ */
+export function trackGenerateLead(formLocation: "api_access" | "contacto") {
+  send("generate_lead", {
+    form_location: formLocation,
+  });
+}
+
 /** User created a fuel price alert */
 export function trackPriceAlert(fuelType: string, province?: string) {
   send("price_alert_created", {

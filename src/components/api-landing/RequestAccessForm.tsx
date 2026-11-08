@@ -3,14 +3,19 @@
 /**
  * RequestAccessForm — Formulario de solicitud de acceso a la API.
  * POSTea a /api/contact con validación client-side y manejo de estados.
+ * Casilla de privacidad obligatoria, honeypot y Turnstile (si hay site key).
+ * Tras un 2xx dispara generate_lead (form_location=api_access).
  * Incluye checkbox opcional de newsletter (llama a /api/digest/subscribe).
  */
 
 import Link from "next/link";
 import { useState, useId } from "react";
 import { Loader2, CheckCircle2, AlertCircle, Send } from "lucide-react";
+import Honeypot from "@/components/forms/Honeypot";
+import { useTurnstile } from "@/components/forms/useTurnstile";
 import {
   trackCtaClick as trackCtaClickEvent,
+  trackGenerateLead,
   trackNewsletterSignup as trackNewsletterSignupEvent,
 } from "@/lib/analytics";
 
@@ -22,14 +27,22 @@ interface FormState {
   company: string;
   useCase: string;
   newsletter: boolean;
+  consent: boolean;
 }
 
 type Status = "idle" | "submitting" | "success" | "error";
 
 // ---------------------------------------------------------------- component ---
 
-export default function RequestAccessForm() {
+interface RequestAccessFormProps {
+  turnstileSiteKey?: string | null;
+}
+
+export default function RequestAccessForm({ turnstileSiteKey = null }: RequestAccessFormProps) {
   const formId = useId();
+  const turnstile = useTurnstile(turnstileSiteKey);
+  const [website, setWebsite] = useState("");
+  const [serverError, setServerError] = useState<string>("");
 
   const [form, setForm] = useState<FormState>({
     name: "",
@@ -37,6 +50,7 @@ export default function RequestAccessForm() {
     company: "",
     useCase: "",
     newsletter: false,
+    consent: false,
   });
   const [status, setStatus] = useState<Status>("idle");
   // false when the server registered the request but cannot deliver it
@@ -54,6 +68,7 @@ export default function RequestAccessForm() {
       errors.email = "Introduce un email válido";
     }
     if (!form.useCase.trim()) errors.useCase = "Cuéntanos brevemente tu caso de uso";
+    if (!form.consent) errors.consent = "Debes aceptar la política de privacidad";
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -64,7 +79,14 @@ export default function RequestAccessForm() {
     e.preventDefault();
     if (!validate()) return;
 
+    if (!turnstile.ready) {
+      setServerError("Completa la verificación anti-bot antes de enviar.");
+      setStatus("error");
+      return;
+    }
+
     setStatus("submitting");
+    setServerError("");
     trackCtaClickEvent("request-access", "Solicitar acceso", "api-landing");
 
     try {
@@ -77,21 +99,27 @@ export default function RequestAccessForm() {
           company: form.company.trim() || undefined,
           useCase: form.useCase.trim(),
           source: "api-landing",
+          consentPrivacy: form.consent,
+          turnstileToken: turnstile.token,
+          website,
         }),
       });
 
-      if (res.status === 429) {
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+        delivered?: boolean;
+      };
+
+      if (!res.ok || data.ok === false) {
+        setServerError(res.status === 429 ? "" : data.error || "");
         setStatus("error");
+        turnstile.reset();
         return;
       }
 
-      if (!res.ok) {
-        setStatus("error");
-        return;
-      }
-
-      const data = (await res.json().catch(() => ({}))) as { delivered?: boolean };
       setDelivered(data.delivered !== false);
+      trackGenerateLead("api_access");
 
       // Newsletter opt-in (parallel, non-blocking)
       if (form.newsletter) {
@@ -161,9 +189,11 @@ export default function RequestAccessForm() {
       id="request-access"
       onSubmit={handleSubmit}
       noValidate
-      className="space-y-5"
+      className="relative space-y-5"
       aria-label="Formulario de solicitud de acceso a la API"
     >
+      <Honeypot value={website} onChange={setWebsite} />
+
       {/* Error banner */}
       {status === "error" && (
         <div
@@ -172,8 +202,8 @@ export default function RequestAccessForm() {
         >
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
-            Ha ocurrido un error al enviar tu solicitud. Por favor, inténtalo de nuevo en unos
-            minutos.
+            {serverError ||
+              "Ha ocurrido un error al enviar tu solicitud. Por favor, inténtalo de nuevo en unos minutos."}
           </span>
         </div>
       )}
@@ -281,6 +311,33 @@ export default function RequestAccessForm() {
         )}
       </div>
 
+      {/* Privacidad */}
+      <div>
+        <div className="flex items-start gap-3">
+          <input
+            id={`${formId}-consent`}
+            type="checkbox"
+            required
+            checked={form.consent}
+            onChange={(e) => setForm((f) => ({ ...f, consent: e.target.checked }))}
+            aria-describedby={fieldErrors.consent ? `${formId}-consent-error` : undefined}
+            className="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-gray-700 text-tl-600 dark:text-tl-400 focus:ring-tl-500"
+          />
+          <label htmlFor={`${formId}-consent`} className="text-sm text-gray-600 dark:text-gray-400 leading-snug">
+            He leído y acepto la{" "}
+            <Link href="/privacidad" className="text-tl-600 dark:text-tl-400 underline-offset-2 hover:underline">
+              política de privacidad
+            </Link>{" "}
+            <span aria-hidden="true" className="text-[var(--tl-danger)]">*</span>
+          </label>
+        </div>
+        {fieldErrors.consent && (
+          <p id={`${formId}-consent-error`} className="mt-1 text-xs text-[var(--tl-danger)]">
+            {fieldErrors.consent}
+          </p>
+        )}
+      </div>
+
       {/* Newsletter opt-in */}
       <div className="flex items-start gap-3">
         <input
@@ -295,6 +352,9 @@ export default function RequestAccessForm() {
           destacados de movilidad en España
         </label>
       </div>
+
+      {/* Turnstile */}
+      {turnstileSiteKey ? <div ref={turnstile.containerRef} className="cf-turnstile" /> : null}
 
       {/* Submit */}
       <button
@@ -316,11 +376,7 @@ export default function RequestAccessForm() {
       </button>
 
       <p className="text-center text-xs text-gray-400 dark:text-gray-500">
-        Al enviar, aceptas nuestra{" "}
-        <Link href="/privacidad" className="underline-offset-2 hover:underline">
-          política de privacidad
-        </Link>
-        . Sin spam. Cancelación inmediata.
+        Sin spam. Cancelación inmediata.
       </p>
     </form>
   );

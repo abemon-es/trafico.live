@@ -342,6 +342,8 @@ Self-hosted Protomaps basemap (light + dark themes, Spanish labels native). Data
 | `ENABLE_VECTOR_SEARCH` | Set to `true` to enable Typesense embedding fields + hybrid search |
 | `MOBILITYDATA_REFRESH_TOKEN` | MobilityData API refresh token (optional, for historical snapshots) |
 | `COLLECTOR_DURATION` | AIS collector run duration in ms (0 = indefinite) |
+| `BMC_FORMS_FORWARD_URL` | BMC One client-forms endpoint (https) for the contact forms copy (server only) |
+| `BMC_FORMS_FORWARD_SECRET` | Shared secret sent as `X-BMC-Forward-Secret` (server only, set by BMC) |
 
 ## Security
 
