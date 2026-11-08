@@ -240,7 +240,7 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
       {/* Turnstile */}
       {turnstileSiteKey ? (
         <div>
-          <div ref={turnstile.containerRef} className="cf-turnstile" />
+          <div ref={turnstile.mountWidget} className="cf-turnstile" />
         </div>
       ) : null}
 

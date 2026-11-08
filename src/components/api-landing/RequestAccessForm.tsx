@@ -354,7 +354,7 @@ export default function RequestAccessForm({ turnstileSiteKey = null }: RequestAc
       </div>
 
       {/* Turnstile */}
-      {turnstileSiteKey ? <div ref={turnstile.containerRef} className="cf-turnstile" /> : null}
+      {turnstileSiteKey ? <div ref={turnstile.mountWidget} className="cf-turnstile" /> : null}
 
       {/* Submit */}
       <button

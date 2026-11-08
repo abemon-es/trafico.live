@@ -2,7 +2,8 @@
 
 /**
  * Cloudflare Turnstile widget for the public forms. Renders into the element
- * given to the returned callback ref when a site key is set, and again
+ * given to the returned callback ref (`mountWidget`, pass it as `ref=`) when a
+ * site key is set, and again
  * whenever that element is replaced (e.g. the form shown again after a
  * success view). Without a site key `ready` is always true (the server only
  * verifies when TURNSTILE_SECRET_KEY is set).
@@ -35,7 +36,9 @@ const TURNSTILE_SRC =
 
 export function useTurnstile(siteKey: string | null) {
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
-  const containerRef = useCallback((node: HTMLDivElement | null) => setContainer(node), []);
+  // Not named *Ref on purpose: the React Compiler lint treats ref-like names
+  // read during render as refs (react-hooks/refs). It is a callback for `ref=`.
+  const mountWidget = useCallback((node: HTMLDivElement | null) => setContainer(node), []);
   const widgetIdRef = useRef<string | null>(null);
   const [token, setToken] = useState("");
 
@@ -100,5 +103,5 @@ export function useTurnstile(siteKey: string | null) {
     }
   }, []);
 
-  return { containerRef, token, ready: !siteKey || Boolean(token), reset };
+  return { mountWidget, token, ready: !siteKey || Boolean(token), reset };
 }
