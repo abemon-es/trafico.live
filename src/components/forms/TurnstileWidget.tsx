@@ -1,14 +1,17 @@
 "use client";
 
 /**
- * Cloudflare Turnstile widget for the public forms. Renders into the element
- * given to the returned callback ref when a site key is set, and again
- * whenever that element is replaced (e.g. the form shown again after a
- * success view). Without a site key `ready` is always true (the server only
- * verifies when TURNSTILE_SECRET_KEY is set).
+ * Cloudflare Turnstile widget for the public forms. It owns its container ref
+ * (touched only inside effects), so the forms hold just the token in state:
+ *
+ *   {siteKey ? <TurnstileWidget key={nonce} siteKey={siteKey} onToken={setToken} /> : null}
+ *
+ * A Turnstile token is single-use: to get a fresh one, change `key` (the
+ * widget remounts). `onToken("")` on error/expiry. The server only verifies
+ * when TURNSTILE_SECRET_KEY is set (src/lib/form-guards.ts).
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 declare global {
   interface Window {
@@ -33,24 +36,29 @@ interface TurnstileOptions {
 const TURNSTILE_SRC =
   "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit";
 
-export function useTurnstile(siteKey: string | null) {
-  const [container, setContainer] = useState<HTMLDivElement | null>(null);
-  const containerRef = useCallback((node: HTMLDivElement | null) => setContainer(node), []);
-  const widgetIdRef = useRef<string | null>(null);
-  const [token, setToken] = useState("");
+interface TurnstileWidgetProps {
+  siteKey: string;
+  /** Stable callback (a state setter): receives the token, or "" on error/expiry. */
+  onToken: (token: string) => void;
+}
+
+export default function TurnstileWidget({ siteKey, onToken }: TurnstileWidgetProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!siteKey || !container) return;
+    const container = containerRef.current;
+    if (!container) return;
     let cancelled = false;
+    let widgetId: string | null = null;
 
     const renderWidget = () => {
-      if (cancelled || !window.turnstile || widgetIdRef.current) return;
+      if (cancelled || !window.turnstile || widgetId) return;
       try {
-        widgetIdRef.current = window.turnstile.render(container, {
+        widgetId = window.turnstile.render(container, {
           sitekey: siteKey,
-          callback: (t: string) => setToken(t),
-          "error-callback": () => setToken(""),
-          "expired-callback": () => setToken(""),
+          callback: (t: string) => onToken(t),
+          "error-callback": () => onToken(""),
+          "expired-callback": () => onToken(""),
           theme: "auto",
           language: "es",
         });
@@ -78,27 +86,15 @@ export function useTurnstile(siteKey: string | null) {
 
     return () => {
       cancelled = true;
-      if (widgetIdRef.current && window.turnstile) {
+      if (widgetId && window.turnstile) {
         try {
-          window.turnstile.remove(widgetIdRef.current);
+          window.turnstile.remove(widgetId);
         } catch {
           // ignore
         }
       }
-      widgetIdRef.current = null;
     };
-  }, [siteKey, container]);
+  }, [siteKey, onToken]);
 
-  const reset = useCallback(() => {
-    setToken("");
-    if (widgetIdRef.current && window.turnstile) {
-      try {
-        window.turnstile.reset(widgetIdRef.current);
-      } catch {
-        // ignore
-      }
-    }
-  }, []);
-
-  return { containerRef, token, ready: !siteKey || Boolean(token), reset };
+  return <div ref={containerRef} className="cf-turnstile" />;
 }

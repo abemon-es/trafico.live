@@ -12,7 +12,7 @@ import Link from "next/link";
 import { useState, useId } from "react";
 import { Loader2, CheckCircle2, AlertCircle, Send } from "lucide-react";
 import Honeypot from "@/components/forms/Honeypot";
-import { useTurnstile } from "@/components/forms/useTurnstile";
+import TurnstileWidget from "@/components/forms/TurnstileWidget";
 import {
   trackCtaClick as trackCtaClickEvent,
   trackGenerateLead,
@@ -40,7 +40,10 @@ interface RequestAccessFormProps {
 
 export default function RequestAccessForm({ turnstileSiteKey = null }: RequestAccessFormProps) {
   const formId = useId();
-  const turnstile = useTurnstile(turnstileSiteKey);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  // Bumped to remount the widget: a Turnstile token is single-use.
+  const [turnstileNonce, setTurnstileNonce] = useState(0);
+  const turnstileReady = !turnstileSiteKey || Boolean(turnstileToken);
   const [website, setWebsite] = useState("");
   const [serverError, setServerError] = useState<string>("");
 
@@ -79,7 +82,7 @@ export default function RequestAccessForm({ turnstileSiteKey = null }: RequestAc
     e.preventDefault();
     if (!validate()) return;
 
-    if (!turnstile.ready) {
+    if (!turnstileReady) {
       setServerError("Completa la verificación anti-bot antes de enviar.");
       setStatus("error");
       return;
@@ -100,7 +103,7 @@ export default function RequestAccessForm({ turnstileSiteKey = null }: RequestAc
           useCase: form.useCase.trim(),
           source: "api-landing",
           consentPrivacy: form.consent,
-          turnstileToken: turnstile.token,
+          turnstileToken,
           website,
         }),
       });
@@ -114,7 +117,8 @@ export default function RequestAccessForm({ turnstileSiteKey = null }: RequestAc
       if (!res.ok || data.ok === false) {
         setServerError(res.status === 429 ? "" : data.error || "");
         setStatus("error");
-        turnstile.reset();
+        setTurnstileToken("");
+        setTurnstileNonce((n) => n + 1);
         return;
       }
 
@@ -354,7 +358,9 @@ export default function RequestAccessForm({ turnstileSiteKey = null }: RequestAc
       </div>
 
       {/* Turnstile */}
-      {turnstileSiteKey ? <div ref={turnstile.containerRef} className="cf-turnstile" /> : null}
+      {turnstileSiteKey ? (
+        <TurnstileWidget key={turnstileNonce} siteKey={turnstileSiteKey} onToken={setTurnstileToken} />
+      ) : null}
 
       {/* Submit */}
       <button
