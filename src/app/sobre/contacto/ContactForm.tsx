@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { CheckCircle2, AlertCircle, Loader2, Send } from "lucide-react";
 import Honeypot from "@/components/forms/Honeypot";
-import { useTurnstile } from "@/components/forms/useTurnstile";
+import TurnstileWidget from "@/components/forms/TurnstileWidget";
 import { trackGenerateLead } from "@/lib/analytics";
 
 const TOPICS = [
@@ -34,7 +34,9 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
   const [website, setWebsite] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
-  const turnstile = useTurnstile(turnstileSiteKey);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  // Bumped to remount the widget: a Turnstile token is single-use.
+  const [turnstileNonce, setTurnstileNonce] = useState(0);
   // false when the server accepted the message but has no way to deliver it
   const [delivered, setDelivered] = useState(true);
 
@@ -56,7 +58,7 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
           topic,
           mensaje: mensaje.trim(),
           consentPrivacy: consent,
-          turnstileToken: turnstile.token,
+          turnstileToken,
           website,
         }),
       });
@@ -74,10 +76,12 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
       setMensaje("");
       setConsent(false);
       setTopic("general");
-      turnstile.reset();
+      setTurnstileToken("");
+      setTurnstileNonce((n) => n + 1);
     } catch (err) {
       // A Turnstile token is single-use: the server already spent this one.
-      turnstile.reset();
+      setTurnstileToken("");
+      setTurnstileNonce((n) => n + 1);
       setStatus("error");
       setErrorMsg(err instanceof Error ? err.message : "Error desconocido");
     }
@@ -120,7 +124,7 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) &&
     mensaje.trim().length >= 20 &&
     consent &&
-    turnstile.ready;
+    (!turnstileSiteKey || Boolean(turnstileToken));
 
   return (
     <form onSubmit={handleSubmit} className="relative space-y-5" noValidate>
@@ -240,7 +244,7 @@ export default function ContactForm({ turnstileSiteKey }: ContactFormProps) {
       {/* Turnstile */}
       {turnstileSiteKey ? (
         <div>
-          <div ref={turnstile.mountWidget} className="cf-turnstile" />
+          <TurnstileWidget key={turnstileNonce} siteKey={turnstileSiteKey} onToken={setTurnstileToken} />
         </div>
       ) : null}
 
