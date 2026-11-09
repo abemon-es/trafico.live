@@ -5,7 +5,9 @@
  * POSTea a /api/contact con validación client-side y manejo de estados.
  * Casilla de privacidad obligatoria, honeypot y Turnstile (si hay site key).
  * Tras un 2xx dispara generate_lead (form_location=api_access).
- * Incluye checkbox opcional de newsletter (llama a /api/digest/subscribe).
+ * Incluye checkbox opcional de newsletter (llama a /api/digest/subscribe), solo
+ * mientras DIGEST_SIGNUP_ENABLED (src/lib/email/digest-signup.ts): sin remitente
+ * no se muestra, ni se llama, ni se cuenta en GA4.
  */
 
 import Link from "next/link";
@@ -18,6 +20,7 @@ import {
   trackGenerateLead,
   trackNewsletterSignup as trackNewsletterSignupEvent,
 } from "@/lib/analytics";
+import { DIGEST_SIGNUP_ENABLED } from "@/lib/email/digest-signup";
 
 // ------------------------------------------------------------------ types ---
 
@@ -125,8 +128,8 @@ export default function RequestAccessForm({ turnstileSiteKey = null }: RequestAc
       setDelivered(data.delivered !== false);
       trackGenerateLead("api_access");
 
-      // Newsletter opt-in (parallel, non-blocking)
-      if (form.newsletter) {
+      // Newsletter opt-in (parallel, non-blocking), only while the digest can be sent
+      if (DIGEST_SIGNUP_ENABLED && form.newsletter) {
         trackNewsletterSignupEvent("api-landing-form");
         fetch("/api/digest/subscribe", {
           method: "POST",
@@ -342,20 +345,22 @@ export default function RequestAccessForm({ turnstileSiteKey = null }: RequestAc
         )}
       </div>
 
-      {/* Newsletter opt-in */}
-      <div className="flex items-start gap-3">
-        <input
-          id={`${formId}-newsletter`}
-          type="checkbox"
-          checked={form.newsletter}
-          onChange={(e) => setForm((f) => ({ ...f, newsletter: e.target.checked }))}
-          className="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-gray-700 text-tl-600 dark:text-tl-400 focus:ring-tl-500"
-        />
-        <label htmlFor={`${formId}-newsletter`} className="text-sm text-gray-600 dark:text-gray-400 leading-snug">
-          Suscribirme al newsletter semanal con novedades de la API, nuevos endpoints y datos
-          destacados de movilidad en España
-        </label>
-      </div>
+      {/* Newsletter opt-in: hidden while there is no email sender */}
+      {DIGEST_SIGNUP_ENABLED && (
+        <div className="flex items-start gap-3">
+          <input
+            id={`${formId}-newsletter`}
+            type="checkbox"
+            checked={form.newsletter}
+            onChange={(e) => setForm((f) => ({ ...f, newsletter: e.target.checked }))}
+            className="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-gray-700 text-tl-600 dark:text-tl-400 focus:ring-tl-500"
+          />
+          <label htmlFor={`${formId}-newsletter`} className="text-sm text-gray-600 dark:text-gray-400 leading-snug">
+            Suscribirme al newsletter semanal con novedades de la API, nuevos endpoints y datos
+            destacados de movilidad en España
+          </label>
+        </div>
+      )}
 
       {/* Turnstile */}
       {turnstileSiteKey ? (
