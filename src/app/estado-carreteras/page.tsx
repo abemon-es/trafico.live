@@ -8,6 +8,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 import { jsonLdHtml } from "@/lib/json-ld";
 import { COMMUNITIES } from "@/lib/geo/ine-codes";
 import { communityPath } from "@/lib/geo/geo-paths";
+import { CLOSED, formatCount, incidentPlace, madridTime, since } from "@/lib/road-status";
 
 /**
  * /estado-carreteras: national hub for «estado de las carreteras» (CMO spec of
@@ -38,8 +39,7 @@ export const metadata = buildPageMetadata({
   ],
 });
 
-const NUM = new Intl.NumberFormat("es-ES");
-const n = (v: number) => NUM.format(v);
+const n = formatCount;
 
 const SOURCE_LABELS: Record<string, string> = {
   DGT: "DGT",
@@ -51,16 +51,6 @@ const SOURCE_LABELS: Record<string, string> = {
   NAVARRA: "Gobierno de Navarra",
   CYL: "Junta de Castilla y León",
   BARCELONA: "Ayuntamiento de Barcelona",
-};
-
-/** A closed road: CLOSURE, or a DGT roadClosed / carriagewayClosures stored before #268 (same rule as incidentEffect). */
-const CLOSED: Prisma.TrafficIncidentWhereInput = {
-  isActive: true,
-  OR: [
-    { type: "CLOSURE" },
-    { managementType: { startsWith: "roadClosed" } },
-    { managementType: { startsWith: "carriagewayClosures" } },
-  ],
 };
 
 const LIST_SELECT = {
@@ -76,23 +66,7 @@ const LIST_SELECT = {
 
 type ListIncident = Prisma.TrafficIncidentGetPayload<{ select: typeof LIST_SELECT }>;
 
-function madridTime(d: Date): string {
-  return d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Europe/Madrid" });
-}
-
-/** «las 14:05» today, «el 30 oct.» before (Madrid time). */
-function since(d: Date, now: Date): string {
-  const day = (x: Date) => x.toLocaleDateString("es-ES", { timeZone: "Europe/Madrid" });
-  return day(d) === day(now)
-    ? `las ${madridTime(d)}`
-    : `el ${d.toLocaleDateString("es-ES", { day: "numeric", month: "short", timeZone: "Europe/Madrid" })}`;
-}
-
-function where(i: ListIncident): string {
-  const road = i.roadNumber ? `${i.roadNumber}${i.kmPoint != null ? ` km ${n(Math.round(Number(i.kmPoint)))}` : ""}` : "Vía sin identificar";
-  const place = i.municipality || i.provinceName;
-  return place ? `${road} · ${place}` : road;
-}
+const where = (i: ListIncident) => incidentPlace(i);
 
 async function getData() {
   const [total, closedCount, roadworks, weatherCount, closures, weather, snowAlerts, byCommunity, closedByCommunity, byRoad, bySource, latest] =
