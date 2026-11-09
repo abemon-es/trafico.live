@@ -18,7 +18,12 @@ observability:
 
 postgres:
   connection_string: ${DATABASE_URL}
-  pool_size: 4
+  # 8 connections, not 4: with 4, one visitor's burst of tile requests held
+  # every connection and the next tiles timed out in nginx (504). Sized
+  # together with the per-visitor limit in services/tiles/nginx.conf, against
+  # the tile times (urt) in its log, and inside the headroom of the pooler
+  # the connection string points at.
+  pool_size: 8
   auto_publish: false
 
   functions:
