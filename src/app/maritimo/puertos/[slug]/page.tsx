@@ -21,6 +21,7 @@ import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { PortActivity } from "@/components/maritimo/PortActivity";
 import { PortEntityMap } from "./entity-map";
 import { jsonLdHtml } from "@/lib/json-ld";
+import { portSlug } from "@/lib/maritimo/port-slug";
 
 // 300: build-blank policy (2026-08-17). The Docker build has no DB, so this
 // page prerenders empty and the revalidate window is how long that blank copy
@@ -30,17 +31,8 @@ export const revalidate = 300;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 
 // ---------------------------------------------------------------------------
-// Slug helpers
+// Data
 // ---------------------------------------------------------------------------
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
 
 /** Return all unique port names from the DB */
 const getAllPorts = cache(async () => {
@@ -54,7 +46,7 @@ const getAllPorts = cache(async () => {
 /** Find all stations for a port slug */
 const getPortStations = cache(async (slug: string) => {
   const allPorts = await getAllPorts();
-  const matched = allPorts.find((p) => p.port != null && slugify(p.port) === slug);
+  const matched = allPorts.find((p) => p.port != null && portSlug(p.port) === slug);
   if (!matched?.port) return null;
 
   const stations = await prisma.maritimeStation.findMany({
