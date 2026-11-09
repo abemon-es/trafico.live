@@ -119,8 +119,67 @@ if [ "$READY" != "1" ]; then
   exit 1
 fi
 
-echo "$NEW is serving — joining the web network so Traefik routes to it..."
-docker network connect web "$NEW"
+# Any failure from here on leaves the old container serving: the new one is
+# removed and the deploy exits non-zero.
+abort_swap() {
+  echo "Deploy ABORTED: $1 — leaving the running container untouched"
+  docker rm -f "$NEW" 2>/dev/null || true
+  exit 1
+}
+
+# Smoke test, asked directly of the new container before it gets any traffic.
+# /api/health only says the process is up; these are the pages that matter
+# (the home and the two lead pages) plus one API route. Anything but a 200
+# aborts. Run before joining the web network so a failing container is never
+# routed to.
+SMOKE_ROUTES="/ /api-landing /sobre/contacto /api/health"
+smoke_route() {
+  docker exec "$NEW" node -e "
+    const p = process.argv[1];
+    fetch('http://localhost:3000' + p, { redirect: 'manual', signal: AbortSignal.timeout(20000) })
+      .then((r) => { console.log('  ' + p + ' ' + r.status); process.exit(r.status === 200 ? 0 : 1); })
+      .catch((e) => { console.log('  ' + p + ' error ' + (e && e.name)); process.exit(1); });
+  " "$1"
+}
+echo "Smoke test on $NEW ($SMOKE_ROUTES):"
+SMOKE_FAILED=""
+for route in $SMOKE_ROUTES; do
+  smoke_route "$route" || SMOKE_FAILED="$SMOKE_FAILED $route"
+done
+if [ -n "$SMOKE_FAILED" ]; then
+  docker logs --tail 30 "$NEW" 2>&1
+  abort_swap "smoke test failed on:$SMOKE_FAILED"
+fi
+
+# Join the web network under the app's own name as an alias, so during the
+# swap that name resolves to both containers. Skipped if already attached.
+if [ "$(docker inspect -f '{{if index .NetworkSettings.Networks "web"}}yes{{end}}' "$NEW")" = "yes" ]; then
+  echo "$NEW is already on the web network"
+else
+  echo "$NEW is serving — joining the web network (alias $APP_NAME) so Traefik routes to it..."
+  docker network connect --alias "$APP_NAME" web "$NEW"
+fi
+
+# The edge-cache in front resolves $APP_NAME only when nginx (re)loads. It used
+# to be reloaded after this script, i.e. after the old container was gone, so
+# for that window it kept sending requests to a dead address (502). Reloading
+# now, while the name resolves to both containers, gives it both: when the old
+# one goes, nginx retries on the new one. Only the reload is touched here.
+if docker ps --format '{{.Names}}' | grep -qx edge-cache; then
+  EC_TEST_RC=0
+  EC_TEST_OUT="$(docker exec edge-cache nginx -t 2>&1)" || EC_TEST_RC=$?
+  echo "edge-cache nginx -t rc=$EC_TEST_RC"
+  if [ "$EC_TEST_RC" -ne 0 ]; then
+    echo "$EC_TEST_OUT" | tail -3
+    abort_swap "edge-cache config test failed, not reloading"
+  fi
+  EC_RELOAD_RC=0
+  docker exec edge-cache nginx -s reload >/dev/null 2>&1 || EC_RELOAD_RC=$?
+  echo "edge-cache reload rc=$EC_RELOAD_RC"
+  [ "$EC_RELOAD_RC" -eq 0 ] || abort_swap "edge-cache reload failed"
+else
+  echo "edge-cache is not running: nothing to re-resolve"
+fi
 
 # Both containers now back the same Traefik service, so requests are served
 # throughout the swap — but only once Traefik has actually noticed the new one.
