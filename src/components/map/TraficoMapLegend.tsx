@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronDown, ChevronUp, Info } from "lucide-react";
 import type { LayerDefinition } from "@/lib/map-layers/types";
 
 interface TraficoMapLegendProps {
   layers: LayerDefinition[];
   activeLayers: string[];
+  /** Optional line under the swatches (/mapa uses it for the API invitation). */
+  footer?: ReactNode;
 }
 
 /**
@@ -17,7 +19,7 @@ interface TraficoMapLegendProps {
  * Tap toggles. Keeps map viewport free on small screens where many active
  * layers can push the legend past the viewport height.
  */
-export function TraficoMapLegend({ layers, activeLayers }: TraficoMapLegendProps) {
+export function TraficoMapLegend({ layers, activeLayers, footer }: TraficoMapLegendProps) {
   const visibleLayers = layers.filter(
     (l) => activeLayers.includes(l.id) && l.legend && l.legend.length > 0,
   );
@@ -65,6 +67,7 @@ export function TraficoMapLegend({ layers, activeLayers }: TraficoMapLegendProps
               </button>
             </div>
             <LegendBody visibleLayers={visibleLayers} />
+            {footer && <LegendFooter>{footer}</LegendFooter>}
           </div>
         )}
       </div>
@@ -75,9 +78,14 @@ export function TraficoMapLegend({ layers, activeLayers }: TraficoMapLegendProps
           Leyenda
         </p>
         <LegendBody visibleLayers={visibleLayers} />
+        {footer && <LegendFooter>{footer}</LegendFooter>}
       </div>
     </div>
   );
+}
+
+function LegendFooter({ children }: { children: ReactNode }) {
+  return <div className="mt-2 pt-2 border-t border-slate-200/70 dark:border-slate-700/70">{children}</div>;
 }
 
 function LegendBody({ visibleLayers }: { visibleLayers: LayerDefinition[] }) {

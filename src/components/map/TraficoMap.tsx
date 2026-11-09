@@ -63,6 +63,8 @@ export interface TraficoMapProps {
   syncUrl?: boolean;
   className?: string;
   children?: React.ReactNode;
+  /** Optional line under the legend swatches (only /mapa passes one). */
+  legendFooter?: React.ReactNode;
   /** Invoked once the MapLibre instance is fully loaded — used by overlays
    *  (e.g. RoutingPanel) that need a map ref to register click handlers. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -95,6 +97,7 @@ function TraficoMapInner({
   syncUrl = false,
   className = "",
   children,
+  legendFooter,
   onMapReady,
 }: TraficoMapProps) {
   const {
@@ -530,7 +533,7 @@ function TraficoMapInner({
 
       {/* Legend */}
       {legend && mapReady && (
-        <TraficoMapLegend layers={availableLayers} activeLayers={activeLayers} />
+        <TraficoMapLegend layers={availableLayers} activeLayers={activeLayers} footer={legendFooter} />
       )}
 
       {/* Fullscreen button */}

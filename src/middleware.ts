@@ -5,6 +5,7 @@ import { PROVINCE_SLUG_TO_COMMUNITY_SLUG } from "./lib/geo/province-slugs";
 import { provincePath } from "./lib/geo/geo-paths";
 import { PROVINCES } from "./lib/geo/ine-codes";
 import { provinceSlug } from "./lib/geo/slugify";
+import { leadPageViewLine } from "./lib/lead-logging";
 // S0 launch: T4.1c tier enforcement disabled in middleware — uses
 // rate-limiter-flexible which is not Edge-runtime compatible. Enforcement
 // will move to Node API route handlers in S1. See src/lib/tier-enforcement.ts.
@@ -191,6 +192,19 @@ export async function middleware(request: NextRequest) {
       // /api/internal/bot-visit was removed on 2026-10-19: it never stored a
       // row (our own API auth returned 401 to it) and was attack surface.
     }
+  }
+
+  // Views of the two lead pages (/api-landing, /sobre/contacto): one line
+  // each, no IP, prefetches skipped. GA4 only sees visitors who accept
+  // analytics; this counts the rest (src/lib/lead-logging.ts).
+  if (hostname === CANONICAL_DOMAIN) {
+    const line = leadPageViewLine({
+      method,
+      pathname,
+      header: (name) => request.headers.get(name),
+      siteHost: CANONICAL_DOMAIN,
+    });
+    if (line) console.log(line);
   }
 
   // Redirect legacy domains → trafico.live

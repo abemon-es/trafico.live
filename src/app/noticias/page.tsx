@@ -257,7 +257,7 @@ export default async function NoticiasPage({
               Hoy en las carreteras
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Tráfico en vivo actualizado cada 60 segundos
+              Tráfico en vivo actualizado cada 2 minutos
             </p>
           </div>
           <TickerStrip />

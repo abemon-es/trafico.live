@@ -45,7 +45,7 @@ const faqSchema = {
       name: "¿Con qué frecuencia se actualizan los datos?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Las incidencias de tráfico se actualizan cada 60 segundos desde el NAP de la DGT. La intensidad de tráfico de Madrid se refresca cada 5 minutos. Los precios de combustible varias veces al día. Las alertas de Renfe cada 2 minutos.",
+        text: "Las incidencias de tráfico se actualizan cada 2 minutos desde el NAP de la DGT. La intensidad de tráfico de Madrid se refresca cada 5 minutos. Los precios de combustible varias veces al día. Las alertas de Renfe cada 2 minutos.",
       },
     },
     {
@@ -133,7 +133,7 @@ const ENDPOINT_CATEGORIES: EndpointCategory[] = [
       {
         method: "GET",
         path: "/api/incidents",
-        description: "Incidencias activas en España: accidentes, obras, retenciones. Fuente DGT DATEX II, actualización cada 60 s.",
+        description: "Incidencias activas en España: accidentes, obras, retenciones. Fuente DGT DATEX II, actualización cada 2 min.",
         tier: "FREE",
       },
       {

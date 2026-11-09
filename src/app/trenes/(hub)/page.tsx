@@ -23,6 +23,7 @@ import { StructuredData } from "@/components/seo/StructuredData";
 import { TrenesHeroMap } from "../TrenesHeroMap";
 import { TrenesAnalytics } from "../TrenesAnalytics";
 import { PageIntro } from "@/components/seo/PageIntro";
+import { ApiHubCta } from "@/components/api-landing/ApiHubCta";
 
 export const revalidate = 300;
 
@@ -204,11 +205,14 @@ export default async function TrenesHubPage() {
   );
 
   const stats = (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <StatCard label="Trenes ahora" value={data.trainsNow.toLocaleString("es-ES")} hint="snapshot Renfe" icon={Radio} accent="tl" />
-      <StatCard label="Estaciones" value={data.stationCount.toLocaleString("es-ES")} hint={`${data.accessibleStations} accesibles`} icon={MapPin} accent="tl" />
-      <StatCard label="Rutas" value={data.routeCount.toLocaleString("es-ES")} hint={`${data.brandCount} marcas`} icon={Route} accent="tl" />
-      <StatCard label="Alertas activas" value={data.activeAlertsCount} hint="GTFS-RT" icon={AlertTriangle} accent={data.activeAlertsCount > 0 ? "tl-amber" : "tl"} />
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard label="Trenes ahora" value={data.trainsNow.toLocaleString("es-ES")} hint="snapshot Renfe" icon={Radio} accent="tl" />
+        <StatCard label="Estaciones" value={data.stationCount.toLocaleString("es-ES")} hint={`${data.accessibleStations} accesibles`} icon={MapPin} accent="tl" />
+        <StatCard label="Rutas" value={data.routeCount.toLocaleString("es-ES")} hint={`${data.brandCount} marcas`} icon={Route} accent="tl" />
+        <StatCard label="Alertas activas" value={data.activeAlertsCount} hint="GTFS-RT" icon={AlertTriangle} accent={data.activeAlertsCount > 0 ? "tl-amber" : "tl"} />
+      </div>
+      <ApiHubCta hub="trenes" />
     </div>
   );
 

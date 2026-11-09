@@ -277,7 +277,7 @@ export default function ApiLandingPage() {
 
             <p className="text-tl-300 text-lg sm:text-xl max-w-2xl leading-relaxed mb-10">
               Fuentes oficiales: DGT, Renfe, AENA, MITECO, aisstream.io, OpenSky.
-              Desde incidencias cada 60 s hasta microdatos históricos de accidentes.
+              Desde incidencias cada 2 minutos hasta microdatos históricos de accidentes.
               Plan FREE sin tarjeta de crédito.
             </p>
 
@@ -304,7 +304,7 @@ export default function ApiLandingPage() {
           <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { value: "121", label: "Endpoints" },
-              { value: "60 s", label: "Actualiz. incidencias" },
+              { value: "2 min", label: "Actualiz. incidencias" },
               { value: "26", label: "Colecciones búsqueda" },
               { value: "REST + GeoJSON", label: "Formato estándar" },
             ].map((stat) => (

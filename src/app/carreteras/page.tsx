@@ -4,6 +4,7 @@ import { Route, Car, Construction, MapPin, TrendingUp, Globe } from "lucide-reac
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { StructuredData, generateFAQSchema } from "@/components/seo/StructuredData";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+import { ApiHubCta } from "@/components/api-landing/ApiHubCta";
 
 export const revalidate = 300;
 
@@ -175,7 +176,7 @@ export default async function CarreterasPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4">
             <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalRoads}</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Carreteras</div>
@@ -193,6 +194,7 @@ export default async function CarreterasPage() {
             <div className="text-sm text-gray-600 dark:text-gray-400">Incidencias activas</div>
           </div>
         </div>
+        <ApiHubCta hub="carreteras" className="mb-8" />
 
         {/* Road Types Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
