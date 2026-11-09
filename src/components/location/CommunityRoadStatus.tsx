@@ -31,8 +31,10 @@ export async function CommunityRoadStatus({ communityCode, communityName }: Prop
     prisma.trafficIncident.aggregate({ where: { isActive: true }, _max: { fetchedAt: true } }),
   ]);
 
-  const at = latest._max.fetchedAt ?? new Date();
-  const hora = madridTime(at);
+  // No active incident anywhere means no data time: then no time is shown,
+  // rather than presenting «now» as the time of data that does not exist.
+  const at = latest._max.fetchedAt;
+  const hora = at ? madridTime(at) : null;
   const tiles = [
     { icon: <AlertTriangle className="w-5 h-5 text-tl-amber-500 dark:text-tl-amber-400" />, value: total, label: "Incidencias activas" },
     { icon: <Ban className="w-5 h-5 text-signal-red" />, value: closedCount, label: "Carreteras cortadas" },
@@ -49,9 +51,11 @@ export async function CommunityRoadStatus({ communityCode, communityName }: Prop
       <h2 id="estado-titulo" className="font-heading text-lg font-bold text-ink-900 dark:text-ink-100">
         Carreteras de {communityName} ahora
       </h2>
-      <p className="flex items-center gap-1.5 mt-1 text-xs text-ink-500 dark:text-ink-400">
-        <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" /> Datos de las {hora}, de la DGT y los servicios autonómicos de tráfico
-      </p>
+      {hora && (
+        <p className="flex items-center gap-1.5 mt-1 text-xs text-ink-500 dark:text-ink-400">
+          <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" /> Datos de las {hora}, de la DGT y los servicios autonómicos de tráfico
+        </p>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
         {tiles.map((t) => (
@@ -68,14 +72,14 @@ export async function CommunityRoadStatus({ communityCode, communityName }: Prop
       </h3>
       {closures.length === 0 ? (
         <p className="text-sm text-ink-600 dark:text-ink-400">
-          A las {hora} no hay ninguna carretera cortada registrada en {communityName}.
+          {hora ? `A las ${hora} no` : "No"} hay ninguna carretera cortada registrada en {communityName}.
         </p>
       ) : (
         <ul className="space-y-1.5">
           {closures.map((c) => (
             <li key={c.id} className="text-sm text-ink-700 dark:text-ink-300">
               <span className="font-medium">{incidentPlace(c)}</span>
-              <span className="text-ink-500 dark:text-ink-400"> · desde {since(c.startedAt, at)}</span>
+              <span className="text-ink-500 dark:text-ink-400"> · desde {since(c.startedAt, at ?? c.startedAt)}</span>
             </li>
           ))}
           {closedCount > closures.length && (

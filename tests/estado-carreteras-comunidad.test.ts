@@ -86,6 +86,9 @@ test("the community page and the hub use the shared code", () => {
   const status = read("src/components/location/CommunityRoadStatus.tsx");
   assert.match(status, /href="\/estado-carreteras"/);
   assert.match(status, /Carreteras cortadas hoy en/);
+  // No data time is invented when there are no active incidents (Elsa, #291).
+  assert.ok(!/fetchedAt \?\? new Date\(\)/.test(status), "no «now» as the time of missing data");
+  assert.match(status, /\{hora && \(/);
   // Group style (CTO, #272): brand tokens only, no raw hex, no «en directo».
   const code = status.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, "");
   assert.ok(!/\b(?:bg|text|border|divide|ring|from|to)-(?:gray|slate|zinc|neutral|red|blue|green|amber|yellow)-\d/.test(code), "no generic Tailwind colours");
