@@ -1,0 +1,17 @@
+# Only base images: the web and collector Dockerfiles pin node:*-slim by
+# digest; Dependabot opens one PR when a new digest is published. Each PR
+# gets a full build on the server before merge, like any image change.
+version: 2
+updates:
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 1
+  - package-ecosystem: "docker"
+    directory: "/services/collector"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 1
