@@ -11,6 +11,8 @@
  * - Envío via SES (helper compartido); copia a BMC One después de responder
  * - Sin SES: la copia a BMC One es la entrega (src/lib/contact-delivery.ts)
  * - Reply-To = email del remitente (operador puede responder con un click)
+ * - Una línea {evt:"contact_post", form, outcome} por petición, sin datos
+ *   personales (src/lib/lead-logging.ts)
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -23,6 +25,7 @@ import { INLINE_RETRY, forwardToBmc, isBmcForwardConfigured, type ForwardInput }
 import { forwardToBmcAfterResponse } from "@/lib/bmc-forms-forward-after";
 import { deliverContact } from "@/lib/contact-delivery";
 import { checkTurnstile, honeypotTripped } from "@/lib/form-guards";
+import { logContactPost } from "@/lib/lead-logging";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -177,6 +180,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     await limiter.consume(ip);
   } catch (error) {
     if (error instanceof RateLimiterRes) {
+      logContactPost("contacto", "rate_limited");
       return NextResponse.json(
         { ok: false, error: "Has enviado demasiados mensajes. Inténtalo más tarde." },
         { status: 429, headers: { "Retry-After": String(Math.ceil(error.msBeforeNext / 1000)) } }
@@ -190,16 +194,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     json = await request.json();
   } catch {
+    logContactPost("contacto", "bad_json");
     return NextResponse.json({ ok: false, error: "JSON inválido" }, { status: 400 });
   }
 
   // Honeypot: answered like a success, nothing stored or sent.
   if (honeypotTripped(json)) {
+    logContactPost("contacto", "honeypot");
     return NextResponse.json({ ok: true });
   }
 
   const v = validate(json);
   if (!v.ok) {
+    logContactPost("contacto", "validation");
     return NextResponse.json({ ok: false, error: v.error }, { status: 400 });
   }
 
@@ -208,12 +215,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     onError: (error) => reportApiError(error, "contacto-general] Turnstile"),
   });
   if (turnstile === "misconfigured") {
+    logContactPost("contacto", "misconfigured");
     return NextResponse.json(
       { ok: false, error: "El formulario no está disponible. Escríbenos a hola@trafico.live" },
       { status: 503 }
     );
   }
   if (turnstile === "failed") {
+    logContactPost("contacto", "turnstile");
     return NextResponse.json(
       { ok: false, error: "Verificación anti-bot fallida. Recarga la página e inténtalo de nuevo." },
       { status: 403 }
@@ -255,8 +264,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   switch (result.kind) {
     case "emailed":
     case "forwarded":
+      logContactPost("contacto", "ok");
       return NextResponse.json({ ok: true });
     case "email-failed":
+      logContactPost("contacto", "email_failed");
       reportApiError(result.error, "contacto-general] Failed to send");
       return NextResponse.json(
         { ok: false, error: "Error al enviar. Inténtalo más tarde o escribe directamente a hola@trafico.live" },
@@ -264,6 +275,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     case "forward-failed":
       // Nothing from the request is logged; only the outcome code.
+      logContactPost("contacto", "forward_failed");
       reportApiError(new Error("Contact form: copy to BMC One failed"), "contacto-general", {
         form: "contacto-general",
         topic: v.data.topic,
@@ -276,6 +288,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     case "no-channel":
       // No sender and no forwarding: refuse, and say where to write. Nothing
       // from the request is logged; the event carries no personal data.
+      logContactPost("contacto", "no_channel");
       reportApiError(
         new Error("Contact form refused: no email sender or forwarding configured"),
         "contacto-general",

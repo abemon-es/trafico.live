@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import RoutingPanel from "./routing-panel";
 import { DEFAULT_LENS } from "@/lib/map-layers/lenses";
+import { ApiHubCta } from "@/components/api-landing/ApiHubCta";
 
 const TraficoMap = dynamic(
   () => import("@/components/map/TraficoMap").then((m) => m.TraficoMap),
@@ -45,6 +46,7 @@ export function MapaInfraClient() {
         initialView={{ center: [-3.7, 40.4], zoom: 5.5 }}
         className="w-full h-full"
         onMapReady={setMapInstance}
+        legendFooter={<ApiHubCta hub="mapa" variant="legend" />}
       >
         <RoutingPanel map={mapInstance} />
       </TraficoMap>

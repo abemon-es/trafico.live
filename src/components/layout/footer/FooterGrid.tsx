@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ApiLandingLink } from "@/components/api-landing/ApiLandingLink";
 import {
   Activity,
   Route,
@@ -12,7 +13,8 @@ import {
 type GridColumn = {
   title: string;
   icon: LucideIcon;
-  links: { name: string; href: string }[];
+  /** `apiLanding`: the link records cta_click (source=footer). */
+  links: { name: string; href: string; apiLanding?: boolean }[];
 };
 
 const GRID_COLUMNS: GridColumn[] = [
@@ -81,13 +83,16 @@ const GRID_COLUMNS: GridColumn[] = [
     icon: Info,
     links: [
       { name: "Sobre nosotros", href: "/sobre" },
-      { name: "API", href: "/api-docs" },
+      { name: "API y datos para empresas", href: "/api-landing", apiLanding: true },
       { name: "Posicionamiento", href: "/sobre/posicionamiento" },
       { name: "Contacto", href: "/sobre/contacto" },
       { name: "API docs", href: "/api-docs#referencia" },
     ],
   },
 ];
+
+const LINK_CLASS =
+  "text-sm text-white/80 hover:text-white block py-1.5 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-tl-400 rounded";
 
 export function FooterGrid() {
   return (
@@ -105,12 +110,15 @@ export function FooterGrid() {
                 <ul className="space-y-0.5">
                   {col.links.map((link) => (
                     <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-white/80 hover:text-white block py-1.5 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-tl-400 rounded"
-                      >
-                        {link.name}
-                      </Link>
+                      {link.apiLanding ? (
+                        <ApiLandingLink source="footer" className={LINK_CLASS}>
+                          {link.name}
+                        </ApiLandingLink>
+                      ) : (
+                        <Link href={link.href} className={LINK_CLASS}>
+                          {link.name}
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>

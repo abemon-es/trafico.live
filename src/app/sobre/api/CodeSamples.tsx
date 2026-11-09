@@ -30,7 +30,7 @@ const ENDPOINTS: Endpoint[] = [
     label: "Incidencias de tráfico",
     path: "/api/incidents",
     tier: "FREE",
-    description: "Incidencias activas en carreteras españolas. Fuente DGT DATEX II, actualización cada 60 s.",
+    description: "Incidencias activas en carreteras españolas. Fuente DGT DATEX II, actualización cada 2 min.",
     samples: {
       curl: `curl -s \\
   -H "X-API-Key: tl_free_TU_CLAVE_AQUI" \\

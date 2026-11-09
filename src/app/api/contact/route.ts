@@ -6,6 +6,8 @@
  * BMC One después de responder. Sin SES: la copia a BMC One es la entrega
  * (ver src/lib/contact-delivery.ts). Honeypot, Turnstile y casilla de
  * privacidad obligatoria. Rate limit: 3 peticiones/hora por IP.
+ * Cada petición deja una línea {evt:"contact_post", form, outcome} sin datos
+ * personales (src/lib/lead-logging.ts).
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -19,6 +21,7 @@ import { INLINE_RETRY, forwardToBmc, isBmcForwardConfigured, type ForwardInput }
 import { forwardToBmcAfterResponse } from "@/lib/bmc-forms-forward-after";
 import { deliverContact } from "@/lib/contact-delivery";
 import { checkTurnstile, honeypotTripped } from "@/lib/form-guards";
+import { logContactPost } from "@/lib/lead-logging";
 
 // ---------------------------------------------------------------------------
 // Rate limiter — 3 peticiones por hora por IP
@@ -191,6 +194,7 @@ export async function POST(request: NextRequest) {
     await contactLimiter.consume(ip);
   } catch (error) {
     if (error instanceof RateLimiterRes) {
+      logContactPost("api_access", "rate_limited");
       return NextResponse.json(
         { ok: false },
         {
@@ -210,11 +214,13 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
+    logContactPost("api_access", "bad_json");
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
   // Honeypot: answered like a success, nothing stored or sent.
   if (honeypotTripped(body)) {
+    logContactPost("api_access", "honeypot");
     return NextResponse.json({ ok: true }, { status: 200 });
   }
 
@@ -235,16 +241,19 @@ export async function POST(request: NextRequest) {
     useCase.trim().length > MAX.useCase ||
     (company !== undefined && (typeof company !== "string" || company.trim().length > MAX.company))
   ) {
+    logContactPost("api_access", "validation");
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
   // Validate email format
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!EMAIL_RE.test(email.trim())) {
+    logContactPost("api_access", "validation");
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
   if (consentPrivacy !== true) {
+    logContactPost("api_access", "validation");
     return NextResponse.json(
       { ok: false, error: "Debes aceptar la política de privacidad" },
       { status: 400 }
@@ -255,12 +264,14 @@ export async function POST(request: NextRequest) {
     onError: (error) => reportApiError(error, "contact] Turnstile"),
   });
   if (turnstile === "misconfigured") {
+    logContactPost("api_access", "misconfigured");
     return NextResponse.json(
       { ok: false, error: "El formulario no está disponible. Escríbenos a hola@trafico.live" },
       { status: 503 }
     );
   }
   if (turnstile === "failed") {
+    logContactPost("api_access", "turnstile");
     return NextResponse.json(
       { ok: false, error: "Verificación anti-bot fallida. Recarga la página e inténtalo de nuevo." },
       { status: 403 }
@@ -317,8 +328,10 @@ export async function POST(request: NextRequest) {
     case "emailed":
     case "forwarded":
       // Generic success (never leak details)
+      logContactPost("api_access", "ok");
       return NextResponse.json({ ok: true }, { status: 200 });
     case "email-failed":
+      logContactPost("api_access", "email_failed");
       reportApiError(result.error, "contact] Failed to send access request email");
       return NextResponse.json(
         { ok: false, error: "Error al enviar. Inténtalo más tarde o escríbenos a hola@trafico.live" },
@@ -326,6 +339,7 @@ export async function POST(request: NextRequest) {
       );
     case "forward-failed":
       // Nothing from the request is logged; only the outcome code.
+      logContactPost("api_access", "forward_failed");
       reportApiError(new Error("Contact form: copy to BMC One failed"), "contact", {
         form: "api-access-request",
         code: result.code,
@@ -337,6 +351,7 @@ export async function POST(request: NextRequest) {
     case "no-channel":
       // No sender and no forwarding: refuse, and say where to write. Nothing
       // from the request is logged; the event carries no personal data.
+      logContactPost("api_access", "no_channel");
       reportApiError(
         new Error("Contact form refused: no email sender or forwarding configured"),
         "contact",

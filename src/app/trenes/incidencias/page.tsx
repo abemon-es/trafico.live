@@ -14,6 +14,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { PageIntro } from "@/components/seo/PageIntro";
+import { ApiHubCta } from "@/components/api-landing/ApiHubCta";
 
 export const revalidate = 60;
 
@@ -22,7 +23,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://trafico.live";
 export const metadata: Metadata = {
   title: "Incidencias Renfe hoy — Retrasos y alertas en tiempo real",
   description:
-    "Incidencias y retrasos Renfe en tiempo real: AVE, Cercanías, Alvia, Rodalies. Alertas GTFS-RT actualizadas cada 60 segundos. Consulta el estado de tu línea.",
+    "Incidencias y retrasos Renfe en tiempo real: AVE, Cercanías, Alvia, Rodalies. Alertas GTFS-RT actualizadas cada 2 minutos. Consulta el estado de tu línea.",
   keywords: [
     "incidencias renfe hoy",
     "retrasos renfe",
@@ -298,7 +299,7 @@ export default async function IncidenciasPage() {
               </h1>
               <p className="font-body text-gray-600 dark:text-gray-300 mt-2 leading-relaxed">
                 Alertas y retrasos en tiempo real de la red ferroviaria española.{" "}
-                Datos GTFS-RT actualizados cada 60 segundos.
+                Datos GTFS-RT actualizados cada 2 minutos.
               </p>
               <PageIntro path="/trenes/incidencias" />
             </div>
@@ -539,6 +540,9 @@ export default async function IncidenciasPage() {
             </section>
           );
         })}
+
+        {/* ── API: after the incidents, which are what people came for ───── */}
+        <ApiHubCta hub="trenes" />
 
         {/* ── Reclamaciones CTA ──────────────────────────────────────────── */}
         <section className="rounded-2xl border border-tl-amber-200 dark:border-tl-amber-800/40 bg-tl-amber-50/60 dark:bg-tl-amber-900/10 p-6">

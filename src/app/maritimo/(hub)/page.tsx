@@ -23,6 +23,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { MaritimoHeroMap } from "../MaritimoHeroMap";
 import { PageIntro } from "@/components/seo/PageIntro";
+import { ApiHubCta } from "@/components/api-landing/ApiHubCta";
 
 export const revalidate = 300;
 
@@ -190,11 +191,14 @@ export default async function MaritimoHubPage() {
   );
 
   const stats = (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <StatCard label="Buques activos" value={data.vesselsActive.toLocaleString("es-ES")} hint="última hora" icon={Ship} accent="tl-sea" />
-      <StatCard label="Puertos" value={data.portsOperational} hint="del Estado" icon={Anchor} accent="tl-sea" />
-      <StatCard label="Rutas de ferry" value={data.ferryRoutes} hint="activas" icon={Navigation} accent="tl-sea" />
-      <StatCard label="Alertas costeras" value={data.coastalAlerts} hint="AEMET ahora" icon={AlertTriangle} accent={data.coastalAlerts > 0 ? "tl-amber" : "tl-sea"} />
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard label="Buques activos" value={data.vesselsActive.toLocaleString("es-ES")} hint="última hora" icon={Ship} accent="tl-sea" />
+        <StatCard label="Puertos" value={data.portsOperational} hint="del Estado" icon={Anchor} accent="tl-sea" />
+        <StatCard label="Rutas de ferry" value={data.ferryRoutes} hint="activas" icon={Navigation} accent="tl-sea" />
+        <StatCard label="Alertas costeras" value={data.coastalAlerts} hint="AEMET ahora" icon={AlertTriangle} accent={data.coastalAlerts > 0 ? "tl-amber" : "tl-sea"} />
+      </div>
+      <ApiHubCta hub="maritimo" />
     </div>
   );
 

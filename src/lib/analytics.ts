@@ -143,6 +143,19 @@ export function trackCtaClick(ctaId: string, ctaText: string, source: string) {
 }
 
 /**
+ * A link to /api-landing was clicked: the footer's «API y datos para empresas»
+ * or the one-line API invitation on a hub (src/lib/api-hub-cta.ts). Same
+ * cta_click event as the other CTAs; `hub` says which hub, for source=hub.
+ */
+export function trackApiLandingClick(source: "footer" | "hub", hub?: string) {
+  send("cta_click", {
+    cta_id: "api_landing",
+    source,
+    ...(hub && { hub }),
+  });
+}
+
+/**
  * User clicked an affiliate link. Revenue-attribution signal.
  * Emits `value` + `currency=EUR` when `priceEur` is known so GA4 can compute
  * monetary conversions. Fire from `/go/[partner]/[slug]` before the 302.
