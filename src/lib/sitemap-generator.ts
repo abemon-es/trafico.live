@@ -1636,6 +1636,7 @@ async function municipalitySitemap(
     skip: shardIndex * SHARD_SIZE,
     take: SHARD_SIZE,
     select: {
+      code: true,
       slug: true,
       province: { select: { slug: true, community: { select: { slug: true } } } },
     },
@@ -1645,8 +1646,12 @@ async function municipalitySitemap(
   // The canonical form, the one the province pages link to. /municipio/<slug>
   // was listed here while both forms answered 200 as their own canonical;
   // since 2026-10-19 the middleware 301s /municipio/<slug> to this URL.
+  // The date is when the municipality's card or its gas stations last changed
+  // (municipality fingerprint, src/lib/seo/lastmod.ts), or there is none.
+  const changedAt = await contentChangedAt(["municipality"]);
   return municipalities.map((m) => ({
     url: `${BASE_URL}/espana/${m.province.community.slug}/${m.province.slug}/${m.slug}`,
+    lastModified: changedAt.get(fingerprintKey("municipality", m.code)),
     changeFrequency: "weekly" as const,
     priority: 0.5,
   }));
@@ -1677,10 +1682,14 @@ async function postalCodeSitemap(
 ): Promise<SitemapEntry[]> {
   const postalCodes = await indexablePostalCodes(shardIndex * SHARD_SIZE, SHARD_SIZE);
 
+  // Dated by the postal-code fingerprint (its stations' prices and charging
+  // points), or not at all.
+  const changedAt = await contentChangedAt(["postal-code"]);
   return postalCodes
     .filter((p) => p.postalCode)
     .map((p) => ({
       url: `${BASE_URL}/codigo-postal/${p.postalCode}`,
+      lastModified: changedAt.get(fingerprintKey("postal-code", p.postalCode)),
       changeFrequency: "weekly" as const,
       priority: 0.45,
     }));
@@ -1700,8 +1709,12 @@ async function maritimeStationSitemap(
     orderBy: { id: "asc" },
   });
 
+  // lastPriceUpdate is the feed's read time: the date comes from the
+  // maritime-station fingerprint (its prices and card), or there is none.
+  const changedAt = await contentChangedAt(["maritime-station"]);
   return stations.map((station) => ({
     url: `${BASE_URL}/maritimo/combustible/${station.id}`,
+    lastModified: changedAt.get(fingerprintKey("maritime-station", station.id)),
     changeFrequency: "daily" as const,
     priority: 0.5,
   }));
@@ -1857,13 +1870,21 @@ async function railwayStationSitemap(
       where: { slug: { not: null } },
       orderBy: { slug: "asc" },
     });
-    return stations
-      .filter((s) => !!s.slug)
-      .map((s) => ({
-        url: `${BASE_URL}/trenes/estacion/${s.slug}`,
-        changeFrequency: "weekly" as const,
-        priority: 0.65,
-      }));
+    // fetchedAt is the weekly GTFS run: the date comes from the railway-station
+    // fingerprint (the station and the lines that stop there), or there is none.
+    const changedAt = await contentChangedAt(["railway-station"]);
+    return stations.flatMap((s) =>
+      s.slug
+        ? [
+            {
+              url: `${BASE_URL}/trenes/estacion/${s.slug}`,
+              lastModified: changedAt.get(fingerprintKey("railway-station", s.slug)),
+              changeFrequency: "weekly" as const,
+              priority: 0.65,
+            },
+          ]
+        : [],
+    );
   } catch (err) {
     reportApiError(err, "sitemap railway stations");
     return [];
@@ -1885,6 +1906,9 @@ async function railwayLineSitemap(
       where: { slug: { not: null } },
       orderBy: { slug: "asc" },
     });
+    // fetchedAt is the weekly GTFS run: the date comes from the railway-line
+    // fingerprint (the routes under the slug, their stops and shape), or none.
+    const changedAt = await contentChangedAt(["railway-line"]);
     const seen = new Set<string>();
     return routes.flatMap((r) => {
       if (!r.slug || seen.has(r.slug)) return [];
@@ -1892,6 +1916,7 @@ async function railwayLineSitemap(
       return [
         {
           url: `${BASE_URL}/trenes/linea/${r.slug}`,
+          lastModified: changedAt.get(fingerprintKey("railway-line", r.slug)),
           changeFrequency: "weekly" as const,
           priority: 0.65,
         },
@@ -2031,8 +2056,12 @@ async function spanishPortSitemap(shardIndex: number): Promise<SitemapEntry[]> {
       select: { slug: true },
       orderBy: { slug: "asc" },
     });
+    // updatedAt moves with every port import: the date comes from the
+    // spanish-port fingerprint (the port's card), or there is none.
+    const changedAt = await contentChangedAt(["spanish-port"]);
     return ports.map((p) => ({
       url: `${BASE_URL}/maritimo/puerto/${p.slug}`,
+      lastModified: changedAt.get(fingerprintKey("spanish-port", p.slug)),
       changeFrequency: "daily" as const,
       priority: 0.6,
     }));

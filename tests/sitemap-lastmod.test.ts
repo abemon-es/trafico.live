@@ -6,7 +6,7 @@
  */
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import type { PrismaClient } from "@prisma/client";
 import {
   FAMILIES,
@@ -38,7 +38,7 @@ async function main() {
   assert.equal(fingerprintKey("camera-road", "A-5"), "camera-road:A-5");
 
   // Only stable content goes into a hash: no run times, images or feed URLs.
-  for (const volatile of ["lastUpdated", "updatedAt", "createdAt", "thumbnailUrl", "feedUrl", "lastPriceUpdate"]) {
+  for (const volatile of ["lastUpdated", "updatedAt", "createdAt", "fetchedAt", "thumbnailUrl", "feedUrl", "lastPriceUpdate", "shapeGeoJSON"]) {
     assert.ok(!UPSERT_FINGERPRINTS.sql.includes(volatile), `SQL must not hash ${volatile}`);
   }
   // A key seen for the first time has no date; only a different hash moves it.
@@ -154,6 +154,41 @@ async function main() {
   assert.ok(!/lastUpdated/.test(charger.replace(/\/\/.*$/gm, "")), "no lastmod from lastUpdated");
   assert.match(UPSERT_FINGERPRINTS.sql, /FROM "EVCharger" WHERE "isPublic"/);
   assert.ok(!/lastUpdated/.test(UPSERT_FINGERPRINTS.sql), "the charger hash leaves out the run time");
+
+  // The six families of 2026-11-07. Each sitemap function dates its URLs from
+  // its own fingerprint and never from a run time or a made-up date.
+  const section = (from: string, to?: string) =>
+    gen.slice(gen.indexOf(`async function ${from}`), to ? gen.indexOf(`async function ${to}`) : undefined);
+  const dated: Array<[string, string | undefined, string, string]> = [
+    ["municipalitySitemap", "indexablePostalCodes", "municipality", "m.code"],
+    ["postalCodeSitemap", "maritimeStationSitemap", "postal-code", "p.postalCode"],
+    ["maritimeStationSitemap", "insightsSitemap", "maritime-station", "station.id"],
+    ["railwayStationSitemap", "railwayLineSitemap", "railway-station", "s.slug"],
+    ["railwayLineSitemap", "airQualityStationSitemap", "railway-line", "r.slug"],
+    ["spanishPortSitemap", undefined, "spanish-port", "p.slug"],
+  ];
+  for (const [fn, next, family, id] of dated) {
+    const code = section(fn, next);
+    assert.ok(code.length > 0, `${fn} exists`);
+    assert.ok(code.includes(`contentChangedAt(["${family}"])`), `${fn} reads the ${family} dates`);
+    assert.ok(code.includes(`lastModified: changedAt.get(fingerprintKey("${family}", ${id}))`), `${fn} dates by ${family}:${id}`);
+    assert.ok(!/fetchedAt|lastUpdated|updatedAt|new Date\(\)/.test(code.replace(/\/\/.*$/gm, "")), `${fn}: no run time or made-up date`);
+  }
+  // /maritimo/combustible/<id>: every price the page prints, and only those.
+  const marPage = readFileSync("src/app/maritimo/combustible/[id]/page.tsx", "utf8");
+  const marPrinted = [...new Set(marPage.match(/station\.price\w+/g))].map((m) => m.slice("station.".length)).sort();
+  const sweep = UPSERT_FINGERPRINTS.sql;
+  const marSql = sweep.slice(sweep.indexOf("mar AS ("), sweep.indexOf("mun AS ("));
+  assert.deepEqual([...new Set(marSql.match(/"price\w+"/g))].map((m) => m.slice(1, -1)).sort(), marPrinted);
+  // A municipality's stations are matched the way the page matches them
+  // (municipalityCodeForms: the 5-digit INE code, or the same without zeros).
+  assert.ok(sweep.includes(`s."municipalityCode" IN (m.code, ltrim(m.code, '0'))`));
+  assert.match(readFileSync("src/lib/geo/ine-codes.ts", "utf8"), /return stripped === code \? \[code\] : \[code, stripped\]/);
+  // A station page lists the routes whose stopNames include its name.
+  assert.ok(sweep.includes(`unnest(rr."stopNames")`) && sweep.includes(`LEFT JOIN rstop rs ON rs.name = st.name`));
+  // The legacy /municipio sitemap (lastmod «today» for every municipality, on
+  // the URL that now redirects) is gone.
+  assert.equal(existsSync("src/app/municipio/[slug]/sitemap.ts"), false);
 
   console.log("sitemap lastmod: all checks passed");
 }
