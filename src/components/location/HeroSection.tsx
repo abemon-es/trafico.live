@@ -5,6 +5,8 @@ import { PageIntro } from "@/components/seo/PageIntro";
 
 interface HeroSectionProps {
   entity: GeoEntity;
+  /** H1 override; default «Tráfico en <name> Hoy». The community pages use «Estado de las carreteras en <name> hoy». */
+  title?: string;
   /** Canonical path, for the page's own intro text (src/lib/seo/intro-copy.ts). */
   introPath?: string;
 }
@@ -37,7 +39,7 @@ function toScopeCode(entity: GeoEntity): string {
   );
 }
 
-export async function HeroSection({ entity, introPath }: HeroSectionProps) {
+export async function HeroSection({ entity, introPath, title }: HeroSectionProps) {
   const scopeType = toScopeType(entity.level);
   const scopeCode = toScopeCode(entity);
 
@@ -77,7 +79,7 @@ export async function HeroSection({ entity, introPath }: HeroSectionProps) {
         {/* Title + live badge */}
         <div className="flex-1">
           <h1 className="font-heading text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Tráfico en {entity.name} Hoy
+            {title ?? `Tráfico en ${entity.name} Hoy`}
           </h1>
           {entity.parentName && (
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">

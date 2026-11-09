@@ -7,6 +7,12 @@ import { HeroSection } from "@/components/location/HeroSection";
 import { StatsBar } from "@/components/location/StatsBar";
 import { Suspense } from "react";
 import { SectionSkeleton } from "@/components/location/SectionSkeleton";
+import { CommunityRoadStatus } from "@/components/location/CommunityRoadStatus";
+import {
+  communityRoadDescription,
+  communityRoadHeading,
+  communityRoadTitle,
+} from "@/lib/seo/community-road-title";
 import {
   IncidentsSection,
   CamerasSection,
@@ -43,12 +49,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!comm) return { title: "Comunidad no encontrada" };
 
+  // «Estado de las carreteras en <comunidad> hoy» (CMO spec 02-11, experiment
+  // trafico-estado-carreteras); see src/lib/seo/community-road-title.ts.
   return {
-    title: `Tráfico en ${comm.name} Hoy — Comunidad Autónoma`,
-    description: `Estado del tráfico en ${comm.name}. Incidencias, cámaras DGT, radares, gasolineras y más en las ${comm.provinces.length} provincias.`,
+    title: communityRoadTitle(comm.name),
+    description: communityRoadDescription(comm.name),
     alternates: { canonical: `${BASE_URL}/espana/${slug}` },
     openGraph: {
-      title: `Tráfico en ${comm.name} Hoy`,
+      title: communityRoadHeading(comm.name),
       url: `${BASE_URL}/espana/${slug}`,
       type: "website",
     },
@@ -98,6 +106,7 @@ export default async function CommunityPage({ params }: Props) {
 
   const visibleSections = [
     { id: "hero", label: "Resumen" },
+    { id: "estado", label: "Estado" },
     { id: "incidencias", label: "Incidencias" },
     { id: "camaras", label: "Cámaras" },
     { id: "meteorologia", label: "Meteorología" },
@@ -111,7 +120,12 @@ export default async function CommunityPage({ params }: Props) {
       breadcrumbs={breadcrumbs}
       visibleSections={visibleSections}
     >
-      <HeroSection entity={entity} />
+      <HeroSection entity={entity} title={communityRoadHeading(comm.name)} />
+
+      <Suspense fallback={<SectionSkeleton title="Estado de las carreteras" />}>
+        <CommunityRoadStatus communityCode={comm.code} communityName={comm.name} />
+      </Suspense>
+
       <StatsBar entity={entity} />
 
       <Suspense fallback={<SectionSkeleton title="Incidencias" />}>
