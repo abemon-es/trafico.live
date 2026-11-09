@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import { EntitySamples } from "@/components/home/EntitySamples";
 import type { HomeArticle } from "@/components/home/counts";
@@ -154,7 +155,11 @@ export function HomeClient({
           covers the map, and the text has to show at every width. */}
       {intro && (
         <p className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed" data-page-intro="">
-          {intro}
+          {intro}{" "}
+          {/* The «estado de las carreteras» hub, high in the body (CMO, experiment trafico-estado-carreteras). */}
+          <Link href="/estado-carreteras" className="font-semibold text-tl-600 dark:text-tl-400 hover:underline">
+            Estado de las carreteras hoy
+          </Link>
         </p>
       )}
 

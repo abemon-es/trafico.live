@@ -142,6 +142,7 @@ export const megaMenuPanels: MegaMenuPanel[] = [
         items: [
           { name: "Mapa en vivo", href: "/mapa", icon: Map, description: "Tráfico en tiempo real" },
           { name: "Atascos", href: "/atascos", icon: AlertTriangle, description: "Retenciones actuales" },
+          { name: "Estado de las carreteras", href: "/estado-carreteras", icon: Route, description: "Cortes, obras y nieve hoy" },
           { name: "Incidencias", href: "/incidencias", icon: AlertTriangle, description: "Incidentes en curso" },
           { name: "Alertas AEMET", href: "/alertas-meteo", icon: Cloud, description: "Avisos meteorológicos" },
           { name: "Cortes y obras", href: "/cortes-trafico", icon: Ban, description: "Vías cortadas" },
