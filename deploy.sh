@@ -165,7 +165,9 @@ fi
 # for that window it kept sending requests to a dead address (502). Reloading
 # now, while the name resolves to both containers, gives it both: when the old
 # one goes, nginx retries on the new one. Only the reload is touched here.
-if docker ps --format '{{.Names}}' | grep -qx edge-cache; then
+# Asked directly, not through `docker ps | grep -q`: under pipefail grep's early
+# exit can turn that pipeline false and skip the reload silently.
+if [ "$(docker inspect -f '{{.State.Running}}' edge-cache 2>/dev/null)" = "true" ]; then
   EC_TEST_RC=0
   EC_TEST_OUT="$(docker exec edge-cache nginx -t 2>&1)" || EC_TEST_RC=$?
   echo "edge-cache nginx -t rc=$EC_TEST_RC"
