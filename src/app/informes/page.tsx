@@ -4,6 +4,7 @@ import prisma from "@/lib/db";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RelatedLinks } from "@/components/seo/RelatedLinks";
 import { DigestForm } from "@/components/seo/DigestForm";
+import { DIGEST_SIGNUP_ENABLED } from "@/lib/email/digest-signup";
 import { Calendar, TrendingUp, BarChart3, Fuel, Newspaper, FileText, AlertTriangle } from "lucide-react";
 
 export const revalidate = 300;
@@ -159,10 +160,12 @@ export default async function InformesPage() {
           ))}
         </div>
 
-        {/* Weekly digest signup */}
-        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 mb-8">
-          <DigestForm />
-        </div>
+        {/* Weekly digest signup: hidden while there is no email sender (src/lib/email/digest-signup.ts) */}
+        {DIGEST_SIGNUP_ENABLED && (
+          <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 mb-8">
+            <DigestForm />
+          </div>
+        )}
 
         <RelatedLinks links={[
           { title: "Noticias de tráfico", description: "Últimas noticias y análisis del tráfico en España", href: "/noticias", icon: <Newspaper className="w-5 h-5" /> },
