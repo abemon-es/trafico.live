@@ -54,7 +54,7 @@ services:
       start_period: 10s
 
   nginx-exporter:
-    image: nginx/nginx-prometheus-exporter:latest
+    image: nginx/nginx-prometheus-exporter@sha256:bf76e58df548a13e52bd543ac70f6d3d667e14884e8b51c149bd81994ca75ccd
     container_name: tiles-nginx-exporter
     command: ["--nginx.scrape-uri=http://tiles/nginx_status"]
     ports:
