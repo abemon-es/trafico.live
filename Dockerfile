@@ -62,12 +62,18 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts.bak ./prisma.config.ts
 COPY --from=builder /app/data ./data
+COPY --from=builder /app/cache-handler ./cache-handler
 
 RUN chown -R nextjs:nodejs .next && \
     chown -R nextjs:nodejs node_modules/.prisma node_modules/@prisma
 
 ENV NODE_ENV=production
 ENV PORT=3000
+# ISR cache in memory under a byte budget instead of on disk, where Next 16.4
+# writes .next/server/route-cache/ with no eviction (cache-handler/). Read by
+# Next's default config: this image has no next.config.ts, so the key has to
+# come from the environment. Budget: ISR_CACHE_MAX_MB (default 256).
+ENV NEXT_CACHE_HANDLER_PATH=/app/cache-handler/isr-cache-handler.mjs
 # Which build this is. Surfaced by /api/health so "what is actually live" is a
 # question with an answer, and so a deploy can prove the router reaches the new
 # container instead of assuming it.
