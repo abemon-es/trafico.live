@@ -13,6 +13,7 @@
     "test:aemet-forecast": "tsx tests/aemet-quota-window.test.ts && tsx tests/aemet-request-budget.test.ts && tsx tests/aemet-forecast-queue.test.ts && tsx tests/health-public-meta.test.ts && tsx tests/heartbeat-progress.test.ts",
     "test:redis": "tsx tests/redis-reconnect.test.ts",
     "test:json-ld": "tsx tests/json-ld-escape.test.ts",
+    "test:redirects": "tsx tests/redirects-admin.test.ts",
     "test:rate-limit": "tsx tests/rate-limit-insurance.test.ts",
     "test:html-escape": "tsx tests/html-escape-sinks.test.ts",
     "test:cron": "tsx tests/cron-flock-exit.test.ts",
